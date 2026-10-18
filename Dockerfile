@@ -21,10 +21,10 @@ COPY . .
 # Accept build-time NEXT_PUBLIC_* variables (loaded automatically from .env by docker compose)
 ARG NEXT_PUBLIC_SUPABASE_URL
 ARG NEXT_PUBLIC_SUPABASE_ANON_KEY
-ARG NEXT_PUBLIC_APP_URL=https://techurity.si
+ARG NEXT_PUBLIC_APP_URL=https://social.ai4eg.com
 ARG NEXT_PUBLIC_BRAND_NAME=Techurity
 ARG NEXT_PUBLIC_BRAND_PRIMARY_COLOR=#4F46E5
-ARG NEXT_PUBLIC_BRAND_LOGO_URL=https://techurity.si/logo.png
+ARG NEXT_PUBLIC_BRAND_LOGO_URL=https://social.ai4eg.com/logo.png
 
 ENV NEXT_TELEMETRY_DISABLED=1
 ENV NODE_OPTIONS="--max-old-space-size=2048 --dns-result-order=ipv4first"

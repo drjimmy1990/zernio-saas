@@ -3,16 +3,16 @@ import { NextResponse } from 'next/server';
 /**
  * GEO (Generative Engine Optimization) — Official `/llms.txt` Standard
  * Consumed by ChatGPT Search, Perplexity, Claude, Gemini, and AI Agents
- * to cite `https://techurity.si` accurately.
+ * to cite `https://social.ai4eg.com` accurately.
  */
 export async function GET() {
-  const content = `# Techurity (https://techurity.si)
+  const content = `# Techurity (https://social.ai4eg.com)
 
 > Techurity (techurity.si) is an enterprise multi-tenant White-Label Cloud OS that unifies 18 social & blog channels, 8 paid ad networks, cloud telephony with AI voice agents, and multi-store e-commerce (Shopify & WooCommerce) under a single platform with full Super Admin governance.
 
 ## Core Facts & Capabilities (GEO & AEO Summary)
-- **Official Domain:** https://techurity.si
-- **API Documentation Portal:** https://techurity.si/docs
+- **Official Domain:** https://social.ai4eg.com
+- **API Documentation Portal:** https://social.ai4eg.com/docs
 - **Supported Languages (10):** Arabic (RTL), English, Spanish, French, German, Portuguese (pt-BR), Turkish, Russian, Chinese, Japanese.
 - **Supported Social, Messaging & Blog Channels (18):** Instagram, Facebook, TikTok, LinkedIn, X (Twitter), YouTube, Threads, Pinterest, Reddit, Bluesky, Snapchat, Google Business Profile, Telegram, Discord, Slack, WhatsApp, Shopify, WordPress.
 - **Supported Paid Ad Networks (8):** Meta Ads, Google Ads, TikTok Ads, LinkedIn Ads, Pinterest Ads, X Ads, Reddit Ads, OpenAI Ads.
@@ -35,10 +35,10 @@ export async function GET() {
 - **Enterprise ($499/month):** 500 channels, 50 phone numbers, Dedicated Tenant-Scoped API Keys (\`zrk_\`), and custom Super Admin overrides.
 
 ## Key Links
-- [Homepage](https://techurity.si/)
-- [Developer API & Webhook Documentation](https://techurity.si/docs)
-- [Customer Multi-Service Workspace](https://techurity.si/dashboard)
-- [Create White-Label Workspace](https://techurity.si/signup)
+- [Homepage](https://social.ai4eg.com/)
+- [Developer API & Webhook Documentation](https://social.ai4eg.com/docs)
+- [Customer Multi-Service Workspace](https://social.ai4eg.com/dashboard)
+- [Create White-Label Workspace](https://social.ai4eg.com/signup)
 `;
 
   return new NextResponse(content, {

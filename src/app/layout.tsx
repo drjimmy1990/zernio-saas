@@ -5,7 +5,7 @@ import { Navbar } from '@/components/Navbar';
 import { SeoJsonLd } from '@/components/SeoJsonLd';
 
 export const metadata: Metadata = {
-  metadataBase: new URL('https://techurity.si'),
+  metadataBase: new URL('https://social.ai4eg.com'),
   title: {
     default:
       'Techurity (techurity.si) — منصة التسويق والاتصالات السحابية الموحدة، الأرقام الافتراضية، واتساب للأعمال والذكاء الصوتي',
@@ -26,24 +26,24 @@ export const metadata: Metadata = {
     'إدارة حسابات التواصل والإعلانات',
   ],
   alternates: {
-    canonical: 'https://techurity.si',
+    canonical: 'https://social.ai4eg.com',
     languages: {
-      ar: 'https://techurity.si?lang=ar',
-      en: 'https://techurity.si?lang=en',
-      es: 'https://techurity.si?lang=es',
-      fr: 'https://techurity.si?lang=fr',
-      de: 'https://techurity.si?lang=de',
-      'pt-BR': 'https://techurity.si?lang=pt-BR',
-      tr: 'https://techurity.si?lang=tr',
-      ru: 'https://techurity.si?lang=ru',
-      zh: 'https://techurity.si?lang=zh',
-      ja: 'https://techurity.si?lang=ja',
-      'x-default': 'https://techurity.si',
+      ar: 'https://social.ai4eg.com?lang=ar',
+      en: 'https://social.ai4eg.com?lang=en',
+      es: 'https://social.ai4eg.com?lang=es',
+      fr: 'https://social.ai4eg.com?lang=fr',
+      de: 'https://social.ai4eg.com?lang=de',
+      'pt-BR': 'https://social.ai4eg.com?lang=pt-BR',
+      tr: 'https://social.ai4eg.com?lang=tr',
+      ru: 'https://social.ai4eg.com?lang=ru',
+      zh: 'https://social.ai4eg.com?lang=zh',
+      ja: 'https://social.ai4eg.com?lang=ja',
+      'x-default': 'https://social.ai4eg.com',
     },
   },
   openGraph: {
     type: 'website',
-    url: 'https://techurity.si',
+    url: 'https://social.ai4eg.com',
     siteName: 'Techurity',
     title:
       'Techurity (techurity.si) — Unified Social, Virtual Numbers, WhatsApp Business, AI Voice & Ads Platform',

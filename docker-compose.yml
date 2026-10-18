@@ -8,10 +8,10 @@ services:
       args:
         NEXT_PUBLIC_SUPABASE_URL: ${NEXT_PUBLIC_SUPABASE_URL:-https://placeholder.supabase.co}
         NEXT_PUBLIC_SUPABASE_ANON_KEY: ${NEXT_PUBLIC_SUPABASE_ANON_KEY:-placeholder-anon-key}
-        NEXT_PUBLIC_APP_URL: ${NEXT_PUBLIC_APP_URL:-https://techurity.si}
+        NEXT_PUBLIC_APP_URL: ${NEXT_PUBLIC_APP_URL:-https://social.ai4eg.com}
         NEXT_PUBLIC_BRAND_NAME: ${NEXT_PUBLIC_BRAND_NAME:-Techurity}
         NEXT_PUBLIC_BRAND_PRIMARY_COLOR: ${NEXT_PUBLIC_BRAND_PRIMARY_COLOR:-#4F46E5}
-        NEXT_PUBLIC_BRAND_LOGO_URL: ${NEXT_PUBLIC_BRAND_LOGO_URL:-https://techurity.si/logo.png}
+        NEXT_PUBLIC_BRAND_LOGO_URL: ${NEXT_PUBLIC_BRAND_LOGO_URL:-https://social.ai4eg.com/logo.png}
     ports:
       - "127.0.0.1:5651:5651"
     env_file:

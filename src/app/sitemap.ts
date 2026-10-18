@@ -1,6 +1,6 @@
 import type { MetadataRoute } from 'next';
 
-const BASE_URL = 'https://techurity.si';
+const BASE_URL = (process.env.NEXT_PUBLIC_APP_URL || 'https://social.ai4eg.com').replace(/\/$/, '');
 
 const LANGUAGE_ALTERNATES = {
   ar: `${BASE_URL}?lang=ar`,

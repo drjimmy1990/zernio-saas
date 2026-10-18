@@ -1,6 +1,7 @@
 import type { MetadataRoute } from 'next';
 
 export default function robots(): MetadataRoute.Robots {
+  const baseUrl = (process.env.NEXT_PUBLIC_APP_URL || 'https://social.ai4eg.com').replace(/\/$/, '');
   return {
     rules: [
       {
@@ -22,7 +23,8 @@ export default function robots(): MetadataRoute.Robots {
         allow: ['/', '/docs', '/llms.txt'],
       },
     ],
-    sitemap: 'https://techurity.si/sitemap.xml',
-    host: 'https://techurity.si',
+    sitemap: `${baseUrl}/sitemap.xml`,
+    host: baseUrl,
   };
 }
+

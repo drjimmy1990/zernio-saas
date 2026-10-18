@@ -45,10 +45,10 @@ ZERNIO_WEBHOOK_SECRET=whsec_...
 ZERNIO_BASE_URL=https://zernio.com/api/v1
 
 # 4. Public Domain & White-Label Brand Identity
-NEXT_PUBLIC_APP_URL=https://techurity.si
+NEXT_PUBLIC_APP_URL=https://social.ai4eg.com
 NEXT_PUBLIC_BRAND_NAME=Techurity
 NEXT_PUBLIC_BRAND_PRIMARY_COLOR=#4F46E5
-NEXT_PUBLIC_BRAND_LOGO_URL=https://techurity.si/logo.png
+NEXT_PUBLIC_BRAND_LOGO_URL=https://social.ai4eg.com/logo.png
 ```
 
 > **Important:** Because Next.js bakes `NEXT_PUBLIC_*` variables into the client bundle at build time, always make sure `.env` is present in `/www/wwwroot/techurity.si/.env` **before** running `docker compose up -d --build`.
