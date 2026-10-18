@@ -7,7 +7,6 @@ import { LOCALE_META, type SupportedLocale } from '@/i18n/dictionaries';
 import { getLandingCopy } from '@/i18n/landingTranslations';
 import { useThemeAndLocale } from '@/i18n/ThemeAndLocaleProvider';
 import type { AuthSession } from '@/lib/auth/session';
-import { ExperienceModeSwitcher } from '@/components/dashboard/ExperienceModeSwitcher';
 import { Asra3Logo } from '@/components/Asra3Logo';
 import {
   ShieldCheck,
@@ -91,13 +90,22 @@ export function Navbar() {
   const currentLocaleMeta =
     LOCALE_META.find((l) => l.code === locale) || LOCALE_META[0];
 
-  // Unified, non-redundant navigation items
+  const isLandingPage = pathname === '/';
+
+  // Unified, non-redundant navigation items (compact when signed in so the header never overflows)
   const primaryLinks = [
     { href: '/', label: t.nav.home, exact: true },
-    { href: '/#platforms', label: landingCopy.navAnchors.platforms },
-    { href: '/#telephony', label: landingCopy.navAnchors.telephony },
-    { href: '/#ads', label: landingCopy.navAnchors.ads },
-    { href: '/#pricing', label: landingCopy.navAnchors.pricing },
+    ...(isLandingPage && !session
+      ? [
+          { href: '/#platforms', label: landingCopy.navAnchors.platforms },
+          { href: '/#telephony', label: landingCopy.navAnchors.telephony },
+          { href: '/#ads', label: landingCopy.navAnchors.ads },
+          { href: '/#pricing', label: landingCopy.navAnchors.pricing },
+        ]
+      : [
+          { href: '/#platforms', label: landingCopy.navAnchors.platforms, hideBelowXl: true },
+          { href: '/#pricing', label: landingCopy.navAnchors.pricing, hideBelowXl: true },
+        ]),
     { href: '/docs', label: t.nav.docs, icon: BookOpen, exact: true },
     ...(session
       ? [
@@ -123,8 +131,8 @@ export function Navbar() {
   ];
 
   return (
-    <header className="sticky top-0 z-40 border-b border-[var(--border-subtle)] bg-[var(--bg-header)] backdrop-blur-xl transition-colors">
-      <div className="mx-auto flex h-16 max-w-7xl items-center justify-between gap-3 px-4 sm:h-[68px] sm:px-6 lg:px-8">
+    <header className="sticky top-0 z-40 w-full border-b border-[var(--border-subtle)] bg-[var(--bg-header)] backdrop-blur-xl transition-colors">
+      <div className="mx-auto flex h-16 max-w-7xl items-center justify-between gap-2 px-4 sm:h-[68px] sm:px-6 lg:px-8">
         {/* 1. Brand Identity: Bespoke Asra3 Emblem & Stylized Wordmark */}
         <Link
           href="/"
@@ -136,7 +144,7 @@ export function Navbar() {
         {/* 2. Center Unified Navigation Pill Bar (Desktop) */}
         <nav
           aria-label="Main Navigation"
-          className="hidden lg:flex items-center gap-0.5 rounded-2xl border border-[var(--border-subtle)] bg-[var(--bg-subtle)]/75 p-1 backdrop-blur-md shadow-2xs"
+          className="hidden lg:flex min-w-0 items-center gap-0.5 rounded-2xl border border-[var(--border-subtle)] bg-[var(--bg-subtle)]/75 p-1 backdrop-blur-md shadow-2xs"
         >
           {primaryLinks.map((item) => {
             const Icon = item.icon;
@@ -145,7 +153,11 @@ export function Navbar() {
               <Link
                 key={item.href}
                 href={item.href}
-                className={`inline-flex items-center gap-1.5 whitespace-nowrap rounded-xl px-3 py-1.5 text-xs font-bold transition cursor-pointer ${
+                className={`${
+                  (item as { hideBelowXl?: boolean }).hideBelowXl
+                    ? 'hidden xl:inline-flex'
+                    : 'inline-flex'
+                } items-center gap-1.5 whitespace-nowrap rounded-xl px-2.5 py-1.5 text-xs font-bold transition cursor-pointer ${
                   isActive
                     ? 'bg-[var(--brand-coral)] text-white shadow-xs'
                     : item.isAdmin
@@ -162,9 +174,6 @@ export function Navbar() {
 
         {/* 3. End Action Controls: Always Single-Line & Aligned */}
         <div className="flex shrink-0 items-center gap-2">
-          {pathname === '/dashboard' && (
-            <ExperienceModeSwitcher compact className="hidden xl:inline-flex" />
-          )}
 
           {/* Custom 10-Language Popover Switcher (Clean ISO badges, no broken Windows flag text) */}
           <div className="relative" ref={langMenuRef}>
