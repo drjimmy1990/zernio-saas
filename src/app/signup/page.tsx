@@ -11,6 +11,7 @@ import {
   ArrowRight,
   Code2,
 } from 'lucide-react';
+import { Asra3Logo } from '@/components/Asra3Logo';
 
 function SignUpFormContent() {
   const router = useRouter();
@@ -64,10 +65,9 @@ function SignUpFormContent() {
     <div className="mx-auto max-w-5xl py-6 text-[var(--text-primary)]">
       <div className="grid gap-8 lg:grid-cols-12">
         {/* Clean, Simple Sign Up Form */}
-        <div className="luxury-card p-6 sm:p-8 lg:col-span-7">
-          <div className="inline-flex items-center gap-2 rounded-full bg-[var(--accent-soft)] px-3 py-1 text-xs font-bold text-[var(--accent-primary)]">
-            <Sparkles className="h-3.5 w-3.5" />
-            <span>{t.auth.signUpBadge}</span>
+        <div className="luxury-card rounded-3xl p-6 sm:p-8 lg:col-span-7">
+          <div className="mb-4">
+            <Asra3Logo size="sm" />
           </div>
 
           <h1 className="mt-3 text-2xl font-extrabold text-[var(--text-primary)] sm:text-3xl">

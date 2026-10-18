@@ -8,6 +8,7 @@ import { getLandingCopy } from '@/i18n/landingTranslations';
 import { useThemeAndLocale } from '@/i18n/ThemeAndLocaleProvider';
 import type { AuthSession } from '@/lib/auth/session';
 import { ExperienceModeSwitcher } from '@/components/dashboard/ExperienceModeSwitcher';
+import { Asra3Logo } from '@/components/Asra3Logo';
 import {
   ShieldCheck,
   LayoutDashboard,
@@ -15,7 +16,6 @@ import {
   Sun,
   Moon,
   Globe,
-  Sparkles,
   LogOut,
   User,
   ChevronDown,
@@ -125,25 +125,12 @@ export function Navbar() {
   return (
     <header className="sticky top-0 z-40 border-b border-[var(--border-subtle)] bg-[var(--bg-header)] backdrop-blur-xl transition-colors">
       <div className="mx-auto flex h-16 max-w-7xl items-center justify-between gap-3 px-4 sm:h-[68px] sm:px-6 lg:px-8">
-        {/* 1. Brand Identity: Compact & Executive (Never wraps or overflows) */}
+        {/* 1. Brand Identity: Bespoke Asra3 Emblem & Stylized Wordmark */}
         <Link
           href="/"
-          className="group flex shrink-0 items-center gap-2.5 cursor-pointer"
+          className="group flex shrink-0 items-center cursor-pointer"
         >
-          <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-[var(--brand-coral)] text-white shadow-sm shadow-[var(--brand-coral)]/25 transition-transform group-hover:scale-105">
-            <Sparkles className="h-4 w-4" />
-          </div>
-          <div className="flex items-center gap-2">
-            <span className="text-lg font-extrabold tracking-tight text-[var(--text-primary)]">
-              Asra3
-            </span>
-            <span
-              dir="ltr"
-              className="hidden sm:inline-flex items-center rounded-full border border-[var(--brand-coral)]/25 bg-[var(--brand-coral-soft)] px-2 py-0.5 font-mono text-[10px] font-bold text-[var(--brand-coral)]"
-            >
-              asra3.com
-            </span>
-          </div>
+          <Asra3Logo size="sm" showDomainBadge />
         </Link>
 
         {/* 2. Center Unified Navigation Pill Bar (Desktop) */}

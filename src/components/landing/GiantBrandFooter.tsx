@@ -12,6 +12,7 @@ import {
   ArrowLeft,
   Sparkles,
 } from 'lucide-react';
+import { Asra3Logo } from '@/components/Asra3Logo';
 
 export default function GiantBrandFooter() {
   const { t, dir, locale } = useThemeAndLocale();
@@ -362,11 +363,17 @@ export default function GiantBrandFooter() {
 
         {/* Bottom Copyright & Status Bar */}
         <div className="flex flex-col sm:flex-row items-center justify-between gap-4 border-t border-[var(--border-subtle)] pt-6">
-          <div className="flex items-center gap-2">
-            <span className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
-            <span className="font-semibold text-[var(--text-primary)]">
-              {copy.statusText}
-            </span>
+          <div className="flex flex-wrap items-center gap-3">
+            <Link href="/" className="inline-flex items-center">
+              <Asra3Logo size="sm" showDomainBadge={false} />
+            </Link>
+            <span className="hidden sm:inline text-[var(--border-subtle)]">|</span>
+            <div className="flex items-center gap-2">
+              <span className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
+              <span className="font-semibold text-[var(--text-primary)]">
+                {copy.statusText}
+              </span>
+            </div>
           </div>
 
           <div>

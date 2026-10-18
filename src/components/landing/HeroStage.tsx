@@ -17,6 +17,7 @@ import {
   Cpu,
   PhoneCall,
 } from 'lucide-react';
+import { Asra3Mark } from '@/components/Asra3Logo';
 
 export default function HeroStage() {
   const { t, dir, locale } = useThemeAndLocale();
@@ -309,8 +310,8 @@ console.log(response.status); // 'published_synced'`;
                   className="absolute h-20 w-20 rounded-full border border-[var(--brand-coral)]/40 animate-radar-pulse"
                   style={{ animationDelay: '1.8s' }}
                 />
-                <div className="relative z-10 flex h-14 w-14 items-center justify-center rounded-2xl border border-[var(--brand-coral)]/50 bg-[var(--bg-card)] shadow-lg">
-                  <Radio className="h-6 w-6 text-[var(--brand-coral)] animate-pulse" />
+                <div className="relative z-10 flex items-center justify-center">
+                  <Asra3Mark size="lg" />
                 </div>
               </div>
 

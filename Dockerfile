@@ -44,6 +44,7 @@ ENV HOSTNAME="0.0.0.0"
 ENV NODE_OPTIONS="--dns-result-order=ipv4first"
 
 # Copy standalone build output and static assets
+COPY --from=builder /app/public ./public
 COPY --from=builder /app/.next/standalone ./
 COPY --from=builder /app/.next/static ./.next/static
 

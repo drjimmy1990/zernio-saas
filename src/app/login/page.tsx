@@ -14,6 +14,7 @@ import {
   Share2,
   CheckCircle2,
 } from 'lucide-react';
+import { Asra3Logo } from '@/components/Asra3Logo';
 
 function LoginFormContent() {
   const router = useRouter();
@@ -73,10 +74,9 @@ function LoginFormContent() {
     <div className="mx-auto max-w-5xl py-8 text-[var(--text-primary)]">
       <div className="grid gap-8 lg:grid-cols-12">
         {/* Production SaaS Login Form */}
-        <div className="luxury-card p-6 sm:p-10 lg:col-span-7">
-          <div className="inline-flex items-center gap-2 rounded-full bg-[var(--brand-coral-soft)] px-3 py-1 text-xs font-bold text-[var(--brand-coral)]">
-            <Sparkles className="h-3.5 w-3.5" />
-            <span>Asra3 Secure Access · asra3.com</span>
+        <div className="luxury-card rounded-3xl p-6 sm:p-10 lg:col-span-7">
+          <div className="mb-4">
+            <Asra3Logo size="sm" />
           </div>
 
           <h1 className="mt-4 text-2xl font-extrabold text-[var(--text-primary)] sm:text-3xl">

@@ -53,6 +53,7 @@ import { PublishingAndQueueHub } from '@/components/dashboard/hubs/PublishingAnd
 import { InboxCrmWorkflowsHub } from '@/components/dashboard/hubs/InboxCrmWorkflowsHub';
 import { TelephonyWhatsAppVoiceHub } from '@/components/dashboard/hubs/TelephonyWhatsAppVoiceHub';
 import { AdsCommerceAnalyticsHub } from '@/components/dashboard/hubs/AdsCommerceAnalyticsHub';
+import { Asra3Mark } from '@/components/Asra3Logo';
 
 interface WorkspaceResponse {
   policy: EffectiveTenantPolicy;
@@ -379,9 +380,7 @@ function CustomerDashboardContent() {
       <div className="luxury-card p-5 rounded-3xl">
         <div className="flex flex-wrap items-center justify-between gap-4">
           <div className="flex items-center gap-3">
-            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-[var(--accent-primary)] text-white shadow-sm shadow-[var(--accent-primary)]/25">
-              <Sparkles className="h-5 w-5" />
-            </div>
+            <Asra3Mark size="md" />
             <div>
               <div className="flex items-center gap-2">
                 <h1 className="text-base font-extrabold text-[var(--text-primary)]">
