@@ -13,7 +13,7 @@ services:
         NEXT_PUBLIC_BRAND_PRIMARY_COLOR: ${NEXT_PUBLIC_BRAND_PRIMARY_COLOR:-#4F46E5}
         NEXT_PUBLIC_BRAND_LOGO_URL: ${NEXT_PUBLIC_BRAND_LOGO_URL:-https://asra3.com/logo.png}
     ports:
-      - "127.0.0.1:5651:5651"
+      - "127.0.0.1:${PORT:-3008}:3008"
     env_file:
       - path: .env
         required: false
@@ -21,7 +21,7 @@ services:
         required: false
     environment:
       - NODE_ENV=production
-      - PORT=5651
+      - PORT=3008
       - HOSTNAME=0.0.0.0
     volumes:
       - ./.data:/app/.data
