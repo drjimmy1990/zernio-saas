@@ -64,11 +64,11 @@ cd /www/wwwroot/techurity.si
 docker compose up -d --build
 ```
 
-Verify the container is running and healthy on `127.0.0.1:3000`:
+Verify the container is running and healthy on `127.0.0.1:5651`:
 
 ```bash
 docker ps
-curl -I http://127.0.0.1:3000/api/v1/openapi.json
+curl -I http://127.0.0.1:5651/api/v1/openapi.json
 ```
 
 ---
@@ -84,7 +84,7 @@ curl -I http://127.0.0.1:3000/api/v1/openapi.json
    * Turn ON **Force HTTPS**.
 3. Still inside the `techurity.si` site settings $\rightarrow$ go to **Reverse proxy** $\rightarrow$ click **Add Reverse Proxy**:
    * **Proxy Name:** `nextjs-docker`
-   * **Target URL:** `http://127.0.0.1:3000`
+   * **Target URL:** `http://127.0.0.1:5651`
    * **Send Domain (`$host`):** `$host`
    * Click **Save**.
 4. *(Recommended for Large Media Uploads & Webhooks)* Inside **Reverse proxy** $\rightarrow$ click **Config** (or go to **Config** in the site menu) and ensure these headers are inside the proxy block:

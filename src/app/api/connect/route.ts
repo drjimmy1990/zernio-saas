@@ -206,7 +206,7 @@ export async function POST(request: Request) {
     // =========================================================================
     if (action === 'start_oauth') {
       const appUrl =
-        process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
+        process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:5651';
       const result = await CoreConnectService.startHeadlessOAuth({
         organizationId,
         platform: body.platform as SocialPlatform,
