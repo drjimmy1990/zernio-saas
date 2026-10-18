@@ -279,9 +279,73 @@ export async function POST(request: Request) {
       const result = await CoreConnectService.listHeadlessSelectableEntities({
         organizationId,
         step,
-        tempToken: (body.tempToken as string) || 'live_token',
+        tempToken: (body.tempToken as string) || '',
       });
-      return NextResponse.json(result);
+
+      const raw = (result as { raw?: Record<string, unknown> }).raw || {};
+      const rawList =
+        (Array.isArray(raw.pages) && raw.pages) ||
+        (Array.isArray(raw.organizations) && raw.organizations) ||
+        (Array.isArray(raw.boards) && raw.boards) ||
+        (Array.isArray(raw.locations) && raw.locations) ||
+        (Array.isArray(raw.profiles) && raw.profiles) ||
+        (Array.isArray(raw.numbers) && raw.numbers) ||
+        (Array.isArray(raw.phoneNumbers) && raw.phoneNumbers) ||
+        (Array.isArray(raw.accounts) && raw.accounts) ||
+        (Array.isArray((result as { items?: unknown[] }).items) && (result as { items?: unknown[] }).items) ||
+        [];
+
+      const items = (rawList as Array<Record<string, unknown>>).map((item, idx) => ({
+        id: String(item.id || item.pageId || item.phoneNumberId || item.locationId || item.boardId || item.organizationId || item._id || `entity_${idx}`),
+        name: String(item.name || item.displayName || item.verifiedName || item.title || item.username || `Account ${idx + 1}`),
+        username: String(item.username || item.displayPhoneNumber || item.phoneNumber || item.vanityName || item.id || ''),
+        category: String(item.category || platform.toUpperCase()),
+        followers: item.followersCount ? `${item.followersCount} Followers` : 'Live Verified Entity',
+        details: String(item.address || item.about || item.wabaId || `ID: ${item.id || item.pageId || item.phoneNumberId || ''}`),
+      }));
+
+      return NextResponse.json({
+        ...result,
+        platform,
+        step,
+        items,
+      });
+    }
+
+    // =========================================================================
+    // 2b. COMPLETE DIRECT OAUTH CALLBACK (when Zernio redirects with ?connected=...&accountId=...)
+    // =========================================================================
+    if (action === 'complete_oauth_callback') {
+      const accountId = (body.accountId as string) || `acc_${platform}_${Date.now().toString(36)}`;
+      const username = (body.username as string) || `@${platform}_account`;
+      const displayName = (body.displayName as string) || username;
+
+      const callbackAccount = {
+        id: accountId,
+        accountId,
+        platform: platform || 'facebook',
+        username,
+        displayName,
+        status: 'healthy',
+        tokenHealth: {
+          status: 'healthy',
+          expiresAt: new Date(Date.now() + 60 * 24 * 60 * 60 * 1000).toISOString(),
+          expiresInDays: 60,
+        },
+        syncTime: 'Just now',
+        grantedScopes: ['posting', 'analytics', 'comments', 'messaging'],
+        canPost: true,
+        canFetchAnalytics: true,
+        needsReconnect: false,
+      };
+
+      WorkspaceStore.addConnectedAccount(organizationId, callbackAccount);
+
+      return NextResponse.json({
+        success: true,
+        simulated: !zernioClient.isConfigured(),
+        account: callbackAccount,
+      });
     }
 
     // =========================================================================
@@ -294,36 +358,36 @@ export async function POST(request: Request) {
         'select_page';
 
       const entityId = (body.entityId as string) || 'entity_primary_01';
-      const entityName = (body.entityName as string) || 'Asra3 Brand Official';
-      const entityUsername = (body.entityUsername as string) || `@asra3_${platform || 'official'}`;
-      const accountId = `acc_${platform || 'entity'}_${Date.now().toString(36)}`;
+      const entityName = (body.entityName as string) || 'Connected Page';
+      const entityUsername = (body.entityUsername as string) || `@${platform || 'official'}`;
 
-      const newAccount = {
-        id: accountId,
-        accountId,
-        platform: platform || 'facebook',
-        username: entityUsername,
-        displayName: entityName,
-        status: 'healthy',
-        tokenHealth: {
+      if (!zernioClient.isConfigured() || (body.tempToken && String(body.tempToken).startsWith('sim_'))) {
+        const accountId = `acc_${platform || 'entity'}_${Date.now().toString(36)}`;
+        const newAccount = {
+          id: accountId,
+          accountId,
+          platform: platform || 'facebook',
+          username: entityUsername,
+          displayName: entityName,
           status: 'healthy',
-          expiresAt: new Date(Date.now() + 60 * 24 * 60 * 60 * 1000).toISOString(),
-          expiresInDays: 60,
-        },
-        syncTime: 'Just now',
-        grantedScopes: ['posting', 'analytics', 'comments', 'messaging'],
-        canPost: true,
-        canFetchAnalytics: true,
-        needsReconnect: false,
-        selectedEntity: {
-          id: entityId,
-          name: entityName,
-        },
-      };
+          tokenHealth: {
+            status: 'healthy',
+            expiresAt: new Date(Date.now() + 60 * 24 * 60 * 60 * 1000).toISOString(),
+            expiresInDays: 60,
+          },
+          syncTime: 'Just now',
+          grantedScopes: ['posting', 'analytics', 'comments', 'messaging'],
+          canPost: true,
+          canFetchAnalytics: true,
+          needsReconnect: false,
+          selectedEntity: {
+            id: entityId,
+            name: entityName,
+          },
+        };
 
-      WorkspaceStore.addConnectedAccount(organizationId, newAccount);
+        WorkspaceStore.addConnectedAccount(organizationId, newAccount);
 
-      if (!zernioClient.isConfigured() || (body.tempToken && body.tempToken.startsWith('sim_'))) {
         return NextResponse.json({
           success: true,
           simulated: true,
@@ -341,11 +405,43 @@ export async function POST(request: Request) {
         redirectUrl: body.redirectUrl as string | undefined,
       });
 
-      return NextResponse.json(result);
+      const remoteAcc = (result as { account?: Record<string, unknown> }).account || {};
+      const realAccountId = String(remoteAcc._id || remoteAcc.accountId || `acc_${platform}_${Date.now().toString(36)}`);
+      const liveAccount = {
+        id: realAccountId,
+        accountId: realAccountId,
+        platform: platform || 'facebook',
+        username: String(remoteAcc.username || entityUsername),
+        displayName: String(remoteAcc.displayName || entityName),
+        status: 'healthy',
+        tokenHealth: {
+          status: 'healthy',
+          expiresAt: new Date(Date.now() + 60 * 24 * 60 * 60 * 1000).toISOString(),
+          expiresInDays: 60,
+        },
+        syncTime: 'Just now',
+        grantedScopes: ['posting', 'analytics', 'comments', 'messaging'],
+        canPost: true,
+        canFetchAnalytics: true,
+        needsReconnect: false,
+        selectedEntity: {
+          id: entityId,
+          name: entityName,
+        },
+      };
+
+      WorkspaceStore.addConnectedAccount(organizationId, liveAccount);
+
+      return NextResponse.json({
+        ...result,
+        success: true,
+        simulated: false,
+        account: liveAccount,
+      });
     }
 
     // =========================================================================
-    // 4. CONNECT WITH CREDENTIALS (Telegram, Shopify, WordPress, Bluesky)
+    // 4. CONNECT WITH CREDENTIALS (Telegram, Shopify, WordPress, Bluesky, WhatsApp)
     // =========================================================================
     if (action === 'connect_credentials') {
       const creds = (body.credentials as Record<string, string>) || {};
@@ -365,8 +461,8 @@ export async function POST(request: Request) {
           id: accountId,
           accountId,
           platform: 'telegram',
-          username: creds.username || '@Asra3BroadcastBot',
-          displayName: creds.displayName || 'Asra3 Telegram Bot',
+          username: creds.username || '@TelegramBot',
+          displayName: creds.displayName || 'Telegram Bot Channel',
           status: 'healthy',
           tokenHealth: {
             status: 'healthy',
@@ -391,64 +487,79 @@ export async function POST(request: Request) {
 
       // Handle Bluesky, WordPress, Shopify, WhatsApp
       if (['bluesky', 'wordpress', 'shopify', 'whatsapp'].includes(platform)) {
-        if (!zernioClient.isConfigured()) {
-          const accountId = `acc_${platform}_${Date.now().toString(36)}`;
-          let username = `@asra3_${platform}`;
-          let displayName = `Asra3 ${platform.toUpperCase()}`;
-
-          if (platform === 'shopify') {
-            username = creds.shopDomain || creds.identifier || 'store.myshopify.com';
-            displayName = 'Shopify Storefront';
-          } else if (platform === 'wordpress') {
-            username = creds.siteUrl || creds.identifier || 'https://asra3.com/blog';
-            displayName = 'WordPress Blog Hub';
-          } else if (platform === 'bluesky') {
-            username = creds.handle || creds.identifier || 'asra3.bsky.social';
-            displayName = 'Bluesky Official';
-          } else if (platform === 'whatsapp') {
-            const phoneId = creds.phoneNumberId || creds.identifier;
-            const wabaId = creds.wabaId;
-            username = creds.phoneNumber || (phoneId ? `Phone ID: ${phoneId}` : '+1 (415) 890-2341');
-            displayName = creds.displayName || (wabaId ? `WhatsApp Cloud (${wabaId})` : 'WhatsApp Business Cloud');
+        if (platform === 'whatsapp') {
+          if (!creds.wabaId?.trim() || !creds.phoneNumberId?.trim() || !creds.accessToken?.trim()) {
+            return NextResponse.json(
+              { error: 'WhatsApp Business Account ID (wabaId), Phone Number ID (phoneNumberId), and System User Access Token (accessToken) are all required.' },
+              { status: 400 }
+            );
           }
-
-          const credAccount = {
-            id: accountId,
-            accountId,
-            platform,
-            username,
-            displayName,
-            status: 'healthy',
-            tokenHealth: {
-              status: 'healthy',
-              expiresAt: new Date(Date.now() + 60 * 24 * 60 * 60 * 1000).toISOString(),
-              expiresInDays: 60,
-            },
-            syncTime: 'Just now',
-            grantedScopes:
-              platform === 'whatsapp'
-                ? ['whatsapp_business_messaging', 'whatsapp_business_management', 'webhooks']
-                : ['posting', 'analytics', 'comments'],
-            canPost: true,
-            canFetchAnalytics: true,
-            needsReconnect: false,
-          };
-
-          WorkspaceStore.addConnectedAccount(organizationId, credAccount);
-
-          return NextResponse.json({
-            success: true,
-            simulated: true,
-            account: credAccount,
-          });
         }
 
-        const result = await CoreConnectService.connectWithCredentials({
-          organizationId,
-          platform: platform as 'bluesky' | 'wordpress' | 'shopify' | 'whatsapp',
-          credentials: creds,
+        let remoteAccountId = `acc_${platform}_${Date.now().toString(36)}`;
+        let isSimulated = true;
+
+        if (zernioClient.isConfigured()) {
+          const result = await CoreConnectService.connectWithCredentials({
+            organizationId,
+            platform: platform as 'bluesky' | 'wordpress' | 'shopify' | 'whatsapp',
+            credentials: creds,
+          });
+          const remoteAcc = (result as { account?: Record<string, unknown> }).account;
+          if (remoteAcc && (remoteAcc._id || remoteAcc.accountId)) {
+            remoteAccountId = String(remoteAcc._id || remoteAcc.accountId);
+          }
+          isSimulated = false;
+        }
+
+        let username = `@${platform}`;
+        let displayName = `${platform.toUpperCase()} Account`;
+
+        if (platform === 'shopify') {
+          username = creds.shopDomain || creds.identifier || 'store.myshopify.com';
+          displayName = creds.displayName || `Shopify (${username})`;
+        } else if (platform === 'wordpress') {
+          username = creds.siteUrl || creds.identifier || 'wordpress-site';
+          displayName = creds.displayName || `WordPress (${username})`;
+        } else if (platform === 'bluesky') {
+          username = creds.handle || creds.identifier || 'bsky.social';
+          displayName = creds.displayName || `Bluesky (${username})`;
+        } else if (platform === 'whatsapp') {
+          const phoneId = creds.phoneNumberId || creds.identifier;
+          const wabaId = creds.wabaId;
+          username = creds.phoneNumber || `Phone ID: ${phoneId}`;
+          displayName = creds.displayName || `WhatsApp Business (WABA: ${wabaId})`;
+        }
+
+        const credAccount = {
+          id: remoteAccountId,
+          accountId: remoteAccountId,
+          platform,
+          username,
+          displayName,
+          status: 'healthy',
+          tokenHealth: {
+            status: 'healthy',
+            expiresAt: new Date(Date.now() + 60 * 24 * 60 * 60 * 1000).toISOString(),
+            expiresInDays: 60,
+          },
+          syncTime: 'Just now',
+          grantedScopes:
+            platform === 'whatsapp'
+              ? ['whatsapp_business_messaging', 'whatsapp_business_management', 'webhooks']
+              : ['posting', 'analytics', 'comments'],
+          canPost: true,
+          canFetchAnalytics: true,
+          needsReconnect: false,
+        };
+
+        WorkspaceStore.addConnectedAccount(organizationId, credAccount);
+
+        return NextResponse.json({
+          success: true,
+          simulated: isSimulated,
+          account: credAccount,
         });
-        return NextResponse.json(result);
       }
 
       // Fallback for any other credential connection

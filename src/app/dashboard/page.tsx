@@ -234,8 +234,65 @@ function CustomerDashboardContent() {
   const [isWizardOpen, setIsWizardOpen] = useState<boolean>(false);
   const [wizardPlatform, setWizardPlatform] = useState<SocialPlatform>('instagram');
   const [wizardInitialStep, setWizardInitialStep] = useState<1 | 2 | 3 | 4>(1);
+  const [wizardTempToken, setWizardTempToken] = useState<string>('');
+  const [wizardSelectionStep, setWizardSelectionStep] = useState<string>('');
   const [wizardInitialAccount, setWizardInitialAccount] =
     useState<ConnectedAccountData | null>(null);
+
+  // Handle OAuth Redirect Callback from Zernio (/dashboard?oauth_callback=1&tempToken=... or ?connected=...&accountId=...)
+  useEffect(() => {
+    if (authChecking || !organizationId) return;
+    const tempToken = searchParams.get('tempToken');
+    const stepParam = searchParams.get('step');
+    const connectedPlatform = searchParams.get('connected') || searchParams.get('platform');
+    const accountId = searchParams.get('accountId');
+    const username = searchParams.get('username');
+
+    if (tempToken && (connectedPlatform || stepParam)) {
+      const stepToPlatform: Record<string, SocialPlatform> = {
+        select_page: 'facebook',
+        select_organization: 'linkedin',
+        select_board: 'pinterest',
+        select_location: 'googlebusiness',
+        select_public_profile: 'snapchat',
+        select_phone_number: 'whatsapp',
+        select_account: 'instagram',
+      };
+      const resolvedPlatform =
+        (connectedPlatform as SocialPlatform) ||
+        (stepParam && stepToPlatform[stepParam]) ||
+        'facebook';
+
+      setWizardPlatform(resolvedPlatform);
+      setWizardTempToken(tempToken);
+      setWizardSelectionStep(stepParam || '');
+      setWizardInitialStep(3);
+      setIsWizardOpen(true);
+    } else if (connectedPlatform && accountId) {
+      void (async () => {
+        try {
+          const res = await fetch('/api/connect', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              action: 'complete_oauth_callback',
+              organizationId,
+              platform: connectedPlatform,
+              accountId,
+              username: username || `@${connectedPlatform}`,
+              displayName: username || `${connectedPlatform.toUpperCase()} Account`,
+            }),
+          });
+          const data = await res.json();
+          if (data.account) {
+            handleAccountConnected(data.account);
+          }
+        } catch {
+          // Ignore callback error
+        }
+      })();
+    }
+  }, [authChecking, organizationId, searchParams]);
 
   const handleOpenWizard = (
     platform?: SocialPlatform,
@@ -245,6 +302,8 @@ function CustomerDashboardContent() {
     if (platform) {
       setWizardPlatform(platform);
     }
+    setWizardTempToken('');
+    setWizardSelectionStep('');
     setWizardInitialStep(step);
     setWizardInitialAccount(account || null);
     setIsWizardOpen(true);
@@ -607,14 +666,22 @@ function CustomerDashboardContent() {
         onClose={() => {
           setIsWizardOpen(false);
           setWizardInitialAccount(null);
+          setWizardTempToken('');
+          setWizardSelectionStep('');
           setWizardInitialStep(1);
         }}
         initialPlatform={wizardPlatform}
         initialStep={wizardInitialStep}
+        initialTempToken={wizardTempToken}
+        initialSelectionStep={wizardSelectionStep}
         initialAccount={wizardInitialAccount}
         organizationId={organizationId}
         onAccountConnected={handleAccountConnected}
         onAccountDisconnected={handleAccountDisconnected}
+        onOpenBuyNumberWizard={() => {
+          setIsWizardOpen(false);
+          setMode('simple');
+        }}
       />
     </div>
   );

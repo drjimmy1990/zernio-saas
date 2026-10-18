@@ -126,8 +126,15 @@ export class SuperAdminService {
       )
     );
 
+    const rawKey = zernioClient.getMasterApiKey();
+    const isConfigured = zernioClient.isConfigured();
+
     return {
       globalConfig: store.globalConfig,
+      zernioConfigured: isConfigured,
+      zernioApiKeyPreview: isConfigured && rawKey.length >= 10
+        ? `${rawKey.slice(0, 6)}••••••${rawKey.slice(-4)}`
+        : '',
       plans: Object.values(store.plans),
       tenants: Object.values(store.tenants),
       effectivePolicies,

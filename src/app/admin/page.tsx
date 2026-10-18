@@ -32,6 +32,8 @@ import {
 
 interface AdminSnapshot {
   globalConfig: GlobalAdminConfigState;
+  zernioConfigured?: boolean;
+  zernioApiKeyPreview?: string;
   plans: PlanTemplateState[];
   tenants: TenantOverrideState[];
   billingReport?: {
@@ -55,13 +57,15 @@ type AdminTab = 'global' | 'plans' | 'tenants' | 'billing';
 
 export default function SuperAdminControlPlanePage() {
   const router = useRouter();
-  const { t } = useThemeAndLocale();
+  const { t, locale } = useThemeAndLocale();
   const [authChecking, setAuthChecking] = useState<boolean>(true);
   const [activeTab, setActiveTab] = useState<AdminTab>('global');
   const [data, setData] = useState<AdminSnapshot | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
   const [selectedPlanKey, setSelectedPlanKey] = useState<string>('starter');
   const [mintedKeySecret, setMintedKeySecret] = useState<string>('');
+  const [zernioKeyInput, setZernioKeyInput] = useState<string>('');
+  const [zernioKeySaved, setZernioKeySaved] = useState<boolean>(false);
 
   // Quick Create Tenant state inside Admin
   const [newOrgName, setNewOrgName] = useState<string>('');
@@ -372,6 +376,75 @@ export default function SuperAdminControlPlanePage() {
         {/* TAB 1: GLOBAL SWITCHBOARD */}
         {activeTab === 'global' && data && (
           <div className="space-y-6">
+            {/* Zernio Master API Engine Configuration Card */}
+            <div className="luxury-card p-6 border-2 border-[var(--accent-primary)]/30">
+              <div className="flex flex-wrap items-center justify-between gap-4">
+                <div>
+                  <div className="flex items-center gap-2">
+                    <KeyRound className="h-4 w-4 text-[var(--accent-primary)]" />
+                    <h2 className="text-base font-bold text-[var(--text-primary)]">
+                      {locale === 'ar'
+                        ? 'مفتاح محرك Zernio الرئيسي (ZERNIO_API_KEY)'
+                        : 'Zernio Master API Engine (ZERNIO_API_KEY)'}
+                    </h2>
+                    <span
+                      className={`rounded-full px-2.5 py-0.5 text-[11px] font-bold ${
+                        data.zernioConfigured
+                          ? 'bg-emerald-500/15 text-emerald-600'
+                          : 'bg-amber-500/15 text-amber-600'
+                      }`}
+                    >
+                      {data.zernioConfigured
+                        ? locale === 'ar'
+                          ? `متصل بالمحرك الحي (${data.zernioApiKeyPreview})`
+                          : `Live Engine Active (${data.zernioApiKeyPreview})`
+                        : locale === 'ar'
+                        ? 'وضع المحاكاة (لم يتم ضبط المفتاح بعد)'
+                        : 'Sandbox Mode (No Live Key Configured)'}
+                    </span>
+                  </div>
+                  <p className="mt-1 text-xs text-[var(--text-secondary)]">
+                    {locale === 'ar'
+                      ? 'أدخل مفتاح Zernio API الرئيسي (يبدأ بـ sk_...) لتفعيل الربط المباشر الحقيقي مع فيسبوك، واتساب (Meta Embedded Signup)، إنستغرام، وشراء الأرقام.'
+                      : 'Enter your live Zernio Master API Key (starts with sk_...) to activate real OAuth redirects for Facebook, WhatsApp Embedded Signup, Instagram, and live telephony.'}
+                  </p>
+                </div>
+              </div>
+
+              <div className="mt-4 flex flex-col gap-3 sm:flex-row sm:items-center">
+                <input
+                  type="password"
+                  value={zernioKeyInput}
+                  onChange={(e) => setZernioKeyInput(e.target.value)}
+                  placeholder={
+                    data.zernioConfigured
+                      ? `Current: ${data.zernioApiKeyPreview} — Paste new sk_live_... to replace`
+                      : 'sk_live_...'
+                  }
+                  className="flex-1 rounded-xl border border-[var(--border-subtle)] bg-[var(--bg-subtle)] px-4 py-2.5 font-mono text-xs text-[var(--text-primary)] focus:border-[var(--accent-primary)] focus:outline-none"
+                />
+                <button
+                  onClick={async () => {
+                    if (!zernioKeyInput.trim()) return;
+                    await updateGlobalConfig({
+                      zernioApiKey: zernioKeyInput.trim(),
+                    });
+                    setZernioKeyInput('');
+                    setZernioKeySaved(true);
+                    setTimeout(() => setZernioKeySaved(false), 3000);
+                  }}
+                  className="rounded-xl bg-[var(--accent-primary)] px-5 py-2.5 text-xs font-bold text-white hover:bg-[var(--accent-hover)] transition cursor-pointer"
+                >
+                  {locale === 'ar' ? 'حفظ وتفعيل المفتاح الحي' : 'Save & Activate Live Key'}
+                </button>
+              </div>
+              {zernioKeySaved && (
+                <p className="mt-2 text-xs font-bold text-emerald-600">
+                  ✓ {locale === 'ar' ? 'تم حفظ مفتاح Zernio وتفعيله بنجاح على مستوى المنصة!' : 'Zernio Master API Key saved and activated across the platform!'}
+                </p>
+              )}
+            </div>
+
             {/* 8 Sub-Services Master Switches */}
             <div className="luxury-card p-6">
               <h2 className="text-base font-bold text-[var(--text-primary)]">

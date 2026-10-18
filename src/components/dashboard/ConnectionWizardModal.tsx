@@ -364,10 +364,13 @@ export interface ConnectionWizardModalProps {
   onClose: () => void;
   initialPlatform?: SocialPlatform;
   initialStep?: 1 | 2 | 3 | 4;
+  initialTempToken?: string;
+  initialSelectionStep?: string;
   initialAccount?: ConnectedAccountData | null;
   organizationId?: string;
   onAccountConnected: (account: ConnectedAccountData) => void;
   onAccountDisconnected?: (accountId: string) => void;
+  onOpenBuyNumberWizard?: () => void;
 }
 
 export function ConnectionWizardModal({
@@ -375,10 +378,13 @@ export function ConnectionWizardModal({
   onClose,
   initialPlatform = 'instagram',
   initialStep,
+  initialTempToken,
+  initialSelectionStep,
   initialAccount,
-  organizationId = 'org_demo_acme',
+  organizationId = 'org_admin_platform',
   onAccountConnected,
   onAccountDisconnected,
+  onOpenBuyNumberWizard,
 }: ConnectionWizardModalProps) {
   const { t, locale } = useThemeAndLocale();
   const isAr = locale === 'ar';
@@ -392,13 +398,21 @@ export function ConnectionWizardModal({
   const [activeCategoryFilter, setActiveCategoryFilter] = useState<'all' | 'social_video' | 'messaging' | 'blogs_local'>('all');
   const [searchQuery, setSearchQuery] = useState('');
 
-  // Step 2 Credential Inputs
+  // WhatsApp 3-Mode Onboarding State (matching Zernio spec)
+  const [whatsappMethod, setWhatsappMethod] = useState<'embedded_oauth' | 'virtual_number' | 'system_token'>('embedded_oauth');
+  const [whatsappOnboardingType, setWhatsappOnboardingType] = useState<'api' | 'business_app'>('api');
+
+  // Step 2 Credential Inputs (clean, never pre-filled with fake IDs)
   const [credUsername, setCredUsername] = useState('');
   const [credIdentifier, setCredIdentifier] = useState('');
   const [credSecret, setCredSecret] = useState('');
-  const [credWabaId, setCredWabaId] = useState('waba_881923');
-  const [credPhoneNumberId, setCredPhoneNumberId] = useState('pni_991823');
+  const [credWabaId, setCredWabaId] = useState('');
+  const [credPhoneNumberId, setCredPhoneNumberId] = useState('');
   const [showSecret, setShowSecret] = useState(false);
+
+  // OAuth & Sandbox prompt state
+  const [activeTempToken, setActiveTempToken] = useState<string>(initialTempToken || '');
+  const [sandboxPromptVisible, setSandboxPromptVisible] = useState<boolean>(false);
 
   // Loading, Errors & Handshake state
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -413,7 +427,7 @@ export function ConnectionWizardModal({
   // Step 4 Connected Account & Test Post State
   const [connectedAccount, setConnectedAccount] = useState<ConnectedAccountData | null>(initialAccount || null);
   const [testPayloadText, setTestPayloadText] = useState(
-    loc('تم التحقق من ربط القناة بنجاح عبر منصة تكيوريتي. جاهز للنشر الموحد! 🚀', 'Connection Verified: Asra3 omnichannel broadcast pipeline operational. 🚀')
+    loc('تم التحقق من ربط القناة بنجاح عبر منصة Asra3. جاهز للنشر الموحد! 🚀', 'Connection Verified: Asra3 omnichannel broadcast pipeline operational. 🚀')
   );
   const [testPostLoading, setTestPostLoading] = useState(false);
   const [deliveryReceipt, setDeliveryReceipt] = useState<{
@@ -430,6 +444,51 @@ export function ConnectionWizardModal({
   const [showDisconnectConfirm, setShowDisconnectConfirm] = useState(false);
   const [feedbackToast, setFeedbackToast] = useState<string | null>(null);
 
+  const platformMeta = useMemo(() => {
+    return PLATFORM_CATALOG[selectedPlatform] || PLATFORM_CATALOG.instagram;
+  }, [selectedPlatform]);
+
+  // STEP 3: Fetch Selectable Entities from API
+  const fetchEntities = async (platform: SocialPlatform, tokenOverride?: string, stepOverride?: string) => {
+    setIsSubmitting(true);
+    setErrorMessage(null);
+    const tokenToUse = tokenOverride ?? activeTempToken;
+    try {
+      const res = await fetch('/api/connect', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          action: 'list_entities',
+          organizationId,
+          platform,
+          ...(stepOverride ? { step: stepOverride } : {}),
+          tempToken: tokenToUse || 'sim_sandbox_preview',
+        }),
+      });
+
+      const data = await res.json();
+      if (data.error) {
+        throw new Error(data.error);
+      }
+      if (data.items && Array.isArray(data.items)) {
+        setEntities(data.items);
+        if (data.items.length > 0) {
+          setSelectedEntityId(data.items[0].id);
+        }
+      } else {
+        setEntities([]);
+      }
+    } catch (err) {
+      setErrorMessage(
+        err instanceof Error
+          ? err.message
+          : loc('تعذر جلب الحسابات المتاحة.', 'Failed to retrieve available entities.')
+      );
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
   // Set initial platform & step when modal opens or initial props change
   useEffect(() => {
     if (isOpen) {
@@ -437,6 +496,11 @@ export function ConnectionWizardModal({
         setConnectedAccount(initialAccount);
         setSelectedPlatform(initialAccount.platform);
         setCurrentStep((initialStep as 1 | 2 | 3 | 4) || 4);
+      } else if (initialTempToken && initialPlatform) {
+        setSelectedPlatform(initialPlatform);
+        setActiveTempToken(initialTempToken);
+        setCurrentStep(3);
+        void fetchEntities(initialPlatform, initialTempToken, initialSelectionStep);
       } else {
         if (initialPlatform) {
           setSelectedPlatform(initialPlatform);
@@ -449,12 +513,9 @@ export function ConnectionWizardModal({
       setHandshakeStage('idle');
       setShowDisconnectConfirm(false);
       setFeedbackToast(null);
+      setSandboxPromptVisible(false);
     }
-  }, [isOpen, initialPlatform, initialStep, initialAccount]);
-
-  const platformMeta = useMemo(() => {
-    return PLATFORM_CATALOG[selectedPlatform] || PLATFORM_CATALOG.instagram;
-  }, [selectedPlatform]);
+  }, [isOpen, initialPlatform, initialStep, initialAccount, initialTempToken, initialSelectionStep]);
 
   // Filtered platforms for Step 1
   const filteredPlatforms = useMemo(() => {
@@ -471,30 +532,45 @@ export function ConnectionWizardModal({
     });
   }, [activeCategoryFilter, searchQuery]);
 
-  // Reset inputs when switching platform
+  // Reset inputs when switching platform (clean empty inputs — no fake sample IDs)
   const handleSelectPlatform = (platform: SocialPlatform) => {
     setSelectedPlatform(platform);
     setErrorMessage(null);
     setDeliveryReceipt(null);
     setHandshakeStage('idle');
-    // Pre-fill realistic sample credentials
-    if (platform === 'shopify') {
-      setCredIdentifier('asra3-flagship.myshopify.com');
-      setCredSecret('shpat_live_89a2b1c4d7e9f3a');
-    } else if (platform === 'wordpress') {
-      setCredIdentifier('https://asra3.com/blog');
-      setCredUsername('editor_admin');
-      setCredSecret('z8k2 9fa1 bc44 e772');
-    } else if (platform === 'bluesky') {
-      setCredIdentifier('asra3.bsky.social');
-      setCredSecret('bsky-app-pass-9912');
-    } else if (platform === 'telegram') {
-      setCredSecret('719283741:AAH8f_9aBcDeFgHiJkLmNoPqRsTuVwXyZ12');
-    } else if (platform === 'whatsapp') {
-      setCredWabaId('waba_881923');
-      setCredPhoneNumberId('pni_991823');
-      setCredSecret('EAAG8k712jks991283haskd8123k');
-      setCredIdentifier('+1 (415) 890-2341');
+    setSandboxPromptVisible(false);
+    setCredIdentifier('');
+    setCredSecret('');
+    setCredUsername('');
+    setCredWabaId('');
+    setCredPhoneNumberId('');
+  };
+
+  // Explicit Sandbox Preview Trigger (only when user clicks "Preview in Sandbox Mode")
+  const handleProceedInSandboxMode = async () => {
+    setSandboxPromptVisible(false);
+    setActiveTempToken('sim_sandbox_preview');
+    if (platformMeta.needsEntitySelection || selectedPlatform === 'whatsapp') {
+      await fetchEntities(selectedPlatform, 'sim_sandbox_preview');
+      setCurrentStep(3);
+    } else {
+      const autoAccount: ConnectedAccountData = {
+        id: `acc_${selectedPlatform}_${Date.now().toString(36)}`,
+        accountId: `acc_${selectedPlatform}_${Date.now().toString(36)}`,
+        platform: selectedPlatform,
+        username: `@sandbox_${selectedPlatform}`,
+        displayName: `${platformMeta.name} (Sandbox Preview)`,
+        status: 'healthy',
+        tokenHealth: {
+          status: 'healthy',
+          expiresAt: new Date(Date.now() + 60 * 24 * 60 * 60 * 1000).toISOString(),
+          expiresInDays: 60,
+        },
+        syncTime: loc('الآن', 'Just now'),
+        grantedScopes: ['posting', 'analytics', 'comments'],
+      };
+      setConnectedAccount(autoAccount);
+      setCurrentStep(4);
     }
   };
 
@@ -502,13 +578,28 @@ export function ConnectionWizardModal({
   const handleAuthorizeOrSubmit = async () => {
     setIsSubmitting(true);
     setErrorMessage(null);
+    setSandboxPromptVisible(false);
 
     try {
-      if (platformMeta.connectionType === 'oauth') {
-        // Run realistic multi-stage handshake simulation
+      const isWhatsAppOAuth =
+        selectedPlatform === 'whatsapp' && whatsappMethod === 'embedded_oauth';
+      const isWhatsAppVirtualNumber =
+        selectedPlatform === 'whatsapp' && whatsappMethod === 'virtual_number';
+
+      if (isWhatsAppVirtualNumber) {
+        setIsSubmitting(false);
+        onClose();
+        onOpenBuyNumberWizard?.();
+        return;
+      }
+
+      if (platformMeta.connectionType === 'oauth' || isWhatsAppOAuth) {
         setHandshakeStage('contacting');
-        await new Promise((r) => setTimeout(r, 600));
-        setHandshakeStage('exchanging');
+
+        const callbackUrl =
+          typeof window !== 'undefined'
+            ? `${window.location.origin}/dashboard?oauth_callback=1&platform=${selectedPlatform}`
+            : undefined;
 
         const res = await fetch('/api/connect', {
           method: 'POST',
@@ -517,8 +608,12 @@ export function ConnectionWizardModal({
             action: 'start_oauth',
             organizationId,
             platform: selectedPlatform,
+            redirectUrl: callbackUrl,
             requestedScopes: ['posting', 'analytics', 'comments', 'messaging'],
             headless: true,
+            ...(selectedPlatform === 'whatsapp'
+              ? { whatsappOnboarding: whatsappOnboardingType }
+              : {}),
           }),
         });
 
@@ -527,60 +622,72 @@ export function ConnectionWizardModal({
           throw new Error(data.error);
         }
 
-        setHandshakeStage('granted');
-        await new Promise((r) => setTimeout(r, 500));
-
-        // Advance to Step 3 if entity selection is needed, or directly to Step 4
-        if (platformMeta.needsEntitySelection) {
-          await fetchEntities(selectedPlatform);
-          setCurrentStep(3);
-        } else {
-          // Direct connection without entity selection
-          const autoAccount: ConnectedAccountData = {
-            id: `acc_${selectedPlatform}_${Date.now().toString(36)}`,
-            accountId: `acc_${selectedPlatform}_${Date.now().toString(36)}`,
-            platform: selectedPlatform,
-            username: `@asra3_${selectedPlatform}`,
-            displayName: `Asra3 ${platformMeta.name}`,
-            status: 'healthy',
-            tokenHealth: {
-              status: 'healthy',
-              expiresAt: new Date(Date.now() + 60 * 24 * 60 * 60 * 1000).toISOString(),
-              expiresInDays: 60,
-            },
-            syncTime: loc('الآن', 'Just now'),
-            grantedScopes: ['posting', 'analytics', 'comments'],
-          };
-          setConnectedAccount(autoAccount);
-          setCurrentStep(4);
+        // Real Zernio API Key is configured -> Redirect browser to real Meta / Facebook / Google / WhatsApp OAuth URL!
+        if (!data.simulated && data.authUrl) {
+          setHandshakeStage('exchanging');
+          window.location.href = data.authUrl;
+          return;
         }
+
+        // If Zernio API Key is NOT configured yet, do NOT silently generate dummy data!
+        // Show the explicit API Key Required / Sandbox prompt so the user knows why and can set their key in /admin.
+        setHandshakeStage('idle');
+        setSandboxPromptVisible(true);
+        return;
       } else {
+        // Direct credential onboarding (WhatsApp System User Token, Telegram Bot Token, Shopify, WordPress, Bluesky)
+        if (selectedPlatform === 'whatsapp') {
+          if (!credWabaId.trim() || !credPhoneNumberId.trim() || !credSecret.trim()) {
+            throw new Error(
+              loc(
+                'يرجى إدخال معرف WABA ومعرف رقم الهاتف ورمز وصول مستخدم النظام (System User Token).',
+                'Please enter your WABA ID, Phone Number ID, and System User Access Token.'
+              )
+            );
+          }
+        } else if (selectedPlatform === 'telegram') {
+          if (!credSecret.trim()) {
+            throw new Error(
+              loc('يرجى إدخال رمز بوت تيليجرام (Bot Token).', 'Please enter your Telegram Bot Token.')
+            );
+          }
+        } else if (!credIdentifier.trim() || !credSecret.trim()) {
+          throw new Error(
+            loc('يرجى ملء جميع حقول بيانات الاعتماد المطلوبة.', 'Please fill in all required credential fields.')
+          );
+        }
+
         const credsPayload: Record<string, string> = {
-          identifier: credIdentifier,
-          secretOrToken: credSecret,
-          username: credUsername,
-          wabaId: credWabaId,
-          phoneNumberId: credPhoneNumberId,
+          identifier: credIdentifier.trim(),
+          secretOrToken: credSecret.trim(),
+          username: credUsername.trim(),
+          wabaId: credWabaId.trim(),
+          phoneNumberId: credPhoneNumberId.trim(),
         };
 
-        if (selectedPlatform === 'whatsapp' || platformMeta.connectionType === 'cloud_api') {
-          credsPayload.wabaId = credWabaId || 'waba_881923';
-          credsPayload.phoneNumberId = credPhoneNumberId || 'pni_991823';
-          credsPayload.systemUserToken = credSecret || 'EAAG_system_user_token_live';
-          credsPayload.accessToken = credSecret || 'EAAG_system_user_token_live';
-          credsPayload.phoneNumber = credIdentifier || '+1 (415) 890-2341';
+        if (selectedPlatform === 'whatsapp') {
+          credsPayload.wabaId = credWabaId.trim();
+          credsPayload.phoneNumberId = credPhoneNumberId.trim();
+          credsPayload.systemUserToken = credSecret.trim();
+          credsPayload.accessToken = credSecret.trim();
+          credsPayload.phoneNumber = credIdentifier.trim();
+          credsPayload.displayName = credUsername.trim() || `WhatsApp (${credPhoneNumberId.trim()})`;
         } else if (selectedPlatform === 'telegram') {
-          credsPayload.botToken = credSecret;
+          credsPayload.botToken = credSecret.trim();
+          credsPayload.username = credIdentifier.trim();
         } else if (selectedPlatform === 'shopify') {
-          credsPayload.shopDomain = credIdentifier;
-          credsPayload.adminToken = credSecret;
+          credsPayload.shopDomain = credIdentifier.trim();
+          credsPayload.adminToken = credSecret.trim();
+          credsPayload.accessToken = credSecret.trim();
         } else if (selectedPlatform === 'wordpress') {
-          credsPayload.siteUrl = credIdentifier;
-          credsPayload.username = credUsername;
-          credsPayload.applicationPassword = credSecret;
+          credsPayload.siteUrl = credIdentifier.trim();
+          credsPayload.username = credUsername.trim();
+          credsPayload.applicationPassword = credSecret.trim();
         } else if (selectedPlatform === 'bluesky') {
-          credsPayload.handle = credIdentifier;
-          credsPayload.appPassword = credSecret;
+          credsPayload.handle = credIdentifier.trim();
+          credsPayload.identifier = credIdentifier.trim();
+          credsPayload.appPassword = credSecret.trim();
+          credsPayload.password = credSecret.trim();
         }
 
         const res = await fetch('/api/connect', {
@@ -599,69 +706,31 @@ export function ConnectionWizardModal({
           throw new Error(data.error);
         }
 
-        // If platform needs entity selection (e.g. WhatsApp with selectable phone numbers), route to Step 3
-        if (platformMeta.needsEntitySelection) {
-          await fetchEntities(selectedPlatform);
-          setCurrentStep(3);
-        } else {
-          const accountData: ConnectedAccountData = {
-            id: data.account?.accountId || `acc_${selectedPlatform}_${Date.now().toString(36)}`,
-            accountId: data.account?.accountId || `acc_${selectedPlatform}_${Date.now().toString(36)}`,
-            platform: selectedPlatform,
-            username: data.account?.username || credIdentifier || `@asra3_${selectedPlatform}`,
-            displayName: data.account?.displayName || `Asra3 ${platformMeta.name}`,
+        const accountData: ConnectedAccountData = {
+          id: data.account?.accountId || `acc_${selectedPlatform}_${Date.now().toString(36)}`,
+          accountId: data.account?.accountId || `acc_${selectedPlatform}_${Date.now().toString(36)}`,
+          platform: selectedPlatform,
+          username: data.account?.username || credIdentifier.trim() || `@${selectedPlatform}`,
+          displayName: data.account?.displayName || `${platformMeta.name} Account`,
+          status: 'healthy',
+          tokenHealth: {
             status: 'healthy',
-            tokenHealth: {
-              status: 'healthy',
-              expiresAt: new Date(Date.now() + 60 * 24 * 60 * 60 * 1000).toISOString(),
-              expiresInDays: 60,
-            },
-            syncTime: loc('الآن', 'Just now'),
-            grantedScopes:
-              selectedPlatform === 'whatsapp'
-                ? ['whatsapp_business_messaging', 'whatsapp_business_management', 'webhooks']
-                : ['posting', 'analytics'],
-          };
+            expiresAt: new Date(Date.now() + 60 * 24 * 60 * 60 * 1000).toISOString(),
+            expiresInDays: 60,
+          },
+          syncTime: loc('الآن', 'Just now'),
+          grantedScopes:
+            selectedPlatform === 'whatsapp'
+              ? ['whatsapp_business_messaging', 'whatsapp_business_management', 'webhooks']
+              : ['posting', 'analytics'],
+        };
 
-          setConnectedAccount(accountData);
-          setCurrentStep(4);
-        }
+        setConnectedAccount(accountData);
+        setCurrentStep(4);
       }
     } catch (err) {
       setErrorMessage(err instanceof Error ? err.message : 'Connection failed. Please verify credentials.');
       setHandshakeStage('idle');
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
-
-  // STEP 3: Fetch Selectable Entities from API
-  const fetchEntities = async (platform: SocialPlatform) => {
-    setIsSubmitting(true);
-    setErrorMessage(null);
-    try {
-      const res = await fetch('/api/connect', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          action: 'list_entities',
-          organizationId,
-          platform,
-          tempToken: 'sim_token_99182',
-        }),
-      });
-
-      const data = await res.json();
-      if (data.items && Array.isArray(data.items)) {
-        setEntities(data.items);
-        if (data.items.length > 0) {
-          setSelectedEntityId(data.items[0].id);
-        }
-      } else {
-        setEntities([]);
-      }
-    } catch {
-      setErrorMessage(loc('تعذر جلب الحسابات المتاحة.', 'Failed to retrieve available entities.'));
     } finally {
       setIsSubmitting(false);
     }
@@ -686,7 +755,7 @@ export function ConnectionWizardModal({
           entityId: selectedEntityId,
           entityName: chosen?.name,
           entityUsername: chosen?.username,
-          tempToken: 'sim_token_99182',
+          tempToken: activeTempToken || 'sim_sandbox_preview',
         }),
       });
 
@@ -697,8 +766,8 @@ export function ConnectionWizardModal({
         id: data.account?.accountId || `acc_${selectedPlatform}_${Date.now().toString(36)}`,
         accountId: data.account?.accountId || `acc_${selectedPlatform}_${Date.now().toString(36)}`,
         platform: selectedPlatform,
-        username: chosen?.username || `@asra3_${selectedPlatform}`,
-        displayName: chosen?.name || `Asra3 ${platformMeta.name}`,
+        username: data.account?.username || chosen?.username || `@${selectedPlatform}`,
+        displayName: data.account?.displayName || chosen?.name || `${platformMeta.name}`,
         status: 'healthy',
         tokenHealth: {
           status: 'healthy',
@@ -1059,6 +1128,49 @@ export function ConnectionWizardModal({
                 </button>
               </div>
 
+              {/* Explicit Live Zernio API Key Required / Sandbox Prompt */}
+              {sandboxPromptVisible && (
+                <div className="rounded-2xl border-2 border-amber-500/40 bg-amber-500/10 p-5 space-y-3 animate-in fade-in">
+                  <div className="flex items-start gap-3">
+                    <AlertCircle className="h-5 w-5 text-amber-600 shrink-0 mt-0.5" />
+                    <div className="space-y-1">
+                      <h4 className="text-xs font-extrabold text-[var(--text-primary)]">
+                        {loc(
+                          'مفتاح محرك Zernio الحي (ZERNIO_API_KEY) غير مضبوط بعد',
+                          'Live Zernio Master API Key (ZERNIO_API_KEY) Not Configured Yet'
+                        )}
+                      </h4>
+                      <p className="text-xs text-[var(--text-secondary)] leading-relaxed">
+                        {loc(
+                          'لإجراء ربط حقيقي مباشر مع فيسبوك وواتساب وإنستغرام عبر بوابة OAuth الرسمية، يرجى لصق مفتاح Zernio API الخاص بك (يبدأ بـ sk_...) في لوحة تحكم المشرف العام (/admin). أو يمكنك المتابعة في وضع المعاينة التجريبية أدناه.',
+                          'To redirect to the real Meta / Facebook / WhatsApp OAuth login via Zernio, paste your live Zernio API Key (sk_...) in the Super Admin Console (/admin). Alternatively, you can preview the flow in Sandbox Mode below.'
+                        )}
+                      </p>
+                    </div>
+                  </div>
+                  <div className="flex flex-wrap items-center gap-2.5 pt-1">
+                    <a
+                      href="/admin"
+                      className="inline-flex items-center gap-1.5 rounded-xl bg-[var(--accent-primary)] px-4 py-2 text-xs font-bold text-white hover:bg-[var(--accent-hover)] transition shadow-sm"
+                    >
+                      <KeyRound className="h-3.5 w-3.5" />
+                      <span>
+                        {loc('فتح لوحة الأدمن (/admin) لإدخال مفتاح Zernio', 'Configure Live Zernio Key in /admin')}
+                      </span>
+                    </a>
+                    <button
+                      type="button"
+                      onClick={() => void handleProceedInSandboxMode()}
+                      className="inline-flex items-center gap-1.5 rounded-xl border border-[var(--border-subtle)] bg-[var(--bg-card)] px-4 py-2 text-xs font-bold text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition cursor-pointer"
+                    >
+                      <span>
+                        {loc('معاينة ببيانات تجريبية (Sandbox Mode)', 'Preview with Sandbox Sample Data')}
+                      </span>
+                    </button>
+                  </div>
+                </div>
+              )}
+
               {/* A. OAuth 2.0 Consent Handshake Screen */}
               {platformMeta.connectionType === 'oauth' && (
                 <div className="rounded-2xl border border-[var(--border-subtle)] bg-[var(--bg-card)] p-6 space-y-5 shadow-sm">
@@ -1123,7 +1235,7 @@ export function ConnectionWizardModal({
                       <RefreshCw className="h-4 w-4 animate-spin" />
                       <span>
                         {handshakeStage === 'contacting' && (loc('جاري الاتصال بمزود OAuth...', 'Contacting OAuth Provider...'))}
-                        {handshakeStage === 'exchanging' && (loc('جاري تبادل رمز التفويض واستصدار المفتاح المشفر...', 'Exchanging authorization code for token...'))}
+                        {handshakeStage === 'exchanging' && (loc('جاري التوجيه لبوابة المصادقة الرسمية...', 'Redirecting to official OAuth authorization...'))}
                         {handshakeStage === 'granted' && (loc('تم استلام وتأكيد التفويض بنجاح ✓', 'Access Token Granted Successfully ✓'))}
                       </span>
                     </div>
@@ -1131,83 +1243,219 @@ export function ConnectionWizardModal({
                 </div>
               )}
 
-              {/* B. Direct Token / Key Credential Form */}
+              {/* B. Direct Token / Key Credential Form & WhatsApp 3-Mode Zernio Flow */}
               {platformMeta.connectionType !== 'oauth' && (
                 <div className="rounded-2xl border border-[var(--border-subtle)] bg-[var(--bg-card)] p-6 space-y-5 shadow-sm">
-                  <div className="flex items-center gap-2.5 text-xs font-bold text-amber-600 bg-amber-500/10 px-3 py-1.5 rounded-xl w-fit">
-                    <KeyRound className="h-4 w-4" />
-                    <span>{loc('الربط المباشر عبر الرموز البرمجية ومفاتيح الـ API', 'Direct Credential Onboarding (No Redirect)')}</span>
-                  </div>
-
-                  {/* WhatsApp Cloud API Specific Form */}
+                  {/* WhatsApp 3-Mode Official Zernio Onboarding */}
                   {(selectedPlatform === 'whatsapp' || platformMeta.connectionType === 'cloud_api') && (
-                    <div className="space-y-4">
-                      <div>
-                        <label className="block text-xs font-bold text-[var(--text-primary)]">
-                          {loc('معرف حساب واتساب للأعمال (WABA Account ID)', 'WhatsApp Business Account (WABA) ID')}
-                        </label>
-                        <input
-                          type="text"
-                          value={credWabaId}
-                          onChange={(e) => setCredWabaId(e.target.value)}
-                          placeholder="waba_881923"
-                          className="mt-1.5 w-full rounded-xl border border-[var(--border-subtle)] bg-[var(--bg-subtle)] px-3.5 py-2.5 text-xs font-mono text-[var(--text-primary)] focus:outline-none focus:border-[var(--accent-primary)]"
-                        />
-                      </div>
-
-                      <div>
-                        <label className="block text-xs font-bold text-[var(--text-primary)]">
-                          {loc('معرف رقم الهاتف (Phone Number ID)', 'Phone Number ID')}
-                        </label>
-                        <input
-                          type="text"
-                          value={credPhoneNumberId}
-                          onChange={(e) => setCredPhoneNumberId(e.target.value)}
-                          placeholder="pni_991823"
-                          className="mt-1.5 w-full rounded-xl border border-[var(--border-subtle)] bg-[var(--bg-subtle)] px-3.5 py-2.5 text-xs font-mono text-[var(--text-primary)] focus:outline-none focus:border-[var(--accent-primary)]"
-                        />
-                      </div>
-
-                      <div>
-                        <label className="block text-xs font-bold text-[var(--text-primary)]">
-                          {loc('رمز وصول مستخدم النظام الدائم (System User Access Token)', 'System User Access Token')}
-                        </label>
-                        <div className="relative mt-1.5">
-                          <input
-                            type={showSecret ? 'text' : 'password'}
-                            value={credSecret}
-                            onChange={(e) => setCredSecret(e.target.value)}
-                            placeholder="EAAGxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
-                            className="w-full rounded-xl border border-[var(--border-subtle)] bg-[var(--bg-subtle)] px-3.5 py-2.5 pe-10 text-xs font-mono text-[var(--text-primary)] focus:outline-none focus:border-[var(--accent-primary)]"
-                          />
-                          <button
-                            type="button"
-                            onClick={() => setShowSecret(!showSecret)}
-                            className="absolute end-3 top-1/2 -translate-y-1/2 text-[var(--text-muted)] hover:text-[var(--text-primary)]"
-                          >
-                            {showSecret ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                          </button>
+                    <div className="space-y-5">
+                      <div className="space-y-2">
+                        <div className="text-xs font-extrabold text-[var(--text-primary)]">
+                          {loc('اختر طريقة ربط واتساب للأعمال (مطابق لتدفق Zernio الرسمي):', 'Choose WhatsApp Business Onboarding Method (Official Zernio Flow):')}
+                        </div>
+                        <div className="grid grid-cols-1 gap-2.5 sm:grid-cols-3">
+                          {[
+                            {
+                              id: 'embedded_oauth',
+                              title: loc('١. التسجيل المدمج من Meta (OAuth)', '1. Meta Embedded Signup (OAuth)'),
+                              desc: loc('ربط فوري عبر نافذة فيسبوك الرسمية (يدعم Cloud API أو التعايش مع تطبيق الهاتف)', 'Official Meta popup/redirect (Cloud API or Business App Coexistence)'),
+                              badge: loc('موصى به', 'Recommended'),
+                            },
+                            {
+                              id: 'virtual_number',
+                              title: loc('٢. شراء رقم افتراضي فوري', '2. Provision Virtual Number'),
+                              desc: loc('احصل على رقم دولي مخصص مع تفعيل واتساب تلقائياً بدون إعداد Meta', 'Buy a dedicated number & auto-register WhatsApp in 60s'),
+                              badge: loc('بدون رقم مسبق', 'Turnkey'),
+                            },
+                            {
+                              id: 'system_token',
+                              title: loc('٣. مفاتيح System User المباشرة', '3. Direct System User Token'),
+                              desc: loc('إدخال WABA ID و Phone Number ID ورمز الوصول الدائم يدوياً', 'Enter WABA ID, Phone Number ID & permanent System User Token'),
+                              badge: loc('للمطورين', 'Advanced'),
+                            },
+                          ].map((m) => {
+                            const active = whatsappMethod === m.id;
+                            return (
+                              <button
+                                key={m.id}
+                                type="button"
+                                onClick={() => {
+                                  setWhatsappMethod(m.id as any);
+                                  setSandboxPromptVisible(false);
+                                  setErrorMessage(null);
+                                }}
+                                className={`flex flex-col justify-between rounded-2xl border p-3.5 text-start transition cursor-pointer ${
+                                  active
+                                    ? 'border-emerald-500 bg-emerald-500/10 ring-2 ring-emerald-500/20'
+                                    : 'border-[var(--border-subtle)] bg-[var(--bg-subtle)] hover:border-emerald-500/40'
+                                }`}
+                              >
+                                <div className="space-y-1">
+                                  <div className="flex items-center justify-between gap-1">
+                                    <span className="text-xs font-extrabold text-[var(--text-primary)]">{m.title}</span>
+                                  </div>
+                                  <p className="text-[11px] text-[var(--text-secondary)] leading-relaxed">{m.desc}</p>
+                                </div>
+                                <span className="mt-2 inline-block w-fit rounded-full bg-emerald-500/15 px-2 py-0.5 text-[10px] font-bold text-emerald-600">
+                                  {m.badge}
+                                </span>
+                              </button>
+                            );
+                          })}
                         </div>
                       </div>
 
-                      {/* Clear Guidance Notes on Meta Business Manager & System Users */}
-                      <div className="rounded-xl border border-emerald-500/20 bg-emerald-500/5 p-4 text-xs space-y-2 text-[var(--text-secondary)]">
-                        <div className="font-bold text-[var(--text-primary)] flex items-center gap-1.5">
-                          <ShieldCheck className="h-4 w-4 text-emerald-600" />
-                          <span>
-                            {loc('دليل إعداد Meta Business Manager ومستخدم النظام (System User)', 'Meta Business Manager & System User Setup Guide')}
-                          </span>
+                      {/* Mode 1: Meta Embedded Signup (OAuth) */}
+                      {whatsappMethod === 'embedded_oauth' && (
+                        <div className="rounded-2xl border border-emerald-500/25 bg-emerald-500/5 p-5 space-y-4">
+                          <div className="flex items-center gap-2 text-xs font-bold text-emerald-600">
+                            <ShieldCheck className="h-4 w-4" />
+                            <span>
+                              {loc('بوابة Meta Embedded Signup الرسمية عبر Zernio (/v1/connect/whatsapp)', 'Official Zernio Meta Embedded Signup (/v1/connect/whatsapp)')}
+                            </span>
+                          </div>
+
+                          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                            <button
+                              type="button"
+                              onClick={() => setWhatsappOnboardingType('api')}
+                              className={`rounded-xl border p-3.5 text-start transition cursor-pointer ${
+                                whatsappOnboardingType === 'api'
+                                  ? 'border-emerald-600 bg-[var(--bg-card)] shadow-xs'
+                                  : 'border-[var(--border-subtle)] bg-[var(--bg-subtle)]/60 opacity-75'
+                              }`}
+                            >
+                              <div className="flex items-center justify-between">
+                                <span className="text-xs font-bold text-[var(--text-primary)]">
+                                  {loc('WhatsApp Cloud API القياسي', 'Standard WhatsApp Cloud API')}
+                                </span>
+                                <span className="font-mono text-[10px] text-emerald-600 font-bold">onboarding=api</span>
+                              </div>
+                              <p className="mt-1 text-[11px] text-[var(--text-secondary)]">
+                                {loc('ربط حساب أعمال واتساب جديد أو حالي مخصص للأتمتة والرسائل السحابية.', 'Connect a new or existing WABA dedicated to Cloud API messaging and broadcasts.')}
+                              </p>
+                            </button>
+
+                            <button
+                              type="button"
+                              onClick={() => setWhatsappOnboardingType('business_app')}
+                              className={`rounded-xl border p-3.5 text-start transition cursor-pointer ${
+                                whatsappOnboardingType === 'business_app'
+                                  ? 'border-emerald-600 bg-[var(--bg-card)] shadow-xs'
+                                  : 'border-[var(--border-subtle)] bg-[var(--bg-subtle)]/60 opacity-75'
+                              }`}
+                            >
+                              <div className="flex items-center justify-between">
+                                <span className="text-xs font-bold text-[var(--text-primary)]">
+                                  {loc('التعايش مع تطبيق WhatsApp Business', 'Business App Coexistence')}
+                                </span>
+                                <span className="font-mono text-[10px] text-emerald-600 font-bold">onboarding=business_app</span>
+                              </div>
+                              <p className="mt-1 text-[11px] text-[var(--text-secondary)]">
+                                {loc('استمر في استخدام تطبيق واتساب للأعمال على هاتفك المحمول مع تفعيل الـ API في نفس الوقت!', 'Keep using your WhatsApp Business mobile app while syncing chats & API automations!')}
+                              </p>
+                            </button>
+                          </div>
                         </div>
-                        <p>
-                          {loc('١. ادخل إلى إعدادات الأعمال في Meta وانتقل إلى "مستخدمو النظام" (System Users).', '1. Navigate to Meta Business Settings (business.facebook.com/settings) > Users > System Users.')}
-                        </p>
-                        <p>
-                          {loc('٢. قم بإنشاء مستخدم نظام بدور مسؤول (Admin) وامنحه أذونات whatsapp_business_messaging و whatsapp_business_management.', '2. Create an Admin System User and generate a token with whatsapp_business_messaging and whatsapp_business_management permissions.')}
-                        </p>
-                        <p>
-                          {loc('٣. انسخ معرف WABA ومعرف رقم الهاتف (Phone Number ID) من لوحة تحكم WhatsApp API والصقها أعلاه.', '3. Copy your WhatsApp Business Account (WABA) ID and Phone Number ID from the WhatsApp Manager API Setup page.')}
-                        </p>
-                      </div>
+                      )}
+
+                      {/* Mode 2: Provision Virtual Number */}
+                      {whatsappMethod === 'virtual_number' && (
+                        <div className="rounded-2xl border border-emerald-500/25 bg-emerald-500/5 p-5 space-y-3">
+                          <h4 className="text-xs font-extrabold text-[var(--text-primary)]">
+                            {loc('شراء رقم افتراضي وتفعيل واتساب السحابي تلقائياً', 'Provision Virtual Number & Auto-Verify WhatsApp')}
+                          </h4>
+                          <p className="text-xs text-[var(--text-secondary)] leading-relaxed">
+                            {loc(
+                              'سيتم فتح معالج شراء الأرقام لاختيار رقم (أمريكي، بريطاني، أو دولي) وتوليد ملف تعريف واتساب معتمد خلال 60 ثانية دون الحاجة لبطاقة SIM.',
+                              'Opens the 60-Second Number Marketplace Wizard to select a US/UK/Global virtual number and automatically complete Meta WhatsApp OTP verification.'
+                            )}
+                          </p>
+                        </div>
+                      )}
+
+                      {/* Mode 3: Direct System User Credentials */}
+                      {whatsappMethod === 'system_token' && (
+                        <div className="space-y-4">
+                          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                            <div>
+                              <label className="block text-xs font-bold text-[var(--text-primary)]">
+                                {loc('معرف حساب واتساب للأعمال (WABA ID) *', 'WhatsApp Business Account (WABA) ID *')}
+                              </label>
+                              <input
+                                type="text"
+                                value={credWabaId}
+                                onChange={(e) => setCredWabaId(e.target.value)}
+                                placeholder="e.g. 104928192839102"
+                                className="mt-1.5 w-full rounded-xl border border-[var(--border-subtle)] bg-[var(--bg-subtle)] px-3.5 py-2.5 text-xs font-mono text-[var(--text-primary)] focus:outline-none focus:border-[var(--accent-primary)]"
+                              />
+                            </div>
+
+                            <div>
+                              <label className="block text-xs font-bold text-[var(--text-primary)]">
+                                {loc('معرف رقم الهاتف (Phone Number ID) *', 'Phone Number ID *')}
+                              </label>
+                              <input
+                                type="text"
+                                value={credPhoneNumberId}
+                                onChange={(e) => setCredPhoneNumberId(e.target.value)}
+                                placeholder="e.g. 109283746519283"
+                                className="mt-1.5 w-full rounded-xl border border-[var(--border-subtle)] bg-[var(--bg-subtle)] px-3.5 py-2.5 text-xs font-mono text-[var(--text-primary)] focus:outline-none focus:border-[var(--accent-primary)]"
+                              />
+                            </div>
+                          </div>
+
+                          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                            <div>
+                              <label className="block text-xs font-bold text-[var(--text-primary)]">
+                                {loc('رقم الهاتف المعروض (اختياري)', 'Display Phone Number (Optional)')}
+                              </label>
+                              <input
+                                type="tel"
+                                value={credIdentifier}
+                                onChange={(e) => setCredIdentifier(e.target.value)}
+                                placeholder="e.g. +966501234567"
+                                className="mt-1.5 w-full rounded-xl border border-[var(--border-subtle)] bg-[var(--bg-subtle)] px-3.5 py-2.5 text-xs font-mono text-[var(--text-primary)] focus:outline-none focus:border-[var(--accent-primary)]"
+                              />
+                            </div>
+
+                            <div>
+                              <label className="block text-xs font-bold text-[var(--text-primary)]">
+                                {loc('اسم النشاط التجاري (اختياري)', 'Business Display Name (Optional)')}
+                              </label>
+                              <input
+                                type="text"
+                                value={credUsername}
+                                onChange={(e) => setCredUsername(e.target.value)}
+                                placeholder="e.g. My Official Store"
+                                className="mt-1.5 w-full rounded-xl border border-[var(--border-subtle)] bg-[var(--bg-subtle)] px-3.5 py-2.5 text-xs text-[var(--text-primary)] focus:outline-none focus:border-[var(--accent-primary)]"
+                              />
+                            </div>
+                          </div>
+
+                          <div>
+                            <label className="block text-xs font-bold text-[var(--text-primary)]">
+                              {loc('رمز وصول مستخدم النظام الدائم (System User Access Token) *', 'System User Access Token *')}
+                            </label>
+                            <div className="relative mt-1.5">
+                              <input
+                                type={showSecret ? 'text' : 'password'}
+                                value={credSecret}
+                                onChange={(e) => setCredSecret(e.target.value)}
+                                placeholder="EAAG..."
+                                className="w-full rounded-xl border border-[var(--border-subtle)] bg-[var(--bg-subtle)] px-3.5 py-2.5 pe-10 text-xs font-mono text-[var(--text-primary)] focus:outline-none focus:border-[var(--accent-primary)]"
+                              />
+                              <button
+                                type="button"
+                                onClick={() => setShowSecret(!showSecret)}
+                                className="absolute end-3 top-1/2 -translate-y-1/2 text-[var(--text-muted)] hover:text-[var(--text-primary)]"
+                              >
+                                {showSecret ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                              </button>
+                            </div>
+                          </div>
+                        </div>
+                      )}
                     </div>
                   )}
 
@@ -1744,13 +1992,17 @@ export function ConnectionWizardModal({
                 type="button"
                 disabled={isSubmitting}
                 onClick={handleAuthorizeOrSubmit}
-                className="inline-flex items-center gap-2 rounded-xl bg-[var(--accent-primary)] px-6 py-2.5 text-xs font-bold text-white hover:bg-[var(--accent-hover)] transition shadow-sm disabled:opacity-50"
+                className="inline-flex items-center gap-2 rounded-xl bg-[var(--accent-primary)] px-6 py-2.5 text-xs font-bold text-white hover:bg-[var(--accent-hover)] transition shadow-sm disabled:opacity-50 cursor-pointer"
               >
                 {isSubmitting && <RefreshCw className="h-3.5 w-3.5 animate-spin" />}
                 <span>
-                  {platformMeta.connectionType === 'oauth'
-                    ? (loc('منح الإذن والمتابعة', 'Authorize & Continue'))
-                    : (loc('التحقق وربط المفاتيح', 'Verify & Connect Credentials'))}
+                  {selectedPlatform === 'whatsapp' && whatsappMethod === 'embedded_oauth'
+                    ? loc('إطلاق التسجيل المدمج من Meta (OAuth)', 'Launch Meta Embedded Signup (OAuth)')
+                    : selectedPlatform === 'whatsapp' && whatsappMethod === 'virtual_number'
+                    ? loc('فتح سوق شراء الأرقام الافتراضية', 'Open Virtual Number Marketplace')
+                    : platformMeta.connectionType === 'oauth'
+                    ? loc('منح الإذن والمتابعة', 'Authorize & Continue')
+                    : loc('التحقق وربط المفاتيح', 'Verify & Connect Credentials')}
                 </span>
                 {!isSubmitting && (isAr ? <ArrowLeft className="h-3.5 w-3.5" /> : <ArrowRight className="h-3.5 w-3.5" />)}
               </button>

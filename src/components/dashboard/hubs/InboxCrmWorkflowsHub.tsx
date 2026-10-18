@@ -79,6 +79,12 @@ export function InboxCrmWorkflowsHub({
   const [triggeringWorkflow, setTriggeringWorkflow] = useState<boolean>(false);
   const [workflowTestLog, setWorkflowTestLog] = useState<string | null>(null);
   const [workflowTestError, setWorkflowTestError] = useState<string | null>(null);
+  const [showCreateWorkflow, setShowCreateWorkflow] = useState<boolean>(false);
+  const [newWfName, setNewWfName] = useState<string>('');
+  const [newWfTrigger, setNewWfTrigger] = useState<string>('Trigger: Keyword #ORDER');
+  const [newWfCondition, setNewWfCondition] = useState<string>('Check: Channel is WhatsApp or Facebook');
+  const [newWfAction, setNewWfAction] = useState<string>('Action: Send Instant Product Catalog & Reply');
+  const [creatingWorkflow, setCreatingWorkflow] = useState<boolean>(false);
 
   // General loading & error feedback
   const [loadingHubData, setLoadingHubData] = useState<boolean>(false);
@@ -1000,8 +1006,15 @@ export function InboxCrmWorkflowsHub({
               </p>
             </div>
 
-            {workflows.length > 0 && (
-              <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2">
+              <button
+                onClick={() => setShowCreateWorkflow((prev) => !prev)}
+                className="inline-flex items-center gap-1.5 rounded-xl bg-[var(--accent-primary)] px-4 py-2 text-xs font-bold text-white hover:bg-[var(--accent-hover)] transition cursor-pointer shadow-sm"
+              >
+                <Plus className="h-3.5 w-3.5" />
+                <span>{loc('إنشاء مسار مخصص (+ Create Flow)', '+ Create Flow / Workflow')}</span>
+              </button>
+              {workflows.length > 0 && (
                 <button
                   onClick={() => handleTestWorkflow(selectedWorkflow?.id)}
                   disabled={triggeringWorkflow}
@@ -1010,9 +1023,124 @@ export function InboxCrmWorkflowsHub({
                   {triggeringWorkflow ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Play className="h-3.5 w-3.5" />}
                   <span>{loc('اختبار المسار (Test Trigger)', 'Test Trigger')}</span>
                 </button>
-              </div>
-            )}
+              )}
+            </div>
           </div>
+
+          {showCreateWorkflow && (
+            <div className="rounded-3xl border border-purple-500/30 bg-purple-500/5 p-5 space-y-4">
+              <div className="flex items-center justify-between">
+                <h4 className="text-xs font-bold text-[var(--text-primary)]">
+                  {loc('تصميم مسار عمل تفاعلي مخصص (Create Custom Automation Flow)', 'Create Custom Automation Flow')}
+                </h4>
+                <button
+                  onClick={() => setShowCreateWorkflow(false)}
+                  className="text-xs text-[var(--text-muted)] hover:text-[var(--text-primary)] cursor-pointer"
+                >
+                  ✕
+                </button>
+              </div>
+              <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                <div>
+                  <label className="block text-[11px] font-bold text-[var(--text-secondary)] mb-1">
+                    {loc('اسم مسار العمل (Flow Name)', 'Workflow / Flow Name')}
+                  </label>
+                  <input
+                    type="text"
+                    value={newWfName}
+                    onChange={(e) => setNewWfName(e.target.value)}
+                    placeholder="e.g., Instant Order & Catalog Bot"
+                    className="w-full rounded-xl border border-[var(--border-subtle)] bg-[var(--bg-card)] px-3 py-2 text-xs text-[var(--text-primary)]"
+                  />
+                </div>
+                <div>
+                  <label className="block text-[11px] font-bold text-[var(--text-secondary)] mb-1">
+                    {loc('المحفز الأول (Step 1: Trigger Node)', 'Step 1: Trigger Node')}
+                  </label>
+                  <input
+                    type="text"
+                    value={newWfTrigger}
+                    onChange={(e) => setNewWfTrigger(e.target.value)}
+                    placeholder="Trigger: Keyword #ORDER"
+                    className="w-full rounded-xl border border-[var(--border-subtle)] bg-[var(--bg-card)] px-3 py-2 text-xs text-[var(--text-primary)]"
+                  />
+                </div>
+                <div>
+                  <label className="block text-[11px] font-bold text-[var(--text-secondary)] mb-1">
+                    {loc('شرط التحقق (Step 2: Condition Node)', 'Step 2: Condition Node')}
+                  </label>
+                  <input
+                    type="text"
+                    value={newWfCondition}
+                    onChange={(e) => setNewWfCondition(e.target.value)}
+                    placeholder="Check: Channel is WhatsApp or Facebook"
+                    className="w-full rounded-xl border border-[var(--border-subtle)] bg-[var(--bg-card)] px-3 py-2 text-xs text-[var(--text-primary)]"
+                  />
+                </div>
+                <div>
+                  <label className="block text-[11px] font-bold text-[var(--text-secondary)] mb-1">
+                    {loc('الفعل التلقائي (Step 3: Action Node)', 'Step 3: Action Node')}
+                  </label>
+                  <input
+                    type="text"
+                    value={newWfAction}
+                    onChange={(e) => setNewWfAction(e.target.value)}
+                    placeholder="Action: Send Instant Product Catalog & Reply"
+                    className="w-full rounded-xl border border-[var(--border-subtle)] bg-[var(--bg-card)] px-3 py-2 text-xs text-[var(--text-primary)]"
+                  />
+                </div>
+              </div>
+              <div className="flex justify-end gap-2">
+                <button
+                  onClick={() => setShowCreateWorkflow(false)}
+                  className="rounded-xl border border-[var(--border-subtle)] bg-[var(--bg-card)] px-4 py-2 text-xs font-bold text-[var(--text-secondary)] cursor-pointer"
+                >
+                  {loc('إلغاء', 'Cancel')}
+                </button>
+                <button
+                  disabled={creatingWorkflow || !newWfName.trim()}
+                  onClick={async () => {
+                    if (!newWfName.trim()) return;
+                    setCreatingWorkflow(true);
+                    setWorkflowTestError(null);
+                    try {
+                      const res = await fetch('/api/v1/workflows', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                          name: newWfName.trim(),
+                          nodes: [
+                            { id: '1', type: 'trigger', title: newWfTrigger.trim() || 'Trigger: Inbound Message' },
+                            { id: '2', type: 'condition', title: newWfCondition.trim() || 'Condition: Customer Match' },
+                            { id: '3', type: 'action', title: newWfAction.trim() || 'Action: Automated Reply' },
+                          ],
+                        }),
+                      });
+                      const data = await res.json().catch(() => ({}));
+                      if (!res.ok || !data.success) {
+                        throw new Error(data.message || data.error?.message || `HTTP ${res.status}`);
+                      }
+                      const createdWf = data.workflow || data.data;
+                      setWorkflows((prev) => [createdWf, ...prev]);
+                      setSelectedWorkflow(createdWf);
+                      setNewWfName('');
+                      setShowCreateWorkflow(false);
+                      setWorkflowTestLog(loc(`تم إنشاء وتفعيل المسار "${createdWf.name}" بنجاح.`, `Workflow "${createdWf.name}" created and activated.`));
+                      onRefreshWorkspace?.();
+                    } catch (err: any) {
+                      setWorkflowTestError(err?.message || 'Failed to create workflow');
+                    } finally {
+                      setCreatingWorkflow(false);
+                    }
+                  }}
+                  className="inline-flex items-center gap-1.5 rounded-xl bg-purple-600 px-5 py-2 text-xs font-bold text-white hover:bg-purple-700 disabled:opacity-50 cursor-pointer"
+                >
+                  {creatingWorkflow ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Plus className="h-3.5 w-3.5" />}
+                  <span>{loc('حفظ وتفعيل المسار', 'Save & Activate Flow')}</span>
+                </button>
+              </div>
+            </div>
+          )}
 
           {workflowTestError && (
             <div className="rounded-2xl border border-rose-500/30 bg-rose-500/10 p-3 text-xs font-mono text-rose-700">
@@ -1041,6 +1169,13 @@ export function InboxCrmWorkflowsHub({
                 )}
               </p>
               <div className="mt-4 flex flex-wrap gap-2 justify-center">
+                <button
+                  onClick={() => setShowCreateWorkflow(true)}
+                  className="inline-flex items-center gap-1.5 rounded-xl bg-[var(--accent-primary)] px-4 py-2 text-xs font-bold text-white hover:bg-[var(--accent-hover)] transition cursor-pointer"
+                >
+                  <Plus className="h-3.5 w-3.5" />
+                  <span>{loc('إنشاء مسار مخصص (+ Create Flow)', '+ Create Custom Flow')}</span>
+                </button>
                 <button
                   onClick={async () => {
                     try {
@@ -1078,6 +1213,23 @@ export function InboxCrmWorkflowsHub({
             </div>
           ) : (
             <div className="rounded-3xl border border-[var(--border-subtle)] bg-[var(--bg-card)] p-6 space-y-4">
+              {workflows.length > 1 && (
+                <div className="flex flex-wrap gap-2 pb-2">
+                  {workflows.map((wf) => (
+                    <button
+                      key={wf.id}
+                      onClick={() => setSelectedWorkflow(wf)}
+                      className={`rounded-xl px-3 py-1.5 text-xs font-bold transition cursor-pointer ${
+                        selectedWorkflow?.id === wf.id
+                          ? 'bg-purple-600 text-white'
+                          : 'bg-[var(--bg-subtle)] text-[var(--text-secondary)] hover:text-[var(--text-primary)]'
+                      }`}
+                    >
+                      {wf.name}
+                    </button>
+                  ))}
+                </div>
+              )}
               <div className="flex items-center justify-between border-b border-[var(--border-subtle)] pb-3">
                 <span className="font-bold text-xs text-[var(--text-primary)]">{selectedWorkflow?.name}</span>
                 <span className="rounded-full bg-emerald-500/15 px-2 py-0.5 text-[10px] font-bold text-emerald-600 uppercase">

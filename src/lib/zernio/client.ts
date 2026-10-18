@@ -1,4 +1,5 @@
 import { randomUUID } from 'crypto';
+import { getFallbackStore } from '@/lib/zernio/policy-engine';
 
 export interface ZernioErrorEnvelope {
   status: number;
@@ -49,27 +50,44 @@ export interface ZernioRequestOptions {
  * - Automatically retries transient 429s when Retry-After <= 15s
  */
 export class ZernioClient {
-  private readonly baseUrl: string;
-  private readonly masterApiKey: string;
+  private readonly explicitBaseUrl?: string;
+  private readonly explicitApiKey?: string;
 
   constructor(apiKey?: string, baseUrl?: string) {
-    this.baseUrl = (
-      baseUrl ||
+    this.explicitBaseUrl = baseUrl;
+    this.explicitApiKey = apiKey;
+  }
+
+  public getBaseUrl(): string {
+    const storeUrl = getFallbackStore().globalConfig.zernioBaseUrl?.trim();
+    return (
+      this.explicitBaseUrl ||
+      storeUrl ||
       process.env.ZERNIO_BASE_URL ||
       'https://zernio.com/api/v1'
     ).replace(/\/$/, '');
-    this.masterApiKey = apiKey || process.env.ZERNIO_API_KEY || '';
+  }
+
+  public getMasterApiKey(): string {
+    const storeKey = getFallbackStore().globalConfig.zernioApiKey?.trim();
+    return (
+      this.explicitApiKey ||
+      storeKey ||
+      process.env.ZERNIO_API_KEY ||
+      ''
+    ).trim();
   }
 
   public isConfigured(): boolean {
-    const key = this.masterApiKey.trim().toLowerCase();
-    if (!key || !key.startsWith('sk_')) return false;
+    const key = this.getMasterApiKey().toLowerCase();
+    if (!key || key.length < 12) return false;
     if (
       key.startsWith('sk_000000') ||
       key.includes('replace') ||
       key.includes('your_') ||
       key.includes('example') ||
-      key.includes('placeholder')
+      key.includes('placeholder') ||
+      key.includes('dummy')
     ) {
       return false;
     }
@@ -81,7 +99,8 @@ export class ZernioClient {
     attempt = 1
   ): Promise<{ data: T; status: number; requestId?: string; rateLimitRemaining?: number }> {
     const method = options.method ?? 'GET';
-    const url = new URL(`${this.baseUrl}${options.path.startsWith('/') ? options.path : `/${options.path}`}`);
+    const baseUrl = this.getBaseUrl();
+    const url = new URL(`${baseUrl}${options.path.startsWith('/') ? options.path : `/${options.path}`}`);
 
     if (options.query) {
       for (const [key, value] of Object.entries(options.query)) {
@@ -91,7 +110,7 @@ export class ZernioClient {
       }
     }
 
-    const token = options.apiKeyOverride || this.masterApiKey;
+    const token = options.apiKeyOverride || this.getMasterApiKey();
     const headers: Record<string, string> = {
       Authorization: `Bearer ${token}`,
       Accept: 'application/json',

@@ -20,6 +20,8 @@ export interface GlobalAdminConfigState {
   brandLogoUrl: string;
   brandPrimaryColor: string;
   enforceHeadlessOAuth: boolean;
+  zernioApiKey?: string;
+  zernioBaseUrl?: string;
   enabledPlatforms: SocialPlatform[];
   enabledAdPlatforms: AdPlatform[];
   enabledOAuthScopes: OAuthScopeArea[];

@@ -64,9 +64,17 @@ export function AdsCommerceAnalyticsHub({
   // 3. Lead Forms & Leads Table
   const [leadForms, setLeadForms] = useState<any[]>([]);
   const [submittedLeads, setSubmittedLeads] = useState<any[]>([]);
+  const [showCreateLeadForm, setShowCreateLeadForm] = useState<boolean>(false);
+  const [newLeadFormName, setNewLeadFormName] = useState<string>('');
+  const [creatingLeadForm, setCreatingLeadForm] = useState<boolean>(false);
 
   // 4. Pixels & Tracking Tags
   const [pixels, setPixels] = useState<any[]>([]);
+  const [showAddPixel, setShowAddPixel] = useState<boolean>(false);
+  const [newPixelName, setNewPixelName] = useState<string>('');
+  const [newPixelTagId, setNewPixelTagId] = useState<string>('');
+  const [newPixelProvider, setNewPixelProvider] = useState<string>('meta');
+  const [creatingPixel, setCreatingPixel] = useState<boolean>(false);
 
   // 5. Competitor Ad Library Spy Search
   const [libraryQuery, setLibraryQuery] = useState<string>('');
@@ -80,9 +88,67 @@ export function AdsCommerceAnalyticsHub({
   const [products, setProducts] = useState<any[]>([]);
   const [orders, setOrders] = useState<any[]>([]);
   const [discounts, setDiscounts] = useState<any[]>([]);
+  const [showAddProduct, setShowAddProduct] = useState<boolean>(false);
+  const [newProductTitle, setNewProductTitle] = useState<string>('');
+  const [newProductPrice, setNewProductPrice] = useState<string>('29.99');
+  const [newProductStock, setNewProductStock] = useState<string>('50');
+  const [creatingProduct, setCreatingProduct] = useState<boolean>(false);
+
+  const [showAddDiscount, setShowAddDiscount] = useState<boolean>(false);
+  const [newDiscountCode, setNewDiscountCode] = useState<string>('');
+  const [newDiscountValue, setNewDiscountValue] = useState<string>('15');
+  const [creatingDiscount, setCreatingDiscount] = useState<boolean>(false);
 
   // 8. GBP Services Menu
   const [gbpServices, setGbpServices] = useState<any[]>([]);
+  const [showAddGbpService, setShowAddGbpService] = useState<boolean>(false);
+  const [newServiceName, setNewServiceName] = useState<string>('');
+  const [newServiceCategory, setNewServiceCategory] = useState<string>('Consultation');
+  const [newServicePrice, setNewServicePrice] = useState<string>('$49.00');
+  const [creatingService, setCreatingService] = useState<boolean>(false);
+
+  useEffect(() => {
+    const loadHubData = async () => {
+      try {
+        const [lfRes, pxRes, prRes, dsRes, gbpRes, btRes] = await Promise.all([
+          fetch('/api/v1/lead-gen/forms').catch(() => null),
+          fetch('/api/v1/tracking-tags').catch(() => null),
+          fetch('/api/v1/commerce/products').catch(() => null),
+          fetch('/api/v1/commerce/discounts').catch(() => null),
+          fetch('/api/v1/google-business/services').catch(() => null),
+          fetch('/api/v1/analytics/best-times').catch(() => null),
+        ]);
+        if (lfRes?.ok) {
+          const d = await lfRes.json().catch(() => ({}));
+          if (Array.isArray(d.forms || d.data)) setLeadForms(d.forms || d.data);
+          if (Array.isArray(d.leads)) setSubmittedLeads(d.leads);
+        }
+        if (pxRes?.ok) {
+          const d = await pxRes.json().catch(() => ({}));
+          if (Array.isArray(d.tags || d.data)) setPixels(d.tags || d.data);
+        }
+        if (prRes?.ok) {
+          const d = await prRes.json().catch(() => ({}));
+          if (Array.isArray(d.products || d.data)) setProducts(d.products || d.data);
+        }
+        if (dsRes?.ok) {
+          const d = await dsRes.json().catch(() => ({}));
+          if (Array.isArray(d.discounts || d.data)) setDiscounts(d.discounts || d.data);
+        }
+        if (gbpRes?.ok) {
+          const d = await gbpRes.json().catch(() => ({}));
+          if (Array.isArray(d.services || d.data)) setGbpServices(d.services || d.data);
+        }
+        if (btRes?.ok) {
+          const d = await btRes.json().catch(() => ({}));
+          if (Array.isArray(d.slots || d.data)) setBestTimesSlots(d.slots || d.data);
+        }
+      } catch {
+        // ignore
+      }
+    };
+    loadHubData();
+  }, []);
 
   const handleLaunchAd = async () => {
     if (!adName.trim() || !adHeadline.trim()) {
@@ -145,6 +211,158 @@ export function AdsCommerceAnalyticsHub({
       // ignore
     } finally {
       setSearchingLibrary(false);
+    }
+  };
+
+  const handleCreateLeadForm = async () => {
+    if (!newLeadFormName.trim()) return;
+    setCreatingLeadForm(true);
+    try {
+      const res = await fetch('/api/v1/lead-gen/forms', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          name: newLeadFormName.trim(),
+          fields: ['full_name', 'email', 'phone_number'],
+          status: 'ACTIVE',
+        }),
+      });
+      const data = await res.json().catch(() => ({}));
+      const created = data.form || data.data || {
+        id: `lf_${Date.now()}`,
+        name: newLeadFormName.trim(),
+        leadsCount: 0,
+        status: 'ACTIVE',
+      };
+      setLeadForms((prev) => [created, ...prev]);
+      setNewLeadFormName('');
+      setShowCreateLeadForm(false);
+      onRefreshWorkspace?.();
+    } finally {
+      setCreatingLeadForm(false);
+    }
+  };
+
+  const handleCreatePixel = async () => {
+    if (!newPixelName.trim() || !newPixelTagId.trim()) return;
+    setCreatingPixel(true);
+    try {
+      const res = await fetch('/api/v1/tracking-tags', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          name: newPixelName.trim(),
+          tagId: newPixelTagId.trim(),
+          provider: newPixelProvider,
+          status: 'ACTIVE',
+        }),
+      });
+      const data = await res.json().catch(() => ({}));
+      const created = data.tag || data.data || {
+        id: `px_${Date.now()}`,
+        name: newPixelName.trim(),
+        tagId: newPixelTagId.trim(),
+        provider: newPixelProvider,
+        status: 'ACTIVE',
+      };
+      setPixels((prev) => [created, ...prev]);
+      setNewPixelName('');
+      setNewPixelTagId('');
+      setShowAddPixel(false);
+      onRefreshWorkspace?.();
+    } finally {
+      setCreatingPixel(false);
+    }
+  };
+
+  const handleCreateProduct = async () => {
+    if (!newProductTitle.trim()) return;
+    setCreatingProduct(true);
+    try {
+      const priceNum = parseFloat(newProductPrice) || 29.99;
+      const stockNum = parseInt(newProductStock, 10) || 50;
+      const res = await fetch('/api/v1/commerce/products', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          title: newProductTitle.trim(),
+          price: priceNum,
+          currency: 'USD',
+          stock: stockNum,
+        }),
+      });
+      const data = await res.json().catch(() => ({}));
+      const created = data.product || data.data || {
+        id: `prod_${Date.now()}`,
+        title: newProductTitle.trim(),
+        price: priceNum,
+        currency: 'USD',
+        stock: stockNum,
+      };
+      setProducts((prev) => [created, ...prev]);
+      setNewProductTitle('');
+      setShowAddProduct(false);
+      onRefreshWorkspace?.();
+    } finally {
+      setCreatingProduct(false);
+    }
+  };
+
+  const handleCreateDiscount = async () => {
+    if (!newDiscountCode.trim()) return;
+    setCreatingDiscount(true);
+    try {
+      const valNum = parseInt(newDiscountValue, 10) || 15;
+      const res = await fetch('/api/v1/commerce/discounts', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          code: newDiscountCode.trim().toUpperCase(),
+          value: valNum,
+          type: 'percentage',
+        }),
+      });
+      const data = await res.json().catch(() => ({}));
+      const created = data.discount || data.data || {
+        code: newDiscountCode.trim().toUpperCase(),
+        value: valNum,
+        usageCount: 0,
+      };
+      setDiscounts((prev) => [created, ...prev]);
+      setNewDiscountCode('');
+      setShowAddDiscount(false);
+      onRefreshWorkspace?.();
+    } finally {
+      setCreatingDiscount(false);
+    }
+  };
+
+  const handleCreateGbpService = async () => {
+    if (!newServiceName.trim()) return;
+    setCreatingService(true);
+    try {
+      const res = await fetch('/api/v1/google-business/services', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          name: newServiceName.trim(),
+          category: newServiceCategory.trim() || 'General',
+          price: newServicePrice.trim() || '$49.00',
+        }),
+      });
+      const data = await res.json().catch(() => ({}));
+      const created = data.service || data.data || {
+        id: `srv_${Date.now()}`,
+        name: newServiceName.trim(),
+        category: newServiceCategory.trim() || 'General',
+        price: newServicePrice.trim() || '$49.00',
+      };
+      setGbpServices((prev) => [created, ...prev]);
+      setNewServiceName('');
+      setShowAddGbpService(false);
+      onRefreshWorkspace?.();
+    } finally {
+      setCreatingService(false);
     }
   };
 
@@ -363,9 +581,43 @@ export function AdsCommerceAnalyticsHub({
       {activeSubTab === 'lead_forms' && (
         <div className="space-y-4">
           <div className="rounded-3xl border border-[var(--border-subtle)] bg-[var(--bg-card)] p-6 space-y-3">
-            <h3 className="text-sm font-bold text-[var(--text-primary)]">
-              {loc('نماذج جمع العملاء الفورية (Instant Lead Forms)', 'Instant Lead Generation Forms')}
-            </h3>
+            <div className="flex items-center justify-between">
+              <h3 className="text-sm font-bold text-[var(--text-primary)]">
+                {loc('نماذج جمع العملاء الفورية (Instant Lead Forms)', 'Instant Lead Generation Forms')}
+              </h3>
+              <button
+                onClick={() => setShowCreateLeadForm((prev) => !prev)}
+                className="inline-flex items-center gap-1.5 rounded-xl bg-[var(--accent-primary)] px-3.5 py-1.5 text-xs font-bold text-white hover:bg-[var(--accent-hover)] transition cursor-pointer shadow-sm"
+              >
+                <Plus className="h-3.5 w-3.5" />
+                <span>{loc('إنشاء نموذج جديد', '+ Create Lead Form')}</span>
+              </button>
+            </div>
+
+            {showCreateLeadForm && (
+              <div className="rounded-2xl border border-[var(--accent-primary)]/30 bg-[var(--accent-soft)]/30 p-4 space-y-3">
+                <label className="block text-xs font-bold text-[var(--text-primary)]">
+                  {loc('اسم نموذج جمع العملاء (Lead Form Name)', 'Instant Lead Form Name')}
+                </label>
+                <div className="flex gap-2">
+                  <input
+                    type="text"
+                    value={newLeadFormName}
+                    onChange={(e) => setNewLeadFormName(e.target.value)}
+                    placeholder="e.g., VIP Consultation Lead Capture"
+                    className="flex-1 rounded-xl border border-[var(--border-subtle)] bg-[var(--bg-card)] px-3 py-2 text-xs text-[var(--text-primary)]"
+                  />
+                  <button
+                    onClick={handleCreateLeadForm}
+                    disabled={creatingLeadForm || !newLeadFormName.trim()}
+                    className="rounded-xl bg-[var(--accent-primary)] px-4 py-2 text-xs font-bold text-white hover:bg-[var(--accent-hover)] disabled:opacity-50 cursor-pointer"
+                  >
+                    {creatingLeadForm ? loc('جاري الحفظ...', 'Saving...') : loc('حفظ وتفعيل', 'Save Form')}
+                  </button>
+                </div>
+              </div>
+            )}
+
             {leadForms.length === 0 ? (
               <div className="rounded-2xl border border-dashed border-[var(--border-subtle)] p-6 text-center">
                 <Layers className="h-8 w-8 text-[var(--text-muted)] mx-auto mb-2" />
@@ -376,7 +628,7 @@ export function AdsCommerceAnalyticsHub({
                   {loc('أنشئ نموذجاً مخصصاً لجمع بيانات واهتمامات العملاء مباشرة من إعلاناتك.', 'Create customized forms to capture names, emails, and phone numbers directly from ads.')}
                 </p>
                 <button
-                  onClick={() => onRefreshWorkspace?.()}
+                  onClick={() => setShowCreateLeadForm(true)}
                   className="mt-3 inline-flex items-center gap-1.5 rounded-xl bg-[var(--accent-primary)] px-4 py-1.5 text-xs font-bold text-white hover:bg-[var(--accent-hover)] transition cursor-pointer shadow-sm"
                 >
                   <Plus className="h-3.5 w-3.5" />
@@ -389,10 +641,10 @@ export function AdsCommerceAnalyticsHub({
                   <div key={f.id} className="rounded-2xl border border-[var(--border-subtle)] bg-[var(--bg-subtle)]/40 p-4 flex items-center justify-between">
                     <div>
                       <h4 className="text-xs font-bold text-[var(--text-primary)]">{f.name}</h4>
-                      <span className="text-[10px] text-[var(--text-muted)]">{f.leadsCount} submissions</span>
+                      <span className="text-[10px] text-[var(--text-muted)]">{f.leadsCount || 0} submissions</span>
                     </div>
                     <span className="rounded bg-emerald-500/15 px-2 py-0.5 text-[10px] font-bold text-emerald-600">
-                      {f.status}
+                      {f.status || 'ACTIVE'}
                     </span>
                   </div>
                 ))}
@@ -445,9 +697,74 @@ export function AdsCommerceAnalyticsHub({
       {/* SUB-PANEL 4: Pixels & Tracking Tags */}
       {activeSubTab === 'pixels' && (
         <div className="rounded-3xl border border-[var(--border-subtle)] bg-[var(--bg-card)] p-6 space-y-4">
-          <h3 className="text-sm font-bold text-[var(--text-primary)]">
-            {loc('بكسل التتبع وواجهات التحويل CAPI', 'Tracking Pixels & Conversions API')}
-          </h3>
+          <div className="flex items-center justify-between">
+            <h3 className="text-sm font-bold text-[var(--text-primary)]">
+              {loc('بكسل التتبع وواجهات التحويل CAPI', 'Tracking Pixels & Conversions API')}
+            </h3>
+            <button
+              onClick={() => setShowAddPixel((prev) => !prev)}
+              className="inline-flex items-center gap-1.5 rounded-xl bg-[var(--accent-primary)] px-3.5 py-1.5 text-xs font-bold text-white hover:bg-[var(--accent-hover)] transition cursor-pointer shadow-sm"
+            >
+              <Plus className="h-3.5 w-3.5" />
+              <span>{loc('ربط بكسل تتبع', '+ Add Pixel')}</span>
+            </button>
+          </div>
+
+          {showAddPixel && (
+            <div className="rounded-2xl border border-[var(--accent-primary)]/30 bg-[var(--accent-soft)]/30 p-4 space-y-3">
+              <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
+                <div>
+                  <label className="block text-[11px] font-bold text-[var(--text-secondary)] mb-1">
+                    {loc('المنصة (Network)', 'Network')}
+                  </label>
+                  <select
+                    value={newPixelProvider}
+                    onChange={(e) => setNewPixelProvider(e.target.value)}
+                    className="w-full rounded-xl border border-[var(--border-subtle)] bg-[var(--bg-card)] px-3 py-2 text-xs text-[var(--text-primary)]"
+                  >
+                    <option value="meta">Meta Pixel & CAPI</option>
+                    <option value="tiktok">TikTok Pixel</option>
+                    <option value="google">Google Tag (gtag.js)</option>
+                    <option value="linkedin">LinkedIn Insight Tag</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-[11px] font-bold text-[var(--text-secondary)] mb-1">
+                    {loc('اسم البكسل (Pixel Name)', 'Pixel Label')}
+                  </label>
+                  <input
+                    type="text"
+                    value={newPixelName}
+                    onChange={(e) => setNewPixelName(e.target.value)}
+                    placeholder="e.g., Main Storefront Pixel"
+                    className="w-full rounded-xl border border-[var(--border-subtle)] bg-[var(--bg-card)] px-3 py-2 text-xs text-[var(--text-primary)]"
+                  />
+                </div>
+                <div>
+                  <label className="block text-[11px] font-bold text-[var(--text-secondary)] mb-1">
+                    {loc('معرف البكسل (Pixel / Tag ID)', 'Pixel / Tag ID')}
+                  </label>
+                  <input
+                    type="text"
+                    value={newPixelTagId}
+                    onChange={(e) => setNewPixelTagId(e.target.value)}
+                    placeholder="e.g., 1049281749102"
+                    className="w-full rounded-xl border border-[var(--border-subtle)] bg-[var(--bg-card)] px-3 py-2 text-xs font-mono text-[var(--text-primary)]"
+                  />
+                </div>
+              </div>
+              <div className="flex justify-end">
+                <button
+                  onClick={handleCreatePixel}
+                  disabled={creatingPixel || !newPixelName.trim() || !newPixelTagId.trim()}
+                  className="rounded-xl bg-[var(--accent-primary)] px-4 py-2 text-xs font-bold text-white hover:bg-[var(--accent-hover)] disabled:opacity-50 cursor-pointer"
+                >
+                  {creatingPixel ? loc('جاري الربط...', 'Connecting...') : loc('تفعيل البكسل', 'Save & Verify Pixel')}
+                </button>
+              </div>
+            </div>
+          )}
+
           {pixels.length === 0 ? (
             <div className="rounded-2xl border border-dashed border-[var(--border-subtle)] p-8 text-center">
               <Sparkles className="h-8 w-8 text-[var(--text-muted)] mx-auto mb-2" />
@@ -458,7 +775,7 @@ export function AdsCommerceAnalyticsHub({
                 {loc('اربط Meta Pixel أو Google Tag (gtag.js) أو TikTok Pixel لتتبع التحويلات وعائد الإنفاق.', 'Connect Meta Pixel, Google Tag, or TikTok Pixel to track server-side CAPI conversions.')}
               </p>
               <button
-                onClick={() => onRefreshWorkspace?.()}
+                onClick={() => setShowAddPixel(true)}
                 className="mt-3 inline-flex items-center gap-1.5 rounded-xl bg-[var(--accent-primary)] px-4 py-1.5 text-xs font-bold text-white hover:bg-[var(--accent-hover)] transition cursor-pointer shadow-sm"
               >
                 <Plus className="h-3.5 w-3.5" />
@@ -474,7 +791,7 @@ export function AdsCommerceAnalyticsHub({
                     <span className="font-mono text-[11px] text-[var(--text-muted)] block">ID: {px.tagId}</span>
                   </div>
                   <span className="rounded-full bg-emerald-500/10 px-2.5 py-0.5 text-[10px] font-bold text-emerald-600">
-                    {px.status} (Verified)
+                    {px.status || 'ACTIVE'} (Verified)
                   </span>
                 </div>
               ))}
@@ -582,6 +899,49 @@ export function AdsCommerceAnalyticsHub({
       {/* SUB-PANEL 7: Commerce Products, Orders & Discounts */}
       {activeSubTab === 'commerce' && (
         <div className="space-y-5">
+          {showAddProduct && (
+            <div className="rounded-2xl border border-emerald-500/30 bg-emerald-500/5 p-4 space-y-3">
+              <div className="flex items-center justify-between">
+                <h4 className="text-xs font-bold text-[var(--text-primary)]">
+                  {loc('إضافة منتج جديد للكتالوج (Add Catalog Product)', 'Add New Catalog Product')}
+                </h4>
+                <button onClick={() => setShowAddProduct(false)} className="text-xs text-[var(--text-muted)] cursor-pointer">✕</button>
+              </div>
+              <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
+                <input
+                  type="text"
+                  value={newProductTitle}
+                  onChange={(e) => setNewProductTitle(e.target.value)}
+                  placeholder="Product Name (e.g., Growth Plan)"
+                  className="rounded-xl border border-[var(--border-subtle)] bg-[var(--bg-card)] px-3 py-2 text-xs text-[var(--text-primary)]"
+                />
+                <input
+                  type="number"
+                  value={newProductPrice}
+                  onChange={(e) => setNewProductPrice(e.target.value)}
+                  placeholder="Price USD (29.99)"
+                  className="rounded-xl border border-[var(--border-subtle)] bg-[var(--bg-card)] px-3 py-2 text-xs font-mono text-[var(--text-primary)]"
+                />
+                <div className="flex gap-2">
+                  <input
+                    type="number"
+                    value={newProductStock}
+                    onChange={(e) => setNewProductStock(e.target.value)}
+                    placeholder="Stock (50)"
+                    className="flex-1 rounded-xl border border-[var(--border-subtle)] bg-[var(--bg-card)] px-3 py-2 text-xs font-mono text-[var(--text-primary)]"
+                  />
+                  <button
+                    onClick={handleCreateProduct}
+                    disabled={creatingProduct || !newProductTitle.trim()}
+                    className="rounded-xl bg-emerald-600 px-4 py-2 text-xs font-bold text-white hover:bg-emerald-700 disabled:opacity-50 cursor-pointer"
+                  >
+                    {creatingProduct ? '...' : loc('إضافة', 'Save')}
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
+
           {products.length === 0 ? (
             <div className="col-span-full rounded-2xl border border-dashed border-[var(--border-subtle)] p-8 text-center bg-[var(--bg-card)]">
               <ShoppingBag className="h-8 w-8 text-[var(--text-muted)] mx-auto mb-2" />
@@ -592,7 +952,7 @@ export function AdsCommerceAnalyticsHub({
                 {loc('أضف منتجاتك أو خدماتك لتتمكن من مشاركتها في محادثات واتساب وإرسال روابط الدفع.', 'Add catalog items to sell directly through WhatsApp chats and social storefronts.')}
               </p>
               <button
-                onClick={() => onRefreshWorkspace?.()}
+                onClick={() => setShowAddProduct(true)}
                 className="mt-3 inline-flex items-center gap-1.5 rounded-xl bg-emerald-600 px-4 py-1.5 text-xs font-bold text-white hover:bg-emerald-700 transition cursor-pointer shadow-sm"
               >
                 <Plus className="h-3.5 w-3.5" />
@@ -600,21 +960,68 @@ export function AdsCommerceAnalyticsHub({
               </button>
             </div>
           ) : (
-            <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
-              {products.map((p) => (
-                <div key={p.id} className="rounded-2xl border border-[var(--border-subtle)] bg-[var(--bg-card)] p-4 shadow-2xs">
-                  <span className="text-xs font-bold text-[var(--text-primary)]">{p.title}</span>
-                  <div className="font-mono text-base font-black text-emerald-600 mt-1">
-                    ${p.price.toFixed(2)} {p.currency}
+            <div className="space-y-3">
+              <div className="flex justify-end">
+                <button
+                  onClick={() => setShowAddProduct(true)}
+                  className="inline-flex items-center gap-1.5 rounded-xl bg-emerald-600 px-3.5 py-1.5 text-xs font-bold text-white hover:bg-emerald-700 cursor-pointer"
+                >
+                  <Plus className="h-3.5 w-3.5" />
+                  <span>{loc('إضافة منتج جديد', '+ Add Product')}</span>
+                </button>
+              </div>
+              <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+                {products.map((p) => (
+                  <div key={p.id} className="rounded-2xl border border-[var(--border-subtle)] bg-[var(--bg-card)] p-4 shadow-2xs">
+                    <span className="text-xs font-bold text-[var(--text-primary)]">{p.title}</span>
+                    <div className="font-mono text-base font-black text-emerald-600 mt-1">
+                      ${Number(p.price || 0).toFixed(2)} {p.currency || 'USD'}
+                    </div>
+                    <span className="text-[10px] text-[var(--text-muted)] block mt-1">In Stock: {p.stock ?? 0} units</span>
                   </div>
-                  <span className="text-[10px] text-[var(--text-muted)] block mt-1">In Stock: {p.stock} units</span>
-                </div>
-              ))}
+                ))}
+              </div>
             </div>
           )}
 
           <div className="rounded-3xl border border-[var(--border-subtle)] bg-[var(--bg-card)] p-5 space-y-3">
-            <span className="text-xs font-bold text-[var(--text-primary)]">{loc('أكواد الخصم الترويجية النشطة', 'Active Promo Discounts')}</span>
+            <div className="flex items-center justify-between">
+              <span className="text-xs font-bold text-[var(--text-primary)]">{loc('أكواد الخصم الترويجية النشطة', 'Active Promo Discounts')}</span>
+              <button
+                onClick={() => setShowAddDiscount((prev) => !prev)}
+                className="inline-flex items-center gap-1 rounded-xl bg-[var(--accent-primary)] px-3 py-1 text-[11px] font-bold text-white cursor-pointer"
+              >
+                <Plus className="h-3 w-3" />
+                <span>{loc('إنشاء كود خصم', '+ Create Discount Code')}</span>
+              </button>
+            </div>
+
+            {showAddDiscount && (
+              <div className="rounded-2xl border border-[var(--accent-primary)]/30 bg-[var(--accent-soft)]/30 p-3 flex flex-wrap gap-2 items-center">
+                <input
+                  type="text"
+                  value={newDiscountCode}
+                  onChange={(e) => setNewDiscountCode(e.target.value.toUpperCase())}
+                  placeholder="PROMO20"
+                  className="flex-1 rounded-xl border border-[var(--border-subtle)] bg-[var(--bg-card)] px-3 py-1.5 text-xs font-mono text-[var(--text-primary)]"
+                />
+                <input
+                  type="number"
+                  value={newDiscountValue}
+                  onChange={(e) => setNewDiscountValue(e.target.value)}
+                  placeholder="15%"
+                  className="w-24 rounded-xl border border-[var(--border-subtle)] bg-[var(--bg-card)] px-3 py-1.5 text-xs font-mono text-[var(--text-primary)]"
+                />
+                <button
+                  onClick={handleCreateDiscount}
+                  disabled={creatingDiscount || !newDiscountCode.trim()}
+                  className="rounded-xl bg-[var(--accent-primary)] px-4 py-1.5 text-xs font-bold text-white cursor-pointer"
+                >
+                  {creatingDiscount ? '...' : loc('حفظ الكود', 'Save Code')}
+                </button>
+              </div>
+            )}
+
             {discounts.length === 0 ? (
               <div className="rounded-2xl border border-dashed border-[var(--border-subtle)] p-6 text-center flex flex-col items-center justify-center">
                 <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-[var(--accent-soft)] text-[var(--accent-primary)] mb-2">
@@ -627,7 +1034,7 @@ export function AdsCommerceAnalyticsHub({
                   {loc('أنشئ أكواد خصم ترويجية لمشاركتها في حملاتك التسويقية ورسائل المحادثات.', 'Create promotional discount codes to share across marketing campaigns and chat conversations.')}
                 </p>
                 <button
-                  onClick={() => onRefreshWorkspace?.()}
+                  onClick={() => setShowAddDiscount(true)}
                   className="mt-3 inline-flex items-center gap-1.5 rounded-xl bg-[var(--accent-primary)] px-4 py-1.5 text-xs font-bold text-white hover:bg-[var(--accent-hover)] transition cursor-pointer shadow-sm"
                 >
                   <Plus className="h-3.5 w-3.5" />
@@ -635,10 +1042,10 @@ export function AdsCommerceAnalyticsHub({
                 </button>
               </div>
             ) : (
-              <div className="flex gap-2">
+              <div className="flex flex-wrap gap-2">
                 {discounts.map((d) => (
                   <div key={d.code} className="rounded-xl border border-[var(--border-subtle)] bg-[var(--bg-subtle)] px-3 py-1.5 text-xs font-mono">
-                    <strong>{d.code}</strong>: {d.value}% Off ({d.usageCount} uses)
+                    <strong>{d.code}</strong>: {d.value}% Off ({d.usageCount || 0} uses)
                   </div>
                 ))}
               </div>
@@ -654,10 +1061,50 @@ export function AdsCommerceAnalyticsHub({
             <h3 className="text-sm font-bold text-[var(--text-primary)]">
               {loc('قائمة خدمات ملف Google Business المحلي', 'Google Business Profile Services')}
             </h3>
-            <button className="rounded-xl bg-[var(--accent-primary)] px-3.5 py-1.5 text-xs font-bold text-white">
+            <button
+              onClick={() => setShowAddGbpService((prev) => !prev)}
+              className="rounded-xl bg-[var(--accent-primary)] px-3.5 py-1.5 text-xs font-bold text-white cursor-pointer"
+            >
               + Add Service
             </button>
           </div>
+
+          {showAddGbpService && (
+            <div className="rounded-2xl border border-[var(--accent-primary)]/30 bg-[var(--accent-soft)]/30 p-4 space-y-3">
+              <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
+                <input
+                  type="text"
+                  value={newServiceName}
+                  onChange={(e) => setNewServiceName(e.target.value)}
+                  placeholder="Service Name (e.g., VIP Consultation)"
+                  className="rounded-xl border border-[var(--border-subtle)] bg-[var(--bg-card)] px-3 py-2 text-xs text-[var(--text-primary)]"
+                />
+                <input
+                  type="text"
+                  value={newServiceCategory}
+                  onChange={(e) => setNewServiceCategory(e.target.value)}
+                  placeholder="Category (e.g., Consulting)"
+                  className="rounded-xl border border-[var(--border-subtle)] bg-[var(--bg-card)] px-3 py-2 text-xs text-[var(--text-primary)]"
+                />
+                <div className="flex gap-2">
+                  <input
+                    type="text"
+                    value={newServicePrice}
+                    onChange={(e) => setNewServicePrice(e.target.value)}
+                    placeholder="$49.00"
+                    className="flex-1 rounded-xl border border-[var(--border-subtle)] bg-[var(--bg-card)] px-3 py-2 text-xs font-mono text-[var(--text-primary)]"
+                  />
+                  <button
+                    onClick={handleCreateGbpService}
+                    disabled={creatingService || !newServiceName.trim()}
+                    className="rounded-xl bg-[var(--accent-primary)] px-4 py-2 text-xs font-bold text-white cursor-pointer"
+                  >
+                    {creatingService ? '...' : loc('إضافة', 'Save')}
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
 
           {gbpServices.length === 0 ? (
             <div className="py-8 text-center text-xs text-[var(--text-muted)] border border-dashed border-[var(--border-subtle)] rounded-2xl">
@@ -669,7 +1116,7 @@ export function AdsCommerceAnalyticsHub({
                 {loc('أضف خدماتك وأسعارها لتظهر مباشرة للمستخدمين في نتائج بحث وخرائط جوجل.', 'List your local services and prices to display directly on Google Maps.')}
               </p>
               <button
-                onClick={() => onRefreshWorkspace?.()}
+                onClick={() => setShowAddGbpService(true)}
                 className="mt-3 inline-flex items-center gap-1.5 rounded-xl bg-[var(--accent-primary)] px-4 py-1.5 text-xs font-bold text-white hover:bg-[var(--accent-hover)] transition cursor-pointer shadow-sm"
               >
                 <Plus className="h-3.5 w-3.5" />
