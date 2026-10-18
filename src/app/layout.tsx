@@ -1,31 +1,8 @@
 import type { Metadata } from 'next';
-import {
-  IBM_Plex_Sans_Arabic,
-  Plus_Jakarta_Sans,
-  JetBrains_Mono,
-} from 'next/font/google';
 import './globals.css';
 import { ThemeAndLocaleProvider } from '@/i18n/ThemeAndLocaleProvider';
 import { Navbar } from '@/components/Navbar';
 import { SeoJsonLd } from '@/components/SeoJsonLd';
-
-const ibmPlexArabic = IBM_Plex_Sans_Arabic({
-  subsets: ['arabic', 'latin'],
-  variable: '--font-arabic',
-  weight: ['400', '500', '600', '700'],
-});
-
-const plusJakarta = Plus_Jakarta_Sans({
-  subsets: ['latin'],
-  variable: '--font-sans',
-  weight: ['400', '500', '600', '700'],
-});
-
-const jetbrainsMono = JetBrains_Mono({
-  subsets: ['latin'],
-  variable: '--font-mono',
-  weight: ['400', '500', '600'],
-});
 
 export const metadata: Metadata = {
   metadataBase: new URL('https://techurity.si'),
@@ -107,9 +84,16 @@ export default function RootLayout({
       lang="ar"
       dir="rtl"
       data-theme="light"
-      className={`${ibmPlexArabic.variable} ${plusJakarta.variable} ${jetbrainsMono.variable}`}
       suppressHydrationWarning
     >
+      <head>
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
+        <link
+          href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap"
+          rel="stylesheet"
+        />
+      </head>
       <body className="min-h-screen antialiased selection:bg-[var(--brand-coral)] selection:text-white">
         <ThemeAndLocaleProvider>
           <SeoJsonLd />
@@ -122,3 +106,4 @@ export default function RootLayout({
     </html>
   );
 }
+

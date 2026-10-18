@@ -2,11 +2,12 @@
 # Stage 1: Dependencies
 # =============================================================================
 FROM node:22-alpine AS deps
-RUN apk add --no-cache libc6-compat
 WORKDIR /app
 
+ENV NODE_OPTIONS="--dns-result-order=ipv4first"
+
 COPY package.json package-lock.json* ./
-RUN npm ci
+RUN npm ci --no-audit --no-fund --prefer-offline
 
 # =============================================================================
 # Stage 2: Builder
@@ -26,6 +27,7 @@ ARG NEXT_PUBLIC_BRAND_PRIMARY_COLOR=#4F46E5
 ARG NEXT_PUBLIC_BRAND_LOGO_URL=https://techurity.si/logo.png
 
 ENV NEXT_TELEMETRY_DISABLED=1
+ENV NODE_OPTIONS="--max-old-space-size=2048 --dns-result-order=ipv4first"
 
 RUN npm run build
 
@@ -39,6 +41,7 @@ ENV NODE_ENV=production
 ENV NEXT_TELEMETRY_DISABLED=1
 ENV PORT=5651
 ENV HOSTNAME="0.0.0.0"
+ENV NODE_OPTIONS="--dns-result-order=ipv4first"
 
 # Copy standalone build output and static assets
 COPY --from=builder /app/.next/standalone ./
