@@ -2142,7 +2142,7 @@ export const ENDPOINT_SPECS: Record<string, EndpointSpec> = {
     requiredScope: 'public',
     titleEn: 'OpenAPI 3.1.0 Full Machine-Readable Specification',
     titleAr: 'مواصفات OpenAPI 3.1 الكاملة القابلة للقراءة آلياً',
-    descEn: 'Official OpenAPI 3.1 document covering 110 paths across all 8 Zernio resource families without requiring authentication.',
+    descEn: 'Official OpenAPI 3.1 document covering 110 paths across all 8 Asra3 resource families without requiring authentication.',
     descAr: 'المواصفات القياسية الكاملة لجميع نقاط الـ API بدون الحاجة لمصادقة.',
     subService: 'core_connect',
     action: 'get_openapi',
@@ -2150,7 +2150,7 @@ export const ENDPOINT_SPECS: Record<string, EndpointSpec> = {
     samplePayload: {},
     response: {
       openapi: '3.1.0',
-      info: { title: 'Asra3 & Zernio Unified Social, Telephony, Ads & Commerce REST API', version: '1.5.0' },
+      info: { title: 'Asra3 Unified Social, Telephony, Ads & Commerce REST API', version: '1.5.0' },
       pathsCount: 110,
     },
   },
@@ -2169,7 +2169,7 @@ export const ENDPOINT_SPECS: Record<string, EndpointSpec> = {
     params: [],
     samplePayload: {},
     response: {
-      info: { name: 'Asra3 & Zernio REST API v1 — Official Postman Collection', schema: 'https://schema.getpostman.com/json/collection/v2.1.0/collection.json' },
+      info: { name: 'Asra3 REST API v1 — Official Postman Collection', schema: 'https://schema.getpostman.com/json/collection/v2.1.0/collection.json' },
       itemCount: 8,
     },
   },
@@ -2349,7 +2349,7 @@ export default function ApiDocumentationPage() {
   const activeEndpoint = ENDPOINT_SPECS[activeSection] || null;
 
   return (
-    <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-8 sm:py-12">
+    <div className="py-2 sm:py-4">
       {/* TOP DEVELOPER HERO & SPECS ACTIONS */}
       <header className="mb-8 border-b border-[var(--border-subtle)] pb-8">
         <div className="flex flex-col gap-6 md:flex-row md:items-center md:justify-between">
@@ -2373,7 +2373,7 @@ export default function ApiDocumentationPage() {
             <Link
               href="/api/v1/openapi.json"
               target="_blank"
-              download="zernio-openapi-3.1.json"
+              download="asra3-openapi-3.1.json"
               className="inline-flex items-center gap-2 rounded-xl border border-[var(--border-subtle)] bg-[var(--bg-surface)] px-4 py-2.5 text-xs font-bold text-[var(--text-primary)] hover:border-[var(--accent-primary)] hover:text-[var(--accent-primary)] transition-all shadow-sm cursor-pointer"
             >
               <Download className="h-4 w-4 text-[var(--accent-primary)]" />
@@ -2382,7 +2382,7 @@ export default function ApiDocumentationPage() {
             <Link
               href="/api/v1/postman.json"
               target="_blank"
-              download="zernio-postman-collection.json"
+              download="asra3-postman-collection.json"
               className="inline-flex items-center gap-2 rounded-xl border border-[var(--border-subtle)] bg-[var(--bg-surface)] px-4 py-2.5 text-xs font-bold text-[var(--text-primary)] hover:border-[var(--accent-primary)] hover:text-[var(--accent-primary)] transition-all shadow-sm cursor-pointer"
             >
               <Download className="h-4 w-4 text-[var(--accent-primary)]" />
@@ -2476,7 +2476,7 @@ export default function ApiDocumentationPage() {
 
               <p className="text-sm text-[var(--text-secondary)] leading-relaxed">
                 {isAr
-                  ? 'تم تصميم Asra3 (المبني على محرك Zernio) لتمكينك من دمج 26 منصة نشر وتواصل، وأرقام هواتف افتراضية في 55+ دولة، ورسائل واتساب الرسمية، وإعلانات CAPI، والمتاجر في طلب برمجي واحد.'
+                  ? 'تم تصميم منصة Asra3 السحابية لتمكينك من دمج 26 منصة نشر وتواصل، وأرقام هواتف افتراضية في 55+ دولة، ورسائل واتساب الرسمية، وإعلانات CAPI، والمتاجر في طلب برمجي واحد.'
                   : 'Asra3 unified API v1 gives your application instant programmatic access to 26 social networks, virtual numbers in 55+ countries, official WhatsApp Cloud API, AI voice receptionist, and omnichannel CRM.'}
               </p>
 
@@ -2848,7 +2848,7 @@ GET /api/v1/postman.json`}
                 <Link
                   href="/api/v1/openapi.json"
                   target="_blank"
-                  download="zernio-openapi-3.1.json"
+                  download="asra3-openapi-3.1.json"
                   className="inline-flex items-center justify-center gap-1.5 rounded-lg border border-[var(--border-subtle)] bg-[var(--bg-subtle)] py-2 text-xs font-bold text-[var(--text-primary)] hover:border-[var(--accent-primary)] hover:text-[var(--accent-primary)] transition-colors cursor-pointer"
                 >
                   <Download className="h-3.5 w-3.5" />
@@ -2857,7 +2857,7 @@ GET /api/v1/postman.json`}
                 <Link
                   href="/api/v1/postman.json"
                   target="_blank"
-                  download="zernio-postman-collection.json"
+                  download="asra3-postman-collection.json"
                   className="inline-flex items-center justify-center gap-1.5 rounded-lg border border-[var(--border-subtle)] bg-[var(--bg-subtle)] py-2 text-xs font-bold text-[var(--text-primary)] hover:border-[var(--accent-primary)] hover:text-[var(--accent-primary)] transition-colors cursor-pointer"
                 >
                   <Download className="h-3.5 w-3.5" />

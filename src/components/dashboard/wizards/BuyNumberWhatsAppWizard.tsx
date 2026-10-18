@@ -61,7 +61,7 @@ export function BuyNumberWhatsAppWizard({
   const [loadingNumbers, setLoadingNumbers] = useState<boolean>(false);
   const [selectedNumber, setSelectedNumber] = useState<AvailableNumber | null>(null);
 
-  const [businessName, setBusinessName] = useState<string>('Zernio Care');
+  const [businessName, setBusinessName] = useState<string>('Asra3 Care');
   const [businessCategory, setBusinessCategory] = useState<string>('Retail & E-Commerce');
 
   const [provisioningStatus, setProvisioningStatus] = useState<string>('');
@@ -190,7 +190,7 @@ export function BuyNumberWhatsAppWizard({
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           to: testRecipient,
-          text: `Hello from ${businessName}! Your verified WhatsApp channel is active on Zernio.`,
+          text: `Hello from ${businessName}! Your verified WhatsApp channel is active on Asra3.`,
         }),
       });
       const data = await res.json();
@@ -379,7 +379,7 @@ export function BuyNumberWhatsAppWizard({
                   type="text"
                   value={businessName}
                   onChange={(e) => setBusinessName(e.target.value)}
-                  placeholder="e.g. Zernio Customer Care"
+                  placeholder="e.g. Asra3 Customer Care"
                   className="w-full rounded-xl border border-[var(--border-subtle)] bg-[var(--bg-subtle)] px-3.5 py-2.5 text-xs font-medium text-[var(--text-primary)] focus:border-[var(--accent-primary)] focus:outline-none"
                 />
                 <p className="mt-1 text-[11px] text-[var(--text-muted)]">

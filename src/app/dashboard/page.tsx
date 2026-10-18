@@ -376,16 +376,16 @@ function CustomerDashboardContent() {
   return (
     <div className="space-y-6 text-[var(--text-primary)]">
       {/* Top Header Card with Experience Mode Switcher */}
-      <div className="luxury-card p-5">
+      <div className="luxury-card p-5 rounded-3xl">
         <div className="flex flex-wrap items-center justify-between gap-4">
           <div className="flex items-center gap-3">
-            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-[var(--accent-primary)] text-white font-bold">
-              Z
+            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-[var(--accent-primary)] text-white shadow-sm shadow-[var(--accent-primary)]/25">
+              <Sparkles className="h-5 w-5" />
             </div>
             <div>
               <div className="flex items-center gap-2">
-                <h1 className="text-base font-bold text-[var(--text-primary)]">
-                  {loc('مساحة عملي — Zernio', 'My Zernio Workspace')}
+                <h1 className="text-base font-extrabold text-[var(--text-primary)]">
+                  {loc('مساحة عملي — Asra3', 'My Asra3 Workspace')}
                 </h1>
                 <span className="rounded-full bg-emerald-500/15 px-2.5 py-0.5 text-xs font-bold text-emerald-600">
                   {loc('نشط', 'Active')}
@@ -469,37 +469,37 @@ function CustomerDashboardContent() {
       ) : (
         /* Advanced Pro Mode with 5 Modular Visual Hubs + Developer Console */
         <div className="space-y-6">
-          {/* 5-Hub Navigation Bar */}
-          <div className="luxury-card p-2.5 flex flex-wrap items-center gap-2">
+          {/* 6-Hub Symmetrical Navigation Bar */}
+          <div className="luxury-card rounded-2xl p-2 grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-1.5">
             {[
               {
                 id: 'connect',
-                label: loc('مركز الحسابات والربط', 'Connect & Accounts'),
+                label: loc('الحسابات والربط', 'Connect & Accounts'),
                 icon: Link2,
               },
               {
                 id: 'publishing',
-                label: loc('مركز النشر والجدولة', 'Publishing & Queue'),
+                label: loc('النشر والجدولة', 'Publishing & Queue'),
                 icon: Send,
               },
               {
                 id: 'inbox_crm',
-                label: loc('المحادثات والعملاء ومسارات العمل', 'Inbox, CRM & Workflows'),
+                label: loc('المحادثات والعملاء', 'Inbox, CRM & Flows'),
                 icon: MessageSquare,
               },
               {
                 id: 'telephony',
-                label: loc('الاتصالات والواتساب والصوت', 'Telephony, WhatsApp & Voice'),
+                label: loc('الأرقام والواتساب', 'Telephony & Voice'),
                 icon: PhoneCall,
               },
               {
                 id: 'ads_commerce',
-                label: loc('الإعلانات والمتاجر والتحليلات', 'Ads, Commerce & Analytics'),
+                label: loc('الإعلانات والمتاجر', 'Ads & Commerce'),
                 icon: Megaphone,
               },
               {
                 id: 'developer',
-                label: loc('الـ API والويب هوك والمحفظة', 'Developer API & Webhooks'),
+                label: loc('الـ API والمحفظة', 'API & Webhooks'),
                 icon: Code2,
               },
             ].map((hub) => {
@@ -509,14 +509,14 @@ function CustomerDashboardContent() {
                 <button
                   key={hub.id}
                   onClick={() => setActiveHub(hub.id as AdvancedHubKey)}
-                  className={`inline-flex items-center gap-2 rounded-xl px-4 py-2.5 text-xs font-bold transition cursor-pointer ${
+                  className={`flex items-center justify-center gap-2 rounded-xl px-3 py-2.5 text-xs font-bold transition cursor-pointer whitespace-nowrap ${
                     isSelected
                       ? 'bg-[var(--accent-primary)] text-white shadow-sm'
                       : 'text-[var(--text-secondary)] hover:bg-[var(--bg-subtle)] hover:text-[var(--text-primary)]'
                   }`}
                 >
-                  <Icon className="h-4 w-4" />
-                  <span>{hub.label}</span>
+                  <Icon className="h-3.5 w-3.5 shrink-0" />
+                  <span className="truncate">{hub.label}</span>
                 </button>
               );
             })}
@@ -626,7 +626,7 @@ export default function CustomerDashboardPage() {
     <Suspense
       fallback={
         <div className="flex min-h-screen items-center justify-center bg-[var(--bg-canvas)] text-sm font-semibold text-[var(--text-secondary)]">
-          Loading Zernio Dashboard...
+          Loading Asra3 Dashboard...
         </div>
       }
     >

@@ -104,7 +104,7 @@ export function PhoneMarketplaceAndWhatsAppLinking({
   const [voiceLanguage, setVoiceLanguage] = useState<string>('ar-SA');
   const [voicePersona, setVoicePersona] = useState<string>('Support Voice Agent (Warm & Empathetic)');
   const [voicePrompt, setVoicePrompt] = useState<string>(
-    loc('أنت المستشار الذكي لمنصة Zernio. رحب بالعملاء باحترافية، وقدم المساعدة حول أرقام الهواتف، وربط واتساب للأعمال، وتأكيد الطلبات، مع تحويل العميل للمشرف البشري عند الطلب.', 'You are the official AI advisor for Zernio. Greet clients warmly, assist with phone provisioning, WhatsApp templates, order tracking, and transfer to human agents upon request.')
+    loc('أنت المستشار الذكي لمنصة Asra3. رحب بالعملاء باحترافية، وقدم المساعدة حول أرقام الهواتف، وربط واتساب للأعمال، وتأكيد الطلبات، مع تحويل العميل للمشرف البشري عند الطلب.', 'You are the official AI advisor for Asra3. Greet clients warmly, assist with phone provisioning, WhatsApp templates, order tracking, and transfer to human agents upon request.')
   );
   const [voiceTransferNumber, setVoiceTransferNumber] = useState<string>('+1 (800) 555-0199');
   const [voiceSaving, setVoiceSaving] = useState<boolean>(false);

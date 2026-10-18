@@ -171,11 +171,11 @@ export function LiveSmsAndWhatsAppInbox({
   // Quick Template Insertion
   const handleApplyTemplate = (tpl: string) => {
     if (tpl === 'order_update') {
-      setMessageText('Hello, your order #88921 has been confirmed and is on its way. Track live: https://zernio.com/track/88921');
+      setMessageText('Hello, your order #88921 has been confirmed and is on its way. Track live: https://asra3.com/track/88921');
     } else if (tpl === 'promo_offer') {
       setMessageText('Special Offer: Get 50% off enterprise plans for all new subscribers today only!');
     } else if (tpl === 'otp_support') {
-      setMessageText('Thank you for contacting Zernio verified support. How can we assist your business today?');
+      setMessageText('Thank you for contacting Asra3 verified support. How can we assist your business today?');
     }
   };
 

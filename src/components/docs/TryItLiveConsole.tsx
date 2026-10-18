@@ -279,7 +279,7 @@ export default function TryItLiveConsole({ spec, isAr }: TryItLiveConsoleProps) 
     }
 
     // 2. JavaScript Fetch Snippet
-    let js = `// Asra3 & Zernio API v1 — JavaScript Fetch\n`;
+    let js = `// Asra3 Unified API v1 — JavaScript Fetch\n`;
     js += `const response = await fetch('${fullUrl}', {\n`;
     js += `  method: '${spec.method}',\n`;
     js += `  headers: {\n`;
@@ -299,7 +299,7 @@ export default function TryItLiveConsole({ spec, isAr }: TryItLiveConsoleProps) 
     js += `console.log(result);`;
 
     // 3. Python Requests Snippet
-    let py = `# Asra3 & Zernio API v1 — Python Requests\n`;
+    let py = `# Asra3 Unified API v1 — Python Requests\n`;
     py += `import requests\n\n`;
     py += `url = "${fullUrl}"\n`;
     py += `headers = {\n`;
@@ -366,7 +366,7 @@ export default function TryItLiveConsole({ spec, isAr }: TryItLiveConsoleProps) 
             <Link
               href="/api/v1/openapi.json"
               target="_blank"
-              download="zernio-openapi-3.1.json"
+              download="asra3-openapi-3.1.json"
               className="inline-flex items-center gap-1.5 rounded-lg border border-[var(--border-subtle)] bg-[var(--bg-subtle)] px-2.5 py-1 font-mono text-[11px] font-bold text-[var(--text-secondary)] hover:border-[var(--accent-primary)] hover:text-[var(--accent-primary)] transition-colors cursor-pointer"
             >
               <Download className="h-3 w-3" />
@@ -375,7 +375,7 @@ export default function TryItLiveConsole({ spec, isAr }: TryItLiveConsoleProps) 
             <Link
               href="/api/v1/postman.json"
               target="_blank"
-              download="zernio-postman-collection.json"
+              download="asra3-postman-collection.json"
               className="inline-flex items-center gap-1.5 rounded-lg border border-[var(--border-subtle)] bg-[var(--bg-subtle)] px-2.5 py-1 font-mono text-[11px] font-bold text-[var(--text-secondary)] hover:border-[var(--accent-primary)] hover:text-[var(--accent-primary)] transition-colors cursor-pointer"
             >
               <Download className="h-3 w-3" />

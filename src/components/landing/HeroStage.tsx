@@ -29,14 +29,14 @@ export default function HeroStage() {
   const ArrowIcon = dir === 'rtl' ? ArrowLeft : ArrowRight;
 
   const agentPromptText =
-    'You are configuring Zernio API for Asra3 (asra3.com). Connect to POST https://asra3.com/api/services using organizationId and bearer token to manage 18 social channels, virtual phone numbers, WhatsApp Business broadcasts, and AI Voice telephony.';
+    'You are configuring Asra3 Unified API (asra3.com). Connect to POST https://asra3.com/api/v1/posts using Bearer tk_live_... token to manage 18 social channels, virtual phone numbers, WhatsApp Business broadcasts, and AI Voice telephony.';
 
-  const codeSnippet = `import Zernio from '@zernio/node';
+  const codeSnippet = `import Asra3 from '@asra3/node';
 
-const zernio = new Zernio(process.env.ZERNIO_API_KEY);
+const asra3 = new Asra3(process.env.ASRA3_API_KEY);
 
 // Broadcast across 18 channels + WhatsApp in 1 API call
-const response = await zernio.posts.create({
+const response = await asra3.posts.create({
   content: 'Major product drop 🚀 Available worldwide today!',
   mediaUrls: ['https://cdn.asra3.com/assets/launch-reel.mp4'],
   platforms: ['instagram', 'tiktok', 'linkedin', 'whatsapp'],
@@ -252,18 +252,18 @@ console.log(response.status); // 'published_synced'`;
 
                 <pre className="mt-4 overflow-x-auto text-[11px] sm:text-xs leading-relaxed text-slate-200">
                   <code>
-                    <span className="text-purple-400">import</span> Zernio{' '}
+                    <span className="text-purple-400">import</span> Asra3{' '}
                     <span className="text-purple-400">from</span>{' '}
-                    <span className="text-emerald-400">&apos;@zernio/node&apos;</span>;{'\n\n'}
-                    <span className="text-purple-400">const</span> zernio ={' '}
-                    <span className="text-purple-400">new</span> Zernio(process.env.
-                    <span className="text-amber-300">ZERNIO_API_KEY</span>);{'\n\n'}
+                    <span className="text-emerald-400">&apos;@asra3/node&apos;</span>;{'\n\n'}
+                    <span className="text-purple-400">const</span> asra3 ={' '}
+                    <span className="text-purple-400">new</span> Asra3(process.env.
+                    <span className="text-amber-300">ASRA3_API_KEY</span>);{'\n\n'}
                     <span className="text-slate-500">
                       // Broadcast across 18 channels + WhatsApp in 1 call
                     </span>
                     {'\n'}
                     <span className="text-purple-400">const</span> post ={' '}
-                    <span className="text-purple-400">await</span> zernio.posts.create({'{'}{'\n'}
+                    <span className="text-purple-400">await</span> asra3.posts.create({'{'}{'\n'}
                     {'  '}content:{' '}
                     <span className="text-emerald-300">
                       &apos;Major product drop 🚀 Available worldwide!&apos;

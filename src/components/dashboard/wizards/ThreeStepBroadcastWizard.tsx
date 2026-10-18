@@ -355,9 +355,9 @@ export function ThreeStepBroadcastWizard({
                   {/* Chat header */}
                   <div className="border-b border-white/10 pb-2 mb-3 flex items-center gap-2">
                     <div className="h-6 w-6 rounded-full bg-emerald-500 text-[10px] text-white font-bold flex items-center justify-center">
-                      Z
+                      A
                     </div>
-                    <div className="text-[10px] text-white font-bold truncate">Zernio Business</div>
+                    <div className="text-[10px] text-white font-bold truncate">Asra3 Business</div>
                   </div>
                   {/* Chat bubble */}
                   <div className="rounded-2xl rounded-tr-none bg-emerald-600/90 p-2.5 text-[10px] text-white leading-relaxed shadow-sm">

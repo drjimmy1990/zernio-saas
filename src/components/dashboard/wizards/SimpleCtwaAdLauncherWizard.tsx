@@ -251,10 +251,10 @@ export function SimpleCtwaAdLauncherWizard({
                   {/* Feed Header */}
                   <div className="flex items-center gap-2 mb-2">
                     <div className="h-6 w-6 rounded-full bg-[var(--accent-primary)] text-white text-[10px] font-bold flex items-center justify-center">
-                      Z
+                      A
                     </div>
                     <div>
-                      <div className="text-[11px] font-bold text-[var(--text-primary)]">Zernio Brand</div>
+                      <div className="text-[11px] font-bold text-[var(--text-primary)]">Asra3 Brand</div>
                       <div className="text-[9px] text-[var(--text-muted)]">Sponsored · 🌐</div>
                     </div>
                   </div>

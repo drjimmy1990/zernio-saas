@@ -454,7 +454,7 @@ const AR_COPY: LandingPageCopy = {
       fbUserComment: 'أريد "عرض" من فضلكم! أحتاج هذه الخدمة لمتجري.',
       fbAutoDmBadge: '⚡ تم تفعيل التحويل التلقائي لماسنجر (Comment-to-DM)',
       fbAutoDmReply:
-        'تم إرسال رسالة خاصة: "أهلاً بك! إليك قسيمة الخصم الخاصة بك بنسبة 50%: ZERNIO50 🚀"',
+        'تم إرسال رسالة خاصة: "أهلاً بك! إليك قسيمة الخصم الخاصة بك بنسبة 50%: ASRA350 🚀"',
       xThreadBadge: 'سلسلة مترابطة (2/2)',
       xPost1:
         '1/2 لماذا تشتت فريقك بين 18 لوحة تحكم مختلفة بينما يمكنك إدارة كل منشور، ورسالة واتساب، ورقم هاتفي سحابي من منصة واحدة؟',
@@ -612,7 +612,7 @@ const AR_COPY: LandingPageCopy = {
     tool2Desc: 'البحث عن الأرقام الهاتفية وشراؤها فورياً في 55+ دولة',
     tool3Desc: 'إرسال حملات واتساب المعتمدة والردود التلقائية السريعة',
     tool4Desc: 'إجراء مكالمات صوتية بالذكاء الاصطناعي مع تفريغ نصي مباشر',
-    cliTitle: 'أداة سطر الأوامر Zernio CLI',
+    cliTitle: 'أداة سطر الأوامر Asra3 CLI',
     cliDesc:
       'أدر عمليات النشر، وشراء الأرقام، وإرسال الرسائل مباشرة من الطرفية (Terminal) على أنظمة Windows و macOS و Linux.',
   },
@@ -636,7 +636,7 @@ const AR_COPY: LandingPageCopy = {
     col3Links: [
       'بوابة توثيق الـ API التفاعلية',
       'مكتبات البرمجة الـ 8 (SDKs)',
-      'خادم @zernio/mcp-server',
+      'خادم @asra3/mcp-server',
       'لوحة الإدارة ومراقبة الأداء',
     ],
     col4Title: 'المعايير والفهرسة الذكية',
@@ -647,7 +647,7 @@ const AR_COPY: LandingPageCopy = {
       'توافق كامل مع معايير SOC-2 و GDPR',
     ],
     statusText: 'جميع واجهات الـ API الـ 18 وخوادم الاتصالات تعمل بكفاءة (99.99%)',
-    copyrightSuffix: 'جميع الحقوق محفوظة — مدعوم بتقنيات Zernio Cloud.',
+    copyrightSuffix: 'جميع الحقوق محفوظة — مدعوم بتقنيات Asra3 Cloud.',
   },
 };
 
@@ -810,13 +810,13 @@ const EN_COPY: LandingPageCopy = {
       ttAudio: '🎵 Asra3 Original Audio — Verified Business Sound',
       fbTime: 'Just now • 🌍 Public',
       fbPostText:
-        'Big news for e-commerce brands! Zernio telephony and marketing automation is now fully live. Reply "OFFER" below to receive an exclusive 50% promo code straight to your Messenger! 🎉',
+        'Big news for e-commerce brands! Asra3 telephony and marketing automation is now fully live. Reply "OFFER" below to receive an exclusive 50% promo code straight to your Messenger! 🎉',
       fbReactions: '482 reactions',
       fbCommentsShares: '129 comments • 45 shares',
       fbUserComment: 'OFFER please! Need this for my shop.',
       fbAutoDmBadge: '⚡ Comment-to-DM Triggered',
       fbAutoDmReply:
-        'Private message sent: "Hey John! Here is your 50% discount voucher: ZERNIO50 🚀"',
+        'Private message sent: "Hey John! Here is your 50% discount voucher: ASRA350 🚀"',
       xThreadBadge: 'Connected Thread (2/2)',
       xPost1:
         '1/2 Why manage 18 different APIs when you can orchestrate every post, direct message, and virtual phone number through one unified endpoint?',
@@ -962,7 +962,7 @@ const EN_COPY: LandingPageCopy = {
   devHub: {
     tab1: '1. API 8 SDKs',
     tab2: '2. MCP Server (AI Agents)',
-    tab3: '3. Zernio CLI',
+    tab3: '3. Asra3 CLI',
     fullDocsLink: 'Full API Docs',
     copyBtn: 'Copy',
     copiedBtn: 'Copied',
@@ -976,7 +976,7 @@ const EN_COPY: LandingPageCopy = {
     tool2Desc: 'Search & provision numbers in 55+ countries',
     tool3Desc: 'Dispatch WhatsApp broadcast & auto-DM',
     tool4Desc: 'Initiate AI Voice Agent calls with live transcripts',
-    cliTitle: 'Zernio CLI Tooling',
+    cliTitle: 'Asra3 CLI Tooling',
     cliDesc:
       'Manage deployment pipelines, numbers, and marketing broadcasts right from your macOS / Linux / Windows terminal.',
   },
@@ -1000,7 +1000,7 @@ const EN_COPY: LandingPageCopy = {
     col3Links: [
       'Interactive API Docs',
       '8 Production SDKs',
-      '@zernio/mcp-server',
+      '@asra3/mcp-server',
       'System Admin Telemetry',
     ],
     col4Title: 'Machine Discovery & Legal',
@@ -1011,7 +1011,7 @@ const EN_COPY: LandingPageCopy = {
       'SOC-2 Type II & GDPR Compliant',
     ],
     statusText: 'All 18 APIs & Telephony Clusters Operational (99.99%)',
-    copyrightSuffix: 'All rights reserved. Powered by Zernio Cloud.',
+    copyrightSuffix: 'All rights reserved. Powered by Asra3 Cloud.',
   },
 };
 

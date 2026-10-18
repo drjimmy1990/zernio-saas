@@ -74,7 +74,7 @@ export function TelephonyWhatsAppVoiceHub({
   // 3. Meta Business Agent State
   const [agentEnabled, setAgentEnabled] = useState<boolean>(true);
   const [agentPrompt, setAgentPrompt] = useState<string>(
-    'You are an executive customer care AI for Zernio. Answer questions politely, provide product links, and escalate to live softphone when needed.'
+    'You are an executive customer care AI for Asra3. Answer questions politely, provide product links, and escalate to live softphone when needed.'
   );
   const [agentTone, setAgentTone] = useState<string>('Professional');
   const [fallbackPhone, setFallbackPhone] = useState<string>('+12025550184');
@@ -83,7 +83,7 @@ export function TelephonyWhatsAppVoiceHub({
   const [agentError, setAgentError] = useState<string | null>(null);
 
   // 4. Branded Calling State
-  const [brandDisplayName, setBrandDisplayName] = useState<string>('Zernio Enterprise Care');
+  const [brandDisplayName, setBrandDisplayName] = useState<string>('Asra3 Enterprise Care');
   const [brandReason, setBrandReason] = useState<string>('Order Delivery & Security Verification');
   const [savingBranded, setSavingBranded] = useState<boolean>(false);
   const [brandedSaved, setBrandedSaved] = useState<boolean>(false);
@@ -634,7 +634,7 @@ export function TelephonyWhatsAppVoiceHub({
           {regTab === 'porting' && (
             <div className="rounded-3xl border border-[var(--border-subtle)] bg-[var(--bg-card)] p-6 space-y-3">
               <h3 className="text-sm font-bold text-[var(--text-primary)]">Carrier Number Porting (LOA)</h3>
-              <p className="text-xs text-[var(--text-secondary)]">Port existing landline or mobile carrier lines into Zernio with zero downtime.</p>
+              <p className="text-xs text-[var(--text-secondary)]">Port existing landline or mobile carrier lines into Asra3 with zero downtime.</p>
             </div>
           )}
 

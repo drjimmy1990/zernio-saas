@@ -27,14 +27,14 @@ const SDK_DATA: Record<SdkLang, SdkInfo> = {
   node: {
     name: 'Node / TS',
     langKey: 'node',
-    installCmd: 'npm install @zernio/node',
+    installCmd: 'npm install @asra3/node',
     filename: 'index.ts',
-    code: `import Zernio from '@zernio/node';
+    code: `import Asra3 from '@asra3/node';
 
-const zernio = new Zernio(process.env.ZERNIO_API_KEY);
+const asra3 = new Asra3(process.env.ASRA3_API_KEY);
 
 // 1 call to 18 channels + WhatsApp template broadcast
-const post = await zernio.posts.create({
+const post = await asra3.posts.create({
   content: 'Omnichannel launch live worldwide! 🚀',
   mediaUrls: ['https://cdn.asra3.com/launch.mp4'],
   platforms: ['instagram', 'tiktok', 'linkedin', 'whatsapp'],
@@ -48,12 +48,12 @@ console.log('Post ID:', post.id, 'Status:', post.status);`,
   python: {
     name: 'Python',
     langKey: 'python',
-    installCmd: 'pip install zernio',
+    installCmd: 'pip install asra3',
     filename: 'main.py',
-    code: `from zernio import Zernio
+    code: `from asra3 import Asra3
 import os
 
-client = Zernio(api_key=os.environ.get("ZERNIO_API_KEY"))
+client = Asra3(api_key=os.environ.get("ASRA3_API_KEY"))
 
 # Publish across social channels and telephony
 response = client.posts.create(
@@ -68,7 +68,7 @@ print(f"Status: {response.status}")`,
   go: {
     name: 'Go',
     langKey: 'go',
-    installCmd: 'go get github.com/zernio/zernio-go',
+    installCmd: 'go get github.com/asra3/asra3-go',
     filename: 'main.go',
     code: `package main
 
@@ -76,12 +76,12 @@ import (
     "context"
     "fmt"
     "os"
-    "github.com/zernio/zernio-go"
+    "github.com/asra3/asra3-go"
 )
 
 func main() {
-    client := zernio.NewClient(os.Getenv("ZERNIO_API_KEY"))
-    post, err := client.Posts.Create(context.Background(), &zernio.PostParams{
+    client := asra3.NewClient(os.Getenv("ASRA3_API_KEY"))
+    post, err := client.Posts.Create(context.Background(), &asra3.PostParams{
         Content:   "Omnichannel launch live worldwide! 🚀",
         Platforms: []string{"instagram", "tiktok", "linkedin"},
     })
@@ -94,14 +94,14 @@ func main() {
   php: {
     name: 'PHP',
     langKey: 'php',
-    installCmd: 'composer require zernio/zernio-php',
+    installCmd: 'composer require asra3/asra3-php',
     filename: 'publish.php',
     code: `<?php
 require_once __DIR__ . '/vendor/autoload.php';
 
-$zernio = new \\Zernio\\Client(getenv('ZERNIO_API_KEY'));
+$asra3 = new \\Asra3\\Client(getenv('ASRA3_API_KEY'));
 
-$post = $zernio->posts->create([
+$post = $asra3->posts->create([
     'content'   => 'Omnichannel launch live worldwide! 🚀',
     'platforms' => ['instagram', 'tiktok', 'linkedin', 'whatsapp'],
     'mediaUrls' => ['https://cdn.asra3.com/launch.mp4'],
@@ -112,11 +112,11 @@ echo "Status: " . $post->status;`,
   ruby: {
     name: 'Ruby',
     langKey: 'ruby',
-    installCmd: 'gem install zernio',
+    installCmd: 'gem install asra3',
     filename: 'app.rb',
-    code: `require 'zernio'
+    code: `require 'asra3'
 
-client = Zernio::Client.new(api_key: ENV['ZERNIO_API_KEY'])
+client = Asra3::Client.new(api_key: ENV['ASRA3_API_KEY'])
 
 post = client.posts.create(
   content: 'Omnichannel launch live worldwide! 🚀',
@@ -129,15 +129,15 @@ puts "Published: #{post.id}"`,
   java: {
     name: 'Java',
     langKey: 'java',
-    installCmd: "implementation 'com.zernio:zernio-java:1.2.0'",
+    installCmd: "implementation 'com.asra3:asra3-java:1.2.0'",
     filename: 'App.java',
-    code: `import com.zernio.ZernioClient;
-import com.zernio.models.PostRequest;
+    code: `import com.asra3.Asra3Client;
+import com.asra3.models.PostRequest;
 import java.util.List;
 
 public class App {
     public static void main(String[] args) {
-        ZernioClient client = new ZernioClient(System.getenv("ZERNIO_API_KEY"));
+        Asra3Client client = new Asra3Client(System.getenv("ASRA3_API_KEY"));
         var post = client.posts().create(
             PostRequest.builder()
                 .content("Omnichannel launch live worldwide! 🚀")
@@ -151,11 +151,11 @@ public class App {
   dotnet: {
     name: '.NET / C#',
     langKey: 'dotnet',
-    installCmd: 'dotnet add package Zernio',
+    installCmd: 'dotnet add package Asra3',
     filename: 'Program.cs',
-    code: `using Zernio;
+    code: `using Asra3;
 
-var client = new ZernioClient(Environment.GetEnvironmentVariable("ZERNIO_API_KEY"));
+var client = new Asra3Client(Environment.GetEnvironmentVariable("ASRA3_API_KEY"));
 
 var post = await client.Posts.CreateAsync(new PostCreateOptions {
     Content = "Omnichannel launch live worldwide! 🚀",
@@ -168,13 +168,13 @@ Console.WriteLine($"Status: {post.Status}");`,
   rust: {
     name: 'Rust',
     langKey: 'rust',
-    installCmd: 'cargo add zernio',
+    installCmd: 'cargo add asra3',
     filename: 'main.rs',
-    code: `use zernio::ZernioClient;
+    code: `use asra3::Asra3Client;
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
-    let client = ZernioClient::from_env()?;
+    let client = Asra3Client::from_env()?;
     
     let post = client.posts().create(
         "Omnichannel launch live worldwide! 🚀",
@@ -207,18 +207,18 @@ export default function DeveloperHub() {
 
   const mcpConfigJson = `{
   "mcpServers": {
-    "zernio": {
+    "asra3": {
       "command": "npx",
-      "args": ["-y", "@zernio/mcp-server"],
+      "args": ["-y", "@asra3/mcp-server"],
       "env": {
-        "ZERNIO_API_KEY": "tk_live_..."
+        "ASRA3_API_KEY": "tk_live_..."
       }
     }
   }
 }`;
 
   return (
-    <section className="space-y-10 py-8">
+    <section id="developers" className="scroll-mt-24 space-y-10 py-8">
       {/* Section Header */}
       <div className="mx-auto max-w-3xl text-center space-y-3">
         <div className="inline-flex items-center gap-1.5 rounded-full border border-[var(--brand-coral)]/30 bg-[var(--brand-coral-soft)] px-3.5 py-1 text-xs font-bold text-[var(--brand-coral)]">
@@ -383,7 +383,7 @@ export default function DeveloperHub() {
                 dir="ltr"
                 className="rounded-lg bg-emerald-500/20 text-emerald-400 px-3 py-1 text-xs font-mono font-bold shrink-0"
               >
-                npx @zernio/mcp-server
+                npx @asra3/mcp-server
               </span>
             </div>
 
@@ -423,7 +423,7 @@ export default function DeveloperHub() {
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 text-xs">
                 <div className="rounded-xl bg-[#0c0b0a] p-3 border border-[#2c2926]">
                   <strong dir="ltr" className="font-mono text-[var(--brand-coral)]">
-                    zernio_publish_post
+                    asra3_publish_post
                   </strong>
                   <div className="text-[11px] text-slate-400 mt-1">
                     {copy.tool1Desc}
@@ -431,7 +431,7 @@ export default function DeveloperHub() {
                 </div>
                 <div className="rounded-xl bg-[#0c0b0a] p-3 border border-[#2c2926]">
                   <strong dir="ltr" className="font-mono text-[var(--brand-coral)]">
-                    zernio_buy_number
+                    asra3_buy_number
                   </strong>
                   <div className="text-[11px] text-slate-400 mt-1">
                     {copy.tool2Desc}
@@ -439,7 +439,7 @@ export default function DeveloperHub() {
                 </div>
                 <div className="rounded-xl bg-[#0c0b0a] p-3 border border-[#2c2926]">
                   <strong dir="ltr" className="font-mono text-[var(--brand-coral)]">
-                    zernio_send_whatsapp
+                    asra3_send_whatsapp
                   </strong>
                   <div className="text-[11px] text-slate-400 mt-1">
                     {copy.tool3Desc}
@@ -447,7 +447,7 @@ export default function DeveloperHub() {
                 </div>
                 <div className="rounded-xl bg-[#0c0b0a] p-3 border border-[#2c2926]">
                   <strong dir="ltr" className="font-mono text-[var(--brand-coral)]">
-                    zernio_dial_voice_call
+                    asra3_dial_voice_call
                   </strong>
                   <div className="text-[11px] text-slate-400 mt-1">
                     {copy.tool4Desc}
@@ -473,7 +473,7 @@ export default function DeveloperHub() {
                 dir="ltr"
                 className="rounded-lg bg-white/10 px-3 py-1 text-xs font-mono text-slate-300 shrink-0"
               >
-                npm i -g @zernio/cli
+                npm i -g @asra3/cli
               </span>
             </div>
 
@@ -486,7 +486,7 @@ export default function DeveloperHub() {
                   <span className="h-2.5 w-2.5 rounded-full bg-[#ff5f57]" />
                   <span className="h-2.5 w-2.5 rounded-full bg-[#febc2e]" />
                   <span className="h-2.5 w-2.5 rounded-full bg-[#28c840]" />
-                  <span className="ms-2 text-slate-300">bash — zernio-cli</span>
+                  <span className="ms-2 text-slate-300">bash — asra3-cli</span>
                 </div>
               </div>
 
@@ -494,7 +494,7 @@ export default function DeveloperHub() {
                 <div>
                   <span className="text-emerald-400 font-bold">$ </span>
                   <span className="text-white">
-                    zernio numbers:search --country SA --type mobile
+                    asra3 numbers:search --country SA --type mobile
                   </span>
                   <div className="text-slate-400 mt-1">
                     [+] Found 42 numbers in Saudi Arabia (WhatsApp + Voice + SMS enabled):{'\n'}
@@ -506,7 +506,7 @@ export default function DeveloperHub() {
                 <div>
                   <span className="text-emerald-400 font-bold">$ </span>
                   <span className="text-white">
-                    zernio numbers:buy +966548192041 --link-whatsapp
+                    asra3 numbers:buy +966548192041 --link-whatsapp
                   </span>
                   <div className="text-emerald-400 mt-1">
                     ✓ Number acquired and bound to organization #org_asra3.{'\n'}
@@ -517,7 +517,7 @@ export default function DeveloperHub() {
                 <div>
                   <span className="text-emerald-400 font-bold">$ </span>
                   <span className="text-white">
-                    zernio publish --platforms instagram,tiktok,linkedin --content &quot;Live Launch!&quot;
+                    asra3 publish --platforms instagram,tiktok,linkedin --content &quot;Live Launch!&quot;
                   </span>
                   <div className="text-slate-400 mt-1">
                     [i] Dispatching to 3 endpoints...{'\n'}
