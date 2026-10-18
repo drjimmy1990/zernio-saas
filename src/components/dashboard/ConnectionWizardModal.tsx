@@ -401,6 +401,7 @@ export function ConnectionWizardModal({
   // WhatsApp 3-Mode Onboarding State (matching Zernio spec)
   const [whatsappMethod, setWhatsappMethod] = useState<'embedded_oauth' | 'virtual_number' | 'system_token'>('embedded_oauth');
   const [whatsappOnboardingType, setWhatsappOnboardingType] = useState<'api' | 'business_app'>('api');
+  const [whatsappSignupMode, setWhatsappSignupMode] = useState<'hosted' | 'headless'>('hosted');
 
   // Step 2 Credential Inputs (clean, never pre-filled with fake IDs)
   const [credUsername, setCredUsername] = useState('');
@@ -408,6 +409,7 @@ export function ConnectionWizardModal({
   const [credSecret, setCredSecret] = useState('');
   const [credWabaId, setCredWabaId] = useState('');
   const [credPhoneNumberId, setCredPhoneNumberId] = useState('');
+  const [credPin, setCredPin] = useState('');
   const [showSecret, setShowSecret] = useState(false);
 
   // OAuth & Sandbox prompt state
@@ -610,9 +612,12 @@ export function ConnectionWizardModal({
             platform: selectedPlatform,
             redirectUrl: callbackUrl,
             requestedScopes: ['posting', 'analytics', 'comments', 'messaging'],
-            headless: true,
+            headless: selectedPlatform === 'whatsapp' ? whatsappSignupMode === 'headless' : true,
             ...(selectedPlatform === 'whatsapp'
-              ? { whatsappOnboarding: whatsappOnboardingType }
+              ? {
+                  whatsappOnboarding: whatsappOnboardingType,
+                  whatsappSignupMode,
+                }
               : {}),
           }),
         });
@@ -672,6 +677,9 @@ export function ConnectionWizardModal({
           credsPayload.accessToken = credSecret.trim();
           credsPayload.phoneNumber = credIdentifier.trim();
           credsPayload.displayName = credUsername.trim() || `WhatsApp (${credPhoneNumberId.trim()})`;
+          if (credPin.trim()) {
+            credsPayload.pin = credPin.trim();
+          }
         } else if (selectedPlatform === 'telegram') {
           credsPayload.botToken = credSecret.trim();
           credsPayload.username = credIdentifier.trim();
@@ -1308,11 +1316,39 @@ export function ConnectionWizardModal({
                       {/* Mode 1: Meta Embedded Signup (OAuth) */}
                       {whatsappMethod === 'embedded_oauth' && (
                         <div className="rounded-2xl border border-emerald-500/25 bg-emerald-500/5 p-5 space-y-4">
-                          <div className="flex items-center gap-2 text-xs font-bold text-emerald-600">
-                            <ShieldCheck className="h-4 w-4" />
-                            <span>
-                              {loc('بوابة Meta Embedded Signup الرسمية عبر Zernio (/v1/connect/whatsapp)', 'Official Zernio Meta Embedded Signup (/v1/connect/whatsapp)')}
-                            </span>
+                          <div className="flex flex-wrap items-center justify-between gap-2">
+                            <div className="flex items-center gap-2 text-xs font-bold text-emerald-600">
+                              <ShieldCheck className="h-4 w-4" />
+                              <span>
+                                {loc('بوابة Meta Embedded Signup الرسمية عبر Zernio (/v1/connect/whatsapp)', 'Official Zernio Meta Embedded Signup (/v1/connect/whatsapp)')}
+                              </span>
+                            </div>
+
+                            {/* Hosted Guided Signup vs Headless Picker Toggle */}
+                            <div className="inline-flex items-center rounded-xl border border-emerald-500/30 bg-[var(--bg-card)] p-1 text-[11px] font-bold">
+                              <button
+                                type="button"
+                                onClick={() => setWhatsappSignupMode('hosted')}
+                                className={`rounded-lg px-2.5 py-1 transition cursor-pointer ${
+                                  whatsappSignupMode === 'hosted'
+                                    ? 'bg-emerald-600 text-white'
+                                    : 'text-[var(--text-secondary)] hover:text-[var(--text-primary)]'
+                                }`}
+                              >
+                                {loc('صفحة Zernio الإرشادية (signup=hosted)', 'Zernio Guided Page (signup=hosted)')}
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => setWhatsappSignupMode('headless')}
+                                className={`rounded-lg px-2.5 py-1 transition cursor-pointer ${
+                                  whatsappSignupMode === 'headless'
+                                    ? 'bg-emerald-600 text-white'
+                                    : 'text-[var(--text-secondary)] hover:text-[var(--text-primary)]'
+                                }`}
+                              >
+                                {loc('ربط مباشر (headless=true)', 'Direct Headless (headless=true)')}
+                              </button>
+                            </div>
                           </div>
 
                           <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
@@ -1332,7 +1368,7 @@ export function ConnectionWizardModal({
                                 <span className="font-mono text-[10px] text-emerald-600 font-bold">onboarding=api</span>
                               </div>
                               <p className="mt-1 text-[11px] text-[var(--text-secondary)]">
-                                {loc('ربط حساب أعمال واتساب جديد أو حالي مخصص للأتمتة والرسائل السحابية.', 'Connect a new or existing WABA dedicated to Cloud API messaging and broadcasts.')}
+                                {loc('ربط حساب أعمال واتساب جديد أو حالي مخصص للأتمتة والرسائل السحابية والمجموعات والمكالمات.', 'Connect a new or existing WABA dedicated to Cloud API messaging, broadcasts, groups & calling.')}
                               </p>
                             </button>
 
@@ -1347,14 +1383,48 @@ export function ConnectionWizardModal({
                             >
                               <div className="flex items-center justify-between">
                                 <span className="text-xs font-bold text-[var(--text-primary)]">
-                                  {loc('التعايش مع تطبيق WhatsApp Business', 'Business App Coexistence')}
+                                  {loc('التعايش مع تطبيق WhatsApp Business (QR)', 'Business App Coexistence (QR)')}
                                 </span>
                                 <span className="font-mono text-[10px] text-emerald-600 font-bold">onboarding=business_app</span>
                               </div>
                               <p className="mt-1 text-[11px] text-[var(--text-secondary)]">
-                                {loc('استمر في استخدام تطبيق واتساب للأعمال على هاتفك المحمول مع تفعيل الـ API في نفس الوقت!', 'Keep using your WhatsApp Business mobile app while syncing chats & API automations!')}
+                                {loc('احتفظ بالرقم داخل تطبيق WhatsApp Business على هاتفك عبر مسح رمز QR مع مزامنة المحادثات لمدة 6 أشهر.', 'Keep your number on the WhatsApp Business phone app via QR scan while syncing 6 months of chats to the API.')}
                               </p>
                             </button>
+                          </div>
+
+                          {/* Zernio Step-by-Step Follow-Along Checklist */}
+                          <div className="rounded-xl border border-[var(--border-subtle)] bg-[var(--bg-card)] p-3.5 space-y-2">
+                            <div className="text-[11px] font-extrabold text-[var(--text-primary)] flex items-center justify-between">
+                              <span>
+                                {loc('قائمة خطوات الربط المتتابعة (Zernio Follow-Along Checklist):', 'Zernio Step-by-Step Follow-Along Checklist:')}
+                              </span>
+                              <span className="font-mono text-[10px] text-emerald-600">
+                                {whatsappSignupMode === 'hosted' ? 'brandName=Asra3 · #0D9488' : 'headless=true'}
+                              </span>
+                            </div>
+                            <ol className="grid grid-cols-1 gap-1.5 sm:grid-cols-2 text-[11px] text-[var(--text-secondary)]">
+                              <li className="flex items-start gap-2">
+                                <span className="flex h-4 w-4 shrink-0 items-center justify-center rounded-full bg-emerald-500/15 text-[10px] font-bold text-emerald-600">1</span>
+                                <span>{loc('تسجيل الدخول إلى حساب Meta Business الخاص بك', 'Log in to your Meta Business portfolio in the popup')}</span>
+                              </li>
+                              <li className="flex items-start gap-2">
+                                <span className="flex h-4 w-4 shrink-0 items-center justify-center rounded-full bg-emerald-500/15 text-[10px] font-bold text-emerald-600">2</span>
+                                <span>{loc('إنشاء أو اختيار حساب WhatsApp Business (WABA)', 'Select or create your WhatsApp Business Account (WABA)')}</span>
+                              </li>
+                              <li className="flex items-start gap-2">
+                                <span className="flex h-4 w-4 shrink-0 items-center justify-center rounded-full bg-emerald-500/15 text-[10px] font-bold text-emerald-600">3</span>
+                                <span>
+                                  {whatsappOnboardingType === 'business_app'
+                                    ? loc('اختر "ربط تطبيق WhatsApp Business الحالي" وامسح رمز الـ QR من هاتفك', 'Pick "Connect existing WhatsApp Business app" & scan the QR code from your phone')
+                                    : loc('اختر رقم Zernio الموثق مسبقاً أو أدخل رقمك واستلم رمز التحقق', 'Select your pre-verified Zernio number or verify your own carrier number')}
+                                </span>
+                              </li>
+                              <li className="flex items-start gap-2">
+                                <span className="flex h-4 w-4 shrink-0 items-center justify-center rounded-full bg-emerald-500/15 text-[10px] font-bold text-emerald-600">4</span>
+                                <span>{loc('يتم ربط الـ Webhook وتفعيل الـ accountId تلقائياً والعودة للوحة التحكم', 'Zernio binds webhooks & exchanges permanent tokens automatically')}</span>
+                              </li>
+                            </ol>
                           </div>
                         </div>
                       )}
@@ -1367,8 +1437,8 @@ export function ConnectionWizardModal({
                           </h4>
                           <p className="text-xs text-[var(--text-secondary)] leading-relaxed">
                             {loc(
-                              'سيتم فتح معالج شراء الأرقام لاختيار رقم (أمريكي، بريطاني، أو دولي) وتوليد ملف تعريف واتساب معتمد خلال 60 ثانية دون الحاجة لبطاقة SIM.',
-                              'Opens the 60-Second Number Marketplace Wizard to select a US/UK/Global virtual number and automatically complete Meta WhatsApp OTP verification.'
+                              'سيتم فتح معالج شراء الأرقام لاختيار رقم (أمريكي، بريطاني، أو دولي) وتوليد ملف تعريف واتساب معتمد خلال 60 ثانية دون الحاجة لبطاقة SIM (يظهر جاهزاً وموثقاً تلقائياً داخل قائمة Meta).',
+                              'Opens the 60-Second Number Marketplace Wizard (POST /v1/phone-numbers/purchase with connectWhatsapp=true) so the number appears pre-verified in Meta with zero OTP codes needed.'
                             )}
                           </p>
                         </div>
@@ -1386,7 +1456,7 @@ export function ConnectionWizardModal({
                                 type="text"
                                 value={credWabaId}
                                 onChange={(e) => setCredWabaId(e.target.value)}
-                                placeholder="e.g. 104928192839102"
+                                placeholder="e.g. 317766992490131"
                                 className="mt-1.5 w-full rounded-xl border border-[var(--border-subtle)] bg-[var(--bg-subtle)] px-3.5 py-2.5 text-xs font-mono text-[var(--text-primary)] focus:outline-none focus:border-[var(--accent-primary)]"
                               />
                             </div>
@@ -1399,13 +1469,13 @@ export function ConnectionWizardModal({
                                 type="text"
                                 value={credPhoneNumberId}
                                 onChange={(e) => setCredPhoneNumberId(e.target.value)}
-                                placeholder="e.g. 109283746519283"
+                                placeholder="e.g. 1875844705851813"
                                 className="mt-1.5 w-full rounded-xl border border-[var(--border-subtle)] bg-[var(--bg-subtle)] px-3.5 py-2.5 text-xs font-mono text-[var(--text-primary)] focus:outline-none focus:border-[var(--accent-primary)]"
                               />
                             </div>
                           </div>
 
-                          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                          <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
                             <div>
                               <label className="block text-xs font-bold text-[var(--text-primary)]">
                                 {loc('رقم الهاتف المعروض (اختياري)', 'Display Phone Number (Optional)')}
@@ -1431,6 +1501,20 @@ export function ConnectionWizardModal({
                                 className="mt-1.5 w-full rounded-xl border border-[var(--border-subtle)] bg-[var(--bg-subtle)] px-3.5 py-2.5 text-xs text-[var(--text-primary)] focus:outline-none focus:border-[var(--accent-primary)]"
                               />
                             </div>
+
+                            <div>
+                              <label className="block text-xs font-bold text-[var(--text-primary)]">
+                                {loc('رمز التحقق بخطوتين (2FA PIN - اختياري)', '2-Step Verification PIN (Optional)')}
+                              </label>
+                              <input
+                                type="text"
+                                maxLength={6}
+                                value={credPin}
+                                onChange={(e) => setCredPin(e.target.value)}
+                                placeholder="e.g. 481902"
+                                className="mt-1.5 w-full rounded-xl border border-[var(--border-subtle)] bg-[var(--bg-subtle)] px-3.5 py-2.5 text-xs font-mono text-[var(--text-primary)] focus:outline-none focus:border-[var(--accent-primary)]"
+                              />
+                            </div>
                           </div>
 
                           <div>
@@ -1442,7 +1526,7 @@ export function ConnectionWizardModal({
                                 type={showSecret ? 'text' : 'password'}
                                 value={credSecret}
                                 onChange={(e) => setCredSecret(e.target.value)}
-                                placeholder="EAAG..."
+                                placeholder="EAABsbCS...your-system-user-token"
                                 className="w-full rounded-xl border border-[var(--border-subtle)] bg-[var(--bg-subtle)] px-3.5 py-2.5 pe-10 text-xs font-mono text-[var(--text-primary)] focus:outline-none focus:border-[var(--accent-primary)]"
                               />
                               <button

@@ -103,6 +103,7 @@ export class CoreConnectService {
     shopDomain?: string; // Required when platform === 'shopify'
     loginMethod?: 'instagram_login' | 'facebook_login'; // Optional for Instagram
     whatsappOnboarding?: 'api' | 'business_app';
+    whatsappSignupMode?: 'hosted' | 'headless';
   }) {
     const policy = await assertSubServiceAllowed(
       params.organizationId,
@@ -121,7 +122,10 @@ export class CoreConnectService {
       params.platform,
       params.requestedScopes
     );
-    const headless = policy.enforceHeadlessOAuth;
+    const isWhatsAppHosted =
+      params.platform === 'whatsapp' &&
+      (params.whatsappSignupMode || 'hosted') === 'hosted';
+    const headless = isWhatsAppHosted ? false : policy.enforceHeadlessOAuth;
 
     if (!zernioClient.isConfigured()) {
       const simulatedCallback = new URL(params.redirectUrl);
@@ -185,7 +189,13 @@ export class CoreConnectService {
       query: {
         profileId,
         redirect_url: params.redirectUrl,
-        headless,
+        ...(isWhatsAppHosted
+          ? {
+              signup: 'hosted',
+              brandName: 'Asra3',
+              primaryColor: '#0D9488',
+            }
+          : { headless }),
         ...(scopesParam ? { scopes: scopesParam } : {}),
         ...(params.shopDomain ? { shop: params.shopDomain } : {}),
         ...(params.loginMethod ? { loginMethod: params.loginMethod } : {}),

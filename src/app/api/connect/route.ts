@@ -222,6 +222,10 @@ export async function POST(request: Request) {
           | 'api'
           | 'business_app'
           | undefined,
+        whatsappSignupMode: body.whatsappSignupMode as
+          | 'hosted'
+          | 'headless'
+          | undefined,
       });
 
       return NextResponse.json({
