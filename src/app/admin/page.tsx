@@ -65,8 +65,8 @@ export default function SuperAdminControlPlanePage() {
 
   // Quick Create Tenant state inside Admin
   const [newOrgName, setNewOrgName] = useState<string>('');
-  const [newOrgPlan, setNewOrgPlan] = useState<string>('agency_pro');
-  const [newOrgColor, setNewOrgColor] = useState<string>('#4F46E5');
+  const [newOrgPlan, setNewOrgPlan] = useState<string>('agency');
+  const [newOrgColor, setNewOrgColor] = useState<string>('#eb3514');
 
   const fetchSnapshot = useCallback(async () => {
     setLoading(true);
@@ -261,6 +261,21 @@ export default function SuperAdminControlPlanePage() {
       setData((prev) => (prev ? { ...prev, ...json.snapshot } : json.snapshot));
     }
     setNewOrgName('');
+  };
+
+  const handleDeleteTenant = async (organizationId: string) => {
+    const res = await fetch('/api/admin', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        action: 'delete_tenant',
+        organizationId,
+      }),
+    });
+    const json = await res.json();
+    if (json.snapshot) {
+      setData((prev) => (prev ? { ...prev, ...json.snapshot } : json.snapshot));
+    }
   };
 
   const selectedPlan = data?.plans.find((p) => p.planKey === selectedPlanKey);
@@ -626,70 +641,89 @@ export default function SuperAdminControlPlanePage() {
             )}
 
             <div className="grid grid-cols-1 gap-4">
-              {data.tenants.map((tenant) => (
-                <div
-                  key={tenant.organizationId}
-                  className="luxury-card p-6 flex flex-wrap items-center justify-between gap-4"
-                >
-                  <div>
-                    <div className="flex items-center gap-2.5">
-                      <span className="text-base font-bold text-[var(--text-primary)]">
-                        {tenant.organizationName}
-                      </span>
-                      <span className="rounded-full bg-[var(--accent-soft)] px-2.5 py-0.5 text-xs font-bold uppercase text-[var(--accent-primary)]">
-                        {tenant.planKey}
-                      </span>
-                      <span
-                        className={`rounded-full px-2.5 py-0.5 text-xs font-bold ${
-                          tenant.status === 'active'
-                            ? 'bg-emerald-500/15 text-emerald-600'
-                            : 'bg-rose-500/15 text-rose-600'
-                        }`}
-                      >
-                        {tenant.status}
-                      </span>
-                    </div>
-                    <div className="mt-1 font-mono text-xs text-[var(--text-muted)]">
-                      {tenant.organizationId} · Profile:{' '}
-                      {tenant.zernioProfileId || 'Unassigned'} · Key:{' '}
-                      {tenant.zernioScopedKeyPrefix || 'None'}
-                    </div>
-                  </div>
-
-                  <div className="flex flex-wrap items-center gap-2">
-                    <Link
-                      href={`/dashboard?org=${encodeURIComponent(
-                        tenant.organizationId
-                      )}`}
-                      className="inline-flex items-center gap-1.5 rounded-xl border border-[var(--border-subtle)] bg-[var(--bg-subtle)] px-3 py-2 text-xs font-semibold text-[var(--text-primary)] hover:border-[var(--accent-primary)]"
-                    >
-                      <ExternalLink className="h-3.5 w-3.5" />
-                      <span>{t.admin.openWorkspaceBtn}</span>
-                    </Link>
-
-                    <button
-                      onClick={() => handleMintScopedKey(tenant.organizationId)}
-                      className="rounded-xl bg-[var(--accent-primary)] px-3.5 py-2 text-xs font-bold text-white hover:bg-[var(--accent-hover)]"
-                    >
-                      {t.admin.mintKeyBtn}
-                    </button>
-
-                    <button
-                      onClick={() =>
-                        handleUpdateTenant(tenant.organizationId, {
-                          status:
-                            tenant.status === 'active' ? 'suspended' : 'active',
-                        })
-                      }
-                      className="rounded-xl border border-[var(--border-subtle)] bg-[var(--bg-subtle)] px-3 py-2 text-xs font-semibold text-[var(--text-secondary)]"
-                    >
-                      {tenant.status === 'active'
-                        ? t.admin.suspendBtn
-                        : t.admin.restoreBtn}
-                    </button>
-                  </div>
+              {data.tenants.length === 0 ? (
+                <div className="luxury-card p-10 text-center">
+                  <Building2 className="mx-auto h-8 w-8 text-[var(--text-muted)] opacity-60" />
+                  <p className="mt-3 text-sm font-bold text-[var(--text-primary)]">
+                    No customer organizations registered yet
+                  </p>
+                  <p className="mt-1 text-xs text-[var(--text-muted)]">
+                    Real customer workspaces created via /signup or provisioned above will appear here automatically.
+                  </p>
                 </div>
-              ))}
+              ) : (
+                data.tenants.map((tenant) => (
+                  <div
+                    key={tenant.organizationId}
+                    className="luxury-card p-6 flex flex-wrap items-center justify-between gap-4"
+                  >
+                    <div>
+                      <div className="flex items-center gap-2.5">
+                        <span className="text-base font-bold text-[var(--text-primary)]">
+                          {tenant.organizationName}
+                        </span>
+                        <span className="rounded-full bg-[var(--accent-soft)] px-2.5 py-0.5 text-xs font-bold uppercase text-[var(--accent-primary)]">
+                          {tenant.planKey}
+                        </span>
+                        <span
+                          className={`rounded-full px-2.5 py-0.5 text-xs font-bold ${
+                            tenant.status === 'active'
+                              ? 'bg-emerald-500/15 text-emerald-600'
+                              : 'bg-rose-500/15 text-rose-600'
+                          }`}
+                        >
+                          {tenant.status}
+                        </span>
+                      </div>
+                      <div className="mt-1 font-mono text-xs text-[var(--text-muted)]">
+                        {tenant.organizationId} · Profile:{' '}
+                        {tenant.zernioProfileId || 'Unassigned'} · Key:{' '}
+                        {tenant.zernioScopedKeyPrefix || 'None'}
+                      </div>
+                    </div>
+
+                    <div className="flex flex-wrap items-center gap-2">
+                      <Link
+                        href={`/dashboard?org=${encodeURIComponent(
+                          tenant.organizationId
+                        )}`}
+                        className="inline-flex items-center gap-1.5 rounded-xl border border-[var(--border-subtle)] bg-[var(--bg-subtle)] px-3 py-2 text-xs font-semibold text-[var(--text-primary)] hover:border-[var(--accent-primary)]"
+                      >
+                        <ExternalLink className="h-3.5 w-3.5" />
+                        <span>{t.admin.openWorkspaceBtn}</span>
+                      </Link>
+
+                      <button
+                        onClick={() => handleMintScopedKey(tenant.organizationId)}
+                        className="rounded-xl bg-[var(--accent-primary)] px-3.5 py-2 text-xs font-bold text-white hover:bg-[var(--accent-hover)]"
+                      >
+                        {t.admin.mintKeyBtn}
+                      </button>
+
+                      <button
+                        onClick={() =>
+                          handleUpdateTenant(tenant.organizationId, {
+                            status:
+                              tenant.status === 'active' ? 'suspended' : 'active',
+                          })
+                        }
+                        className="rounded-xl border border-[var(--border-subtle)] bg-[var(--bg-subtle)] px-3 py-2 text-xs font-semibold text-[var(--text-secondary)]"
+                      >
+                        {tenant.status === 'active'
+                          ? t.admin.suspendBtn
+                          : t.admin.restoreBtn}
+                      </button>
+
+                      <button
+                        onClick={() => handleDeleteTenant(tenant.organizationId)}
+                        className="rounded-xl border border-rose-500/30 bg-rose-500/10 px-3 py-2 text-xs font-bold text-rose-600 hover:bg-rose-500/20"
+                      >
+                        Delete
+                      </button>
+                    </div>
+                  </div>
+                ))
+              )}
             </div>
           </div>
         )}
@@ -725,28 +759,39 @@ export default function SuperAdminControlPlanePage() {
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-[var(--border-subtle)]">
-                  {data.billingReport.tenantRows.map((row) => (
-                    <tr key={row.organizationId}>
-                      <td className="px-6 py-4 font-bold text-[var(--text-primary)]">
-                        {row.organizationName}
-                      </td>
-                      <td className="px-6 py-4 font-mono text-[var(--text-muted)]">
-                        {row.zernioProfileId}
-                      </td>
-                      <td className="px-6 py-4 uppercase font-semibold text-[var(--accent-primary)]">
-                        {row.planKey}
-                      </td>
-                      <td className="px-6 py-4 font-mono">
-                        ${row.zernioWholesaleUsd}
-                      </td>
-                      <td className="px-6 py-4 font-mono font-bold">
-                        ${row.retailRevenueUsd}
-                      </td>
-                      <td className="px-6 py-4 font-mono font-bold text-emerald-600">
-                        +${row.grossMarginUsd} ({row.marginPercent}%)
+                  {data.billingReport.tenantRows.length === 0 ? (
+                    <tr>
+                      <td
+                        colSpan={6}
+                        className="px-6 py-10 text-center text-xs text-[var(--text-muted)]"
+                      >
+                        No customer workspaces registered yet. Once real accounts sign up or are provisioned, their live wholesale usage and retail subscription margins will appear here.
                       </td>
                     </tr>
-                  ))}
+                  ) : (
+                    data.billingReport.tenantRows.map((row) => (
+                      <tr key={row.organizationId}>
+                        <td className="px-6 py-4 font-bold text-[var(--text-primary)]">
+                          {row.organizationName}
+                        </td>
+                        <td className="px-6 py-4 font-mono text-[var(--text-muted)]">
+                          {row.zernioProfileId}
+                        </td>
+                        <td className="px-6 py-4 uppercase font-semibold text-[var(--accent-primary)]">
+                          {row.planKey}
+                        </td>
+                        <td className="px-6 py-4 font-mono">
+                          ${row.zernioWholesaleUsd}
+                        </td>
+                        <td className="px-6 py-4 font-mono font-bold">
+                          ${row.retailRevenueUsd}
+                        </td>
+                        <td className="px-6 py-4 font-mono font-bold text-emerald-600">
+                          +${row.grossMarginUsd} ({row.marginPercent}%)
+                        </td>
+                      </tr>
+                    ))
+                  )}
                 </tbody>
               </table>
             </div>

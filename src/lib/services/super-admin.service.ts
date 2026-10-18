@@ -1,7 +1,9 @@
 import { createSupabaseAdminClient } from '@/lib/supabase/admin';
 import { zernioClient } from '@/lib/zernio/client';
+import { WorkspaceStore } from '@/lib/storage/workspace-store';
 import {
   getFallbackStore,
+  saveFallbackStore,
   resolveEffectiveTenantPolicy,
   type GlobalAdminConfigState,
   type PlanTemplateState,
@@ -131,6 +133,7 @@ export class SuperAdminService {
       ...store.globalConfig,
       ...patch,
     };
+    saveFallbackStore();
 
     const supabase = createSupabaseAdminClient();
     if (supabase) {
@@ -170,6 +173,7 @@ export class SuperAdminService {
       ...patch,
     };
     store.plans[planKey] = updated;
+    saveFallbackStore();
 
     const supabase = createSupabaseAdminClient();
     if (supabase) {
@@ -217,6 +221,7 @@ export class SuperAdminService {
       },
     };
     store.tenants[organizationId] = updated;
+    saveFallbackStore();
 
     const supabase = createSupabaseAdminClient();
     if (supabase) {
@@ -313,6 +318,7 @@ export class SuperAdminService {
     };
 
     store.tenants[organizationId] = newTenant;
+    saveFallbackStore();
 
     const supabase = createSupabaseAdminClient();
     if (supabase) {
@@ -328,6 +334,23 @@ export class SuperAdminService {
     }
 
     return newTenant;
+  }
+
+  public static async deleteTenantOrganization(
+    organizationId: string
+  ): Promise<void> {
+    const store = getFallbackStore();
+    delete store.tenants[organizationId];
+    saveFallbackStore();
+
+    const supabase = createSupabaseAdminClient();
+    if (supabase) {
+      await supabase
+        .from('org_feature_overrides')
+        .delete()
+        .eq('organization_id', organizationId);
+      await supabase.from('organizations').delete().eq('id', organizationId);
+    }
   }
 
   /**
@@ -473,10 +496,35 @@ export class SuperAdminService {
       }
     }
 
-    // Representative calculation using Zernio's graduated ladder ($6 / $3 / $1 minus $12 credit)
-    const tenantRows = snapshot.tenants.map((t, idx) => {
+    // Calculate real usage from each tenant's actual workspace state
+    let totalAccountsCost = 0;
+    let totalMessagesCost = 0;
+    let totalAdsCost = 0;
+    let totalNumbersCost = 0;
+
+    const tenantRows = snapshot.tenants.map((t) => {
+      const ws = WorkspaceStore.getWorkspace(t.organizationId);
       const retailUsd = plansByKey[t.planKey]?.monthlyPriceUsd ?? 79;
-      const wholesaleUsd = idx === 0 ? 28.4 : 11.2;
+
+      const accountsCost = Number(
+        ((ws.connectedAccounts?.length || 0) * 3.0).toFixed(2)
+      );
+      const messagesCost = Number(
+        ((ws.inboxConversations?.length || 0) * 0.05).toFixed(2)
+      );
+      const adsCost = Number(((ws.campaigns?.length || 0) * 1.5).toFixed(2));
+      const numbersCost = Number(
+        ((ws.ownedNumbers?.length || 0) * 3.0).toFixed(2)
+      );
+      const wholesaleUsd = Number(
+        (accountsCost + messagesCost + adsCost + numbersCost).toFixed(2)
+      );
+
+      totalAccountsCost += accountsCost;
+      totalMessagesCost += messagesCost;
+      totalAdsCost += adsCost;
+      totalNumbersCost += numbersCost;
+
       return {
         organizationId: t.organizationId,
         organizationName: t.organizationName,
@@ -485,27 +533,42 @@ export class SuperAdminService {
         retailRevenueUsd: retailUsd,
         zernioWholesaleUsd: wholesaleUsd,
         grossMarginUsd: Number((retailUsd - wholesaleUsd).toFixed(2)),
-        marginPercent: Number(
-          (((retailUsd - wholesaleUsd) / retailUsd) * 100).toFixed(1)
-        ),
-        breakdown:
-          idx === 0
-            ? { accounts: 21.0, messages: 1.4, ads: 3.0, numbers: 3.0, xApi: 0 }
-            : { accounts: 11.2, messages: 0, ads: 0, numbers: 0, xApi: 0 },
+        marginPercent:
+          retailUsd > 0
+            ? Number(
+                (((retailUsd - wholesaleUsd) / retailUsd) * 100).toFixed(1)
+              )
+            : 0,
+        breakdown: {
+          accounts: accountsCost,
+          messages: messagesCost,
+          ads: adsCost,
+          numbers: numbersCost,
+          xApi: 0,
+        },
       };
     });
+
+    const grossTotal = Number(
+      (
+        totalAccountsCost +
+        totalMessagesCost +
+        totalAdsCost +
+        totalNumbersCost
+      ).toFixed(2)
+    );
 
     return {
       live: false,
       zernioTeamTotals: {
-        accounts: 32.2,
-        messages: 1.4,
-        ads: 3.0,
-        numbers: 3.0,
-        credits: -12.0,
-        total: 27.6,
+        accounts: Number(totalAccountsCost.toFixed(2)),
+        messages: Number(totalMessagesCost.toFixed(2)),
+        ads: Number(totalAdsCost.toFixed(2)),
+        numbers: Number(totalNumbersCost.toFixed(2)),
+        credits: 0,
+        total: grossTotal,
       },
-      unattributedTotals: { credits: -12.0 },
+      unattributedTotals: { credits: 0 },
       tenantRows,
     };
   }

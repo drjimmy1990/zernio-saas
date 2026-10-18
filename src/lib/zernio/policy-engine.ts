@@ -1,3 +1,5 @@
+import fs from 'fs';
+import path from 'path';
 import { createSupabaseAdminClient } from '@/lib/supabase/admin';
 import {
   ALL_AD_PLATFORMS,
@@ -194,45 +196,64 @@ const fallbackStore: {
       maxXApiSpendUsd: 250,
     },
   },
-  tenants: {
-    'org_demo_acme': {
-      organizationId: 'org_demo_acme',
-      organizationName: 'Acme Digital Agency',
-      slug: 'acme-digital',
-      zernioProfileId: '66a1f0c2a4b9d3e8f1a2b3c4',
-      zernioScopedKeyId: '6507a1b2c3d4e5f6a7b8c9d0',
-      zernioScopedKeyPrefix: 'zrk_acme_live_98f2',
-      planKey: 'agency',
-      status: 'active',
-      forceHeadlessMode: true,
-      whiteLabelBranding: {
-        companyName: 'Acme Social Cloud',
-        logoUrl: 'https://acme.example.com/logo.png',
-        primaryColor: '#4F46E5',
-        language: 'en',
-      },
-    },
-    'org_demo_nova': {
-      organizationId: 'org_demo_nova',
-      organizationName: 'Nova Retail Group',
-      slug: 'nova-retail',
-      zernioProfileId: '66a1f0c2a4b9d3e8f1a2b999',
-      zernioScopedKeyId: null,
-      zernioScopedKeyPrefix: null,
-      planKey: 'growth',
-      status: 'active',
-      forceHeadlessMode: true,
-      whiteLabelBranding: {
-        companyName: 'Nova Commerce Hub',
-        logoUrl: 'https://nova.example.com/logo.png',
-        primaryColor: '#0EA5E9',
-        language: 'en',
-      },
-    },
-  },
+  tenants: {},
 };
 
+const DATA_DIR = path.join(process.cwd(), '.data');
+const ADMIN_STORE_FILE = path.join(DATA_DIR, 'admin-store.json');
+let storeLoadedFromDisk = false;
+
+export function saveFallbackStore(): void {
+  try {
+    if (!fs.existsSync(DATA_DIR)) {
+      fs.mkdirSync(DATA_DIR, { recursive: true });
+    }
+    fs.writeFileSync(
+      ADMIN_STORE_FILE,
+      JSON.stringify(fallbackStore, null, 2),
+      'utf-8'
+    );
+  } catch {
+    // Ignore file write errors in read-only environments
+  }
+}
+
 export function getFallbackStore() {
+  if (!storeLoadedFromDisk) {
+    storeLoadedFromDisk = true;
+    try {
+      if (fs.existsSync(ADMIN_STORE_FILE)) {
+        const persisted = JSON.parse(
+          fs.readFileSync(ADMIN_STORE_FILE, 'utf-8')
+        );
+        if (persisted.globalConfig) {
+          fallbackStore.globalConfig = {
+            ...fallbackStore.globalConfig,
+            ...persisted.globalConfig,
+          };
+        }
+        if (persisted.plans) {
+          fallbackStore.plans = {
+            ...fallbackStore.plans,
+            ...persisted.plans,
+          };
+        }
+        if (persisted.tenants) {
+          const cleanTenants: Record<string, TenantOverrideState> = {};
+          for (const [id, t] of Object.entries(
+            persisted.tenants as Record<string, TenantOverrideState>
+          )) {
+            if (id !== 'org_demo_acme' && id !== 'org_demo_nova') {
+              cleanTenants[id] = t;
+            }
+          }
+          fallbackStore.tenants = cleanTenants;
+        }
+      }
+    } catch {
+      // Ignore parse errors
+    }
+  }
   return fallbackStore;
 }
 
@@ -250,12 +271,27 @@ function intersect<T>(a: readonly T[], b: readonly T[]): T[] {
 export async function resolveEffectiveTenantPolicy(
   organizationId: string
 ): Promise<EffectiveTenantPolicy> {
+  const store = getFallbackStore();
   const supabase = createSupabaseAdminClient();
 
-  let globalCfg = fallbackStore.globalConfig;
-  let tenant =
-    fallbackStore.tenants[organizationId] ||
-    fallbackStore.tenants['org_demo_acme'];
+  let globalCfg = store.globalConfig;
+  let tenant: TenantOverrideState = store.tenants[organizationId] || {
+    organizationId,
+    organizationName: 'Asra3 Workspace',
+    slug: organizationId.replace(/^org_/, '') || 'workspace',
+    zernioProfileId: null,
+    zernioScopedKeyId: null,
+    zernioScopedKeyPrefix: null,
+    planKey: 'agency',
+    status: 'active',
+    forceHeadlessMode: true,
+    whiteLabelBranding: {
+      companyName: 'Asra3 Workspace',
+      logoUrl: '',
+      primaryColor: globalCfg.brandPrimaryColor || '#eb3514',
+      language: 'en',
+    },
+  };
 
   if (supabase) {
     const [{ data: dbGlobal }, { data: dbOrg }, { data: dbOverride }] =

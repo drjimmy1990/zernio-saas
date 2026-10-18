@@ -55,8 +55,15 @@ export async function POST(request: Request) {
       const globalConfig = await SuperAdminService.updateGlobalConfig(
         body.patch || {}
       );
-      const snapshot = await SuperAdminService.getControlPlaneSnapshot();
-      return NextResponse.json({ ok: true, globalConfig, snapshot });
+      const [controlPlane, billingReport] = await Promise.all([
+        SuperAdminService.getControlPlaneSnapshot(),
+        SuperAdminService.getWholesaleVsRetailBillingReport(),
+      ]);
+      return NextResponse.json({
+        ok: true,
+        globalConfig,
+        snapshot: { ...controlPlane, billingReport },
+      });
     }
 
     if (action === 'update_plan_template') {
@@ -64,8 +71,15 @@ export async function POST(request: Request) {
         body.planKey as string,
         body.patch || {}
       );
-      const snapshot = await SuperAdminService.getControlPlaneSnapshot();
-      return NextResponse.json({ ok: true, plan, snapshot });
+      const [controlPlane, billingReport] = await Promise.all([
+        SuperAdminService.getControlPlaneSnapshot(),
+        SuperAdminService.getWholesaleVsRetailBillingReport(),
+      ]);
+      return NextResponse.json({
+        ok: true,
+        plan,
+        snapshot: { ...controlPlane, billingReport },
+      });
     }
 
     if (action === 'update_tenant_override') {
@@ -73,8 +87,15 @@ export async function POST(request: Request) {
         body.organizationId as string,
         body.patch || {}
       );
-      const snapshot = await SuperAdminService.getControlPlaneSnapshot();
-      return NextResponse.json({ ok: true, tenant, snapshot });
+      const [controlPlane, billingReport] = await Promise.all([
+        SuperAdminService.getControlPlaneSnapshot(),
+        SuperAdminService.getWholesaleVsRetailBillingReport(),
+      ]);
+      return NextResponse.json({
+        ok: true,
+        tenant,
+        snapshot: { ...controlPlane, billingReport },
+      });
     }
 
     if (action === 'mint_scoped_key') {
@@ -83,8 +104,15 @@ export async function POST(request: Request) {
         permission: body.permission as 'read' | 'write' | undefined,
         expiresInDays: body.expiresInDays as number | undefined,
       });
-      const snapshot = await SuperAdminService.getControlPlaneSnapshot();
-      return NextResponse.json({ ok: true, minted, snapshot });
+      const [controlPlane, billingReport] = await Promise.all([
+        SuperAdminService.getControlPlaneSnapshot(),
+        SuperAdminService.getWholesaleVsRetailBillingReport(),
+      ]);
+      return NextResponse.json({
+        ok: true,
+        minted,
+        snapshot: { ...controlPlane, billingReport },
+      });
     }
 
     if (action === 'create_tenant') {
@@ -94,8 +122,29 @@ export async function POST(request: Request) {
         primaryColor: body.primaryColor as string | undefined,
         language: body.language as 'en' | 'es' | 'pt-BR' | undefined,
       });
-      const snapshot = await SuperAdminService.getControlPlaneSnapshot();
-      return NextResponse.json({ ok: true, tenant, snapshot });
+      const [controlPlane, billingReport] = await Promise.all([
+        SuperAdminService.getControlPlaneSnapshot(),
+        SuperAdminService.getWholesaleVsRetailBillingReport(),
+      ]);
+      return NextResponse.json({
+        ok: true,
+        tenant,
+        snapshot: { ...controlPlane, billingReport },
+      });
+    }
+
+    if (action === 'delete_tenant') {
+      await SuperAdminService.deleteTenantOrganization(
+        body.organizationId as string
+      );
+      const [controlPlane, billingReport] = await Promise.all([
+        SuperAdminService.getControlPlaneSnapshot(),
+        SuperAdminService.getWholesaleVsRetailBillingReport(),
+      ]);
+      return NextResponse.json({
+        ok: true,
+        snapshot: { ...controlPlane, billingReport },
+      });
     }
 
     return NextResponse.json(
