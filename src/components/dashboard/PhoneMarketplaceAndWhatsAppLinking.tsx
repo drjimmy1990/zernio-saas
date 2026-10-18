@@ -75,7 +75,7 @@ export function PhoneMarketplaceAndWhatsAppLinking({
     ownedNumbers[0]?.id || ''
   );
   const [waStep, setWaStep] = useState<1 | 2 | 3 | 4>(1);
-  const [waDisplayName, setWaDisplayName] = useState<string>('Techurity Customer Care');
+  const [waDisplayName, setWaDisplayName] = useState<string>('Asra3 Customer Care');
   const [waCategory, setWaCategory] = useState<string>('CUSTOMER_SERVICE');
   const [waMethod, setWaMethod] = useState<'sms_otp' | 'voice_otp' | 'qr_code'>('sms_otp');
   const [waOtpCode, setWaOtpCode] = useState<string>('');
@@ -892,7 +892,7 @@ export function PhoneMarketplaceAndWhatsAppLinking({
                       <span className="rounded bg-emerald-500/10 px-2 py-0.5 text-[10px] text-emerald-600 font-extrabold">APPROVED ✓</span>
                     </div>
                     <p className="mt-1 font-mono text-[11px] text-[var(--text-secondary)]">
-                      Welcome to Techurity! Here is your 20% discount code: {'{{1}}'}
+                      Welcome to Asra3! Here is your 20% discount code: {'{{1}}'}
                     </p>
                   </div>
                 </div>

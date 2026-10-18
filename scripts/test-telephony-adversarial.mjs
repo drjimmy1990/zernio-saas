@@ -393,7 +393,7 @@ async function runAdversarialSuite() {
   assert(b15.status === 200 && !b15.jsonError, 'send_sms with 15KB text payload returns 200 with valid JSON');
 
   // 5.3 High-Unicode / RTL / Emojis
-  const unicodeText = '🔥🚀 رسالة اختبار التحقق من رقم الهاتف 🌟 Techurity! 100% Arabic text with special characters: &<>"\'' ;
+  const unicodeText = '🔥🚀 رسالة اختبار التحقق من رقم الهاتف 🌟 Asra3! 100% Arabic text with special characters: &<>"\'' ;
   const b16 = await postServices({
     subService: 'telephony',
     action: 'simulate_incoming_sms',

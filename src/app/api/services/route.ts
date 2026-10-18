@@ -431,7 +431,7 @@ export async function POST(request: Request) {
           organizationId,
           body.eventName || 'webhook.test',
           {
-            message: 'Test webhook ping from Techurity Developer Hub',
+            message: 'Test webhook ping from Asra3 Developer Hub',
             timestamp: new Date().toISOString(),
             sampleEvent: body.eventName || 'message.received',
           },

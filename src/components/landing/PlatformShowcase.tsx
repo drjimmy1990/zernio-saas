@@ -205,7 +205,7 @@ function InstagramMockup({ m }: { m: MockupStrings }) {
           </div>
           <div>
             <div className="text-xs font-bold text-[var(--text-primary)] flex items-center gap-1">
-              <span dir="ltr">techurity_hq</span>
+              <span dir="ltr">asra3_hq</span>
               <span className="h-3 w-3 rounded-full bg-blue-500 text-white flex items-center justify-center text-[8px]">
                 ✓
               </span>
@@ -273,7 +273,7 @@ function InstagramMockup({ m }: { m: MockupStrings }) {
         <div className="text-xs font-bold text-[var(--text-primary)]">{m.igLikes}</div>
         <div className="text-xs text-[var(--text-secondary)] leading-relaxed">
           <strong dir="ltr" className="text-[var(--text-primary)] me-1">
-            techurity_hq
+            asra3_hq
           </strong>{' '}
           {m.igCaption}
         </div>
@@ -309,7 +309,7 @@ function TikTokMockup({ m }: { m: MockupStrings }) {
             {m.ttVideoTitle}
           </div>
           <div dir="ltr" className="text-xs text-white/70">
-            #techurity #omnichannel #whatsapp #api
+            #asra3 #omnichannel #whatsapp #api
           </div>
         </div>
       </div>
@@ -343,7 +343,7 @@ function TikTokMockup({ m }: { m: MockupStrings }) {
 
       <div className="z-10 text-start space-y-1 pe-14">
         <div dir="ltr" className="text-sm font-bold">
-          @techurity.official ✓
+          @asra3.official ✓
         </div>
         <div className="text-xs text-white/90 line-clamp-2">{m.ttCaption}</div>
         <div className="text-[11px] text-white/70">{m.ttAudio}</div>
@@ -363,7 +363,7 @@ function FacebookMockup({ m }: { m: MockupStrings }) {
           </div>
           <div>
             <div className="text-xs font-bold text-[var(--text-primary)] flex items-center gap-1">
-              <span>Techurity Platform</span>
+              <span>Asra3 Platform</span>
               <span className="h-3 w-3 rounded-full bg-blue-500 text-white flex items-center justify-center text-[8px]">
                 ✓
               </span>
@@ -436,9 +436,9 @@ function XThreadsMockup({ m }: { m: MockupStrings }) {
         <div className="absolute start-4.5 top-10 bottom-0 w-0.5 bg-[var(--border-subtle)]" />
         <div className="space-y-1 text-xs">
           <div className="flex items-center gap-1.5">
-            <span className="font-bold text-[var(--text-primary)]">Techurity</span>
+            <span className="font-bold text-[var(--text-primary)]">Asra3</span>
             <span dir="ltr" className="text-[var(--text-muted)]">
-              @techurity_si • 2h
+              @asra3_si • 2h
             </span>
           </div>
           <p className="text-[var(--text-primary)] leading-relaxed">{m.xPost1}</p>
@@ -457,9 +457,9 @@ function XThreadsMockup({ m }: { m: MockupStrings }) {
         </div>
         <div className="space-y-1.5 text-xs">
           <div className="flex items-center gap-1.5">
-            <span className="font-bold text-[var(--text-primary)]">Techurity</span>
+            <span className="font-bold text-[var(--text-primary)]">Asra3</span>
             <span dir="ltr" className="text-[var(--text-muted)]">
-              @techurity_si • 2h
+              @asra3_si • 2h
             </span>
           </div>
           <p className="text-[var(--text-primary)] leading-relaxed">{m.xPost2}</p>
@@ -496,7 +496,7 @@ function LinkedInYouTubeMockup({ m }: { m: MockupStrings }) {
           </div>
           <div>
             <div className="text-xs font-bold text-[var(--text-primary)]">
-              Techurity Group
+              Asra3 Group
             </div>
             <div className="text-[10px] text-[var(--text-muted)]">{m.liFollowers}</div>
           </div>

@@ -15,7 +15,7 @@
  *    - Replayed request with same Idempotency-Key -> 201 Created, Idempotent-Replayed header, identical post ID
  * 5. Dual Authentication & Adversarial Security Checks:
  *    - Bearer Token -> 200 OK
- *    - Genuine Session Cookie (techurity_session via /api/auth) -> 200 OK ("Interactive Session")
+ *    - Genuine Session Cookie (asra3_session via /api/auth) -> 200 OK ("Interactive Session")
  *    - Forged / Fake Session Cookie -> 401 Unauthorized (tamper resistance)
  *    - Missing Auth -> 401 Unauthorized
  *    - Invalid Bearer -> 401 Unauthorized
@@ -312,21 +312,21 @@ async function runAdversarialSuite() {
       }),
     });
     const setCookieHeader = signupRes.headers.get('set-cookie') || '';
-    const cookieMatch = setCookieHeader.match(/techurity_session=([^;]+)/);
+    const cookieMatch = setCookieHeader.match(/asra3_session=([^;]+)/);
     const validSessionCookie = cookieMatch ? cookieMatch[1] : '';
 
     assert(
-      'User signup yields genuine encrypted techurity_session cookie',
+      'User signup yields genuine encrypted asra3_session cookie',
       Boolean(validSessionCookie),
       `cookie length: ${validSessionCookie.length}`
     );
 
     const cookieAuthRes = await request('GET', '/api/v1/me', null, {
       Authorization: '',
-      Cookie: `techurity_session=${validSessionCookie}`,
+      Cookie: `asra3_session=${validSessionCookie}`,
     });
     assert(
-      'Authentication via genuine Session Cookie (techurity_session) succeeds with HTTP 200',
+      'Authentication via genuine Session Cookie (asra3_session) succeeds with HTTP 200',
       cookieAuthRes.status === 200 && cookieAuthRes.data?.success === true,
       `auth: ${cookieAuthRes.data?.data?.auth?.keyName}`
     );
@@ -339,7 +339,7 @@ async function runAdversarialSuite() {
     // 3. Forged Cookie Tamper Test: Forged/random session cookie MUST be rejected
     const forgedCookieRes = await request('GET', '/api/v1/me', null, {
       Authorization: '',
-      Cookie: 'techurity_session=forged_untrusted_cookie_random_data_9999',
+      Cookie: 'asra3_session=forged_untrusted_cookie_random_data_9999',
     });
     assert(
       'Forged/Untrusted session cookie is rejected with HTTP 401 Unauthorized',

@@ -34,11 +34,11 @@ function getRateLimitHeaders(
     'X-RateLimit-Limit': String(planLimitPerMin),
     'X-RateLimit-Remaining': String(remaining),
     'X-RateLimit-Reset': String(Math.floor(state.resetAt / 1000)),
-    'X-Techurity-Api-Version': '2026-10-18',
-    'X-Techurity-Request-Id': `req_${Date.now().toString(36)}_${Math.random().toString(36).slice(2, 7)}`,
+    'X-Asra3-Api-Version': '2026-10-18',
+    'X-Asra3-Request-Id': `req_${Date.now().toString(36)}_${Math.random().toString(36).slice(2, 7)}`,
     'Access-Control-Allow-Origin': '*',
     'Access-Control-Allow-Methods': 'GET, POST, PUT, PATCH, DELETE, OPTIONS',
-    'Access-Control-Allow-Headers': 'Content-Type, Authorization, X-Techurity-Signature',
+    'Access-Control-Allow-Headers': 'Content-Type, Authorization, X-Asra3-Signature',
     ...extraHeaders,
   };
 }
@@ -56,18 +56,18 @@ function buildOpenApiSpec(baseUrl: string) {
   return {
     openapi: '3.1.0',
     info: {
-      title: 'Techurity Unified Social, Cloud Telephony & Commerce REST API',
+      title: 'Asra3 Unified Social, Cloud Telephony & Commerce REST API',
       version: '1.4.0',
       description:
-        'Production REST API v1 for Techurity (https://techurity.si). Manage 18+ social networks, provision virtual phone numbers in 55+ countries, link WhatsApp Business Cloud API via OTP, send/receive 2-Way SMS & OTP codes, trigger AI Voice calls, manage unified Inbox & Auto-DM rules, and dispatch Ad CAPI conversions.',
+        'Production REST API v1 for Asra3 (https://asra3.com). Manage 18+ social networks, provision virtual phone numbers in 55+ countries, link WhatsApp Business Cloud API via OTP, send/receive 2-Way SMS & OTP codes, trigger AI Voice calls, manage unified Inbox & Auto-DM rules, and dispatch Ad CAPI conversions.',
       contact: {
-        name: 'Techurity API Engineering',
+        name: 'Asra3 API Engineering',
         url: `${baseUrl}/docs`,
       },
     },
     servers: [
       { url: `${baseUrl}/api/v1`, description: 'Current Environment Gateway' },
-      { url: 'https://techurity.si/api/v1', description: 'Production Global Edge' },
+      { url: 'https://asra3.com/api/v1', description: 'Production Global Edge' },
     ],
     components: {
       securitySchemes: {
@@ -234,7 +234,7 @@ function buildOpenApiSpec(baseUrl: string) {
 function buildPostmanCollection(baseUrl: string, sampleKey: string) {
   return {
     info: {
-      name: 'Techurity REST API v1 — Official Postman Collection',
+      name: 'Asra3 REST API v1 — Official Postman Collection',
       description:
         'Complete developer collection for Social Publishing, Virtual Phone Numbers, WhatsApp Business Cloud API, 2-Way SMS/OTP, AI Voice Calls, Unified Inbox, and Outbound Webhooks.',
       schema: 'https://schema.getpostman.com/json/collection/v2.1.0/collection.json',
@@ -297,7 +297,7 @@ function buildPostmanCollection(baseUrl: string, sampleKey: string) {
             raw: JSON.stringify(
               {
                 numberId: 'num_123456',
-                displayName: 'Techurity Official Store',
+                displayName: 'Asra3 Official Store',
                 category: 'E-Commerce & Retail',
                 verificationMethod: 'sms_otp',
               },
@@ -336,7 +336,7 @@ function buildPostmanCollection(baseUrl: string, sampleKey: string) {
             raw: JSON.stringify(
               {
                 to: '+14158909911',
-                text: 'Your Techurity verification code is 849201. Do not share this code.',
+                text: 'Your Asra3 verification code is 849201. Do not share this code.',
               },
               null,
               2
@@ -388,7 +388,7 @@ function buildPostmanCollection(baseUrl: string, sampleKey: string) {
             mode: 'raw',
             raw: JSON.stringify(
               {
-                content: 'Launching our new unified API v1 today! 🚀 #Techurity #SaaS',
+                content: 'Launching our new unified API v1 today! 🚀 #Asra3 #SaaS',
                 platforms: ['instagram', 'linkedin', 'x', 'tiktok'],
                 publishNow: true,
               },
@@ -411,7 +411,7 @@ function buildPostmanCollection(baseUrl: string, sampleKey: string) {
             mode: 'raw',
             raw: JSON.stringify(
               {
-                url: 'https://api.yourcompany.com/webhooks/techurity',
+                url: 'https://api.yourcompany.com/webhooks/asra3',
                 events: ['post.published', 'number.purchased', 'whatsapp.linked', 'message.sent', 'call.initiated'],
               },
               null,
@@ -431,7 +431,7 @@ export async function OPTIONS() {
     headers: {
       'Access-Control-Allow-Origin': '*',
       'Access-Control-Allow-Methods': 'GET, POST, PUT, PATCH, DELETE, OPTIONS',
-      'Access-Control-Allow-Headers': 'Content-Type, Authorization, X-Techurity-Signature',
+      'Access-Control-Allow-Headers': 'Content-Type, Authorization, X-Asra3-Signature',
     },
   });
 }
@@ -441,7 +441,7 @@ async function handleApiV1(req: NextRequest, context: { params: Promise<{ path: 
   const { path = [] } = await context.params;
   const routeKey = '/' + path.join('/');
   const method = req.method.toUpperCase();
-  const baseUrl = req.nextUrl.origin || 'https://techurity.si';
+  const baseUrl = req.nextUrl.origin || 'https://asra3.com';
 
   // Public spec endpoints (do not require auth so developers can download specs easily)
   if (method === 'GET' && routeKey === '/openapi.json') {
@@ -449,7 +449,7 @@ async function handleApiV1(req: NextRequest, context: { params: Promise<{ path: 
       status: 200,
       headers: {
         'Content-Type': 'application/json',
-        'Content-Disposition': 'inline; filename="techurity-openapi-v1.json"',
+        'Content-Disposition': 'inline; filename="asra3-openapi-v1.json"',
         'Access-Control-Allow-Origin': '*',
       },
     });
@@ -463,7 +463,7 @@ async function handleApiV1(req: NextRequest, context: { params: Promise<{ path: 
       status: 200,
       headers: {
         'Content-Type': 'application/json',
-        'Content-Disposition': 'inline; filename="techurity-postman-collection-v1.json"',
+        'Content-Disposition': 'inline; filename="asra3-postman-collection-v1.json"',
         'Access-Control-Allow-Origin': '*',
       },
     });
@@ -575,7 +575,7 @@ async function handleApiV1(req: NextRequest, context: { params: Promise<{ path: 
             ? { message: 'Post already exists (idempotent retry)', post: cached.body.post || cached.body.data }
             : {}),
           meta: {
-            request_id: headers['X-Techurity-Request-Id'],
+            request_id: headers['X-Asra3-Request-Id'],
             api_version: '2026-10-18',
             latency_ms: 2,
             organization_id: tenantId,
@@ -617,7 +617,7 @@ async function handleApiV1(req: NextRequest, context: { params: Promise<{ path: 
       {
         ...payload,
         meta: {
-          request_id: headers['X-Techurity-Request-Id'],
+          request_id: headers['X-Asra3-Request-Id'],
           api_version: '2026-10-18',
           latency_ms: latencyMs,
           organization_id: tenantId,
@@ -1812,7 +1812,7 @@ async function handleApiV1(req: NextRequest, context: { params: Promise<{ path: 
       body.text ||
       (body.templateName
         ? `[Template: ${body.templateName}] ${JSON.stringify(body.variables || ['Customer', '#ORD-901'])}`
-        : 'Hello from Techurity WhatsApp Business Cloud API!');
+        : 'Hello from Asra3 WhatsApp Business Cloud API!');
 
     const costUsd = 0.008;
     const currentBalance = ws.wallet?.balanceUsd ?? 50;
@@ -2016,7 +2016,7 @@ async function handleApiV1(req: NextRequest, context: { params: Promise<{ path: 
           success: true,
           data: primaryNum?.voiceAgent || {
             enabled: true,
-            agentName: 'Sarah — Techurity AI Voice Receptionist',
+            agentName: 'Sarah — Asra3 AI Voice Receptionist',
             language: 'ar-SA & en-US Bilingual',
             voicePersona: 'Nova Warm Executive',
             systemPrompt: 'Greet callers warmly, answer product questions, qualify leads, and book appointments.',
@@ -2035,7 +2035,7 @@ async function handleApiV1(req: NextRequest, context: { params: Promise<{ path: 
         const res = await TelephonyService.configureAiVoiceAgent({
           organizationId: tenantId,
           phoneNumberId: primaryNum.id,
-          agentName: body.agentName || 'Techurity AI Voice Receptionist',
+          agentName: body.agentName || 'Asra3 AI Voice Receptionist',
           language: body.language || 'ar-SA',
           systemPrompt: body.systemPrompt || 'Answer inquiries and schedule callbacks.',
           voicePersona: body.voicePersona || 'Nova',
@@ -2480,8 +2480,8 @@ async function handleApiV1(req: NextRequest, context: { params: Promise<{ path: 
       platformMessageId: `plat_${newMsgId}`,
       direction: 'outgoing' as const,
       senderId: accountId,
-      senderName: 'Techurity Operator',
-      text: messageText || 'Hello from Techurity API!',
+      senderName: 'Asra3 Operator',
+      text: messageText || 'Hello from Asra3 API!',
       attachments: Array.isArray(body.attachments)
         ? body.attachments
         : body.attachmentUrl
@@ -2761,7 +2761,7 @@ async function handleApiV1(req: NextRequest, context: { params: Promise<{ path: 
         platformMessageId: `plat_${msgId}`,
         direction: 'outgoing' as const,
         senderId: conv.accountId || 'acc_primary',
-        senderName: 'Techurity Operator',
+        senderName: 'Asra3 Operator',
         text: replyText,
         status: 'delivered' as const,
         createdAt: nowIso,
@@ -2929,7 +2929,7 @@ async function handleApiV1(req: NextRequest, context: { params: Promise<{ path: 
           platformMessageId: `plat_${newMsgId}`,
           direction: 'outgoing' as const,
           senderId: body.accountId || conv.accountId || 'acc_primary',
-          senderName: 'Techurity Operator',
+          senderName: 'Asra3 Operator',
           text: text || 'Attachment',
           attachments: hasAttachments
             ? body.attachments
@@ -3005,7 +3005,7 @@ async function handleApiV1(req: NextRequest, context: { params: Promise<{ path: 
               conversationId,
               direction: 'outgoing',
               senderId: conv.accountId || 'acc_primary',
-              senderName: 'Techurity Operator',
+              senderName: 'Asra3 Operator',
               text: newText,
               editedAt: nowIso,
               status: 'delivered',
@@ -3635,7 +3635,7 @@ async function handleApiV1(req: NextRequest, context: { params: Promise<{ path: 
     const eventRes = await AdsService.sendServerConversionEvent({
       organizationId: tenantId,
       accountId: body.accountId || 'ad_acc_meta_01',
-      pixelOrDatasetId: body.pixelOrDatasetId || 'px_techurity_01',
+      pixelOrDatasetId: body.pixelOrDatasetId || 'px_asra3_01',
       eventName: body.eventName || 'Purchase',
       valueUsd: Number(body.value || body.valueUsd || 149),
       userDataHashed: body.user || {},
@@ -3743,7 +3743,7 @@ async function handleApiV1(req: NextRequest, context: { params: Promise<{ path: 
     const ads = [
       {
         id: 'ad_lib_01',
-        pageName: 'Techurity SaaS Solutions',
+        pageName: 'Asra3 SaaS Solutions',
         adText: `Experience modern automation with ${query}. Fast, secure, and turnkey.`,
         mediaUrl: 'https://assets.zernio.com/demo-ad-1.png',
         startedDate: '2026-09-15',
@@ -3777,7 +3777,7 @@ async function handleApiV1(req: NextRequest, context: { params: Promise<{ path: 
           accountId: body.accountId || 'acc_fb_01',
           name: body.name,
           questions: Array.isArray(body.questions) ? body.questions : [{ type: 'FULL_NAME', label: 'Full Name' }, { type: 'EMAIL', label: 'Work Email' }],
-          privacyPolicyUrl: body.privacyPolicyUrl || 'https://techurity.co/privacy',
+          privacyPolicyUrl: body.privacyPolicyUrl || 'https://asra3.co/privacy',
           pageId: body.pageId,
         });
         return respond(201, { success: true, form, data: form }, `Create lead form ${form.name}`, 'Form created');
@@ -4163,7 +4163,7 @@ async function handleApiV1(req: NextRequest, context: { params: Promise<{ path: 
       {
         ping: 'pong',
         organizationId: tenantId,
-        note: 'Signed with HMAC-SHA256 using your whsec_... secret in the X-Techurity-Signature header.',
+        note: 'Signed with HMAC-SHA256 using your whsec_... secret in the X-Asra3-Signature header.',
       },
       body.webhookId
     );

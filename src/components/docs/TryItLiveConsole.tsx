@@ -238,7 +238,7 @@ export default function TryItLiveConsole({ spec, isAr }: TryItLiveConsoleProps) 
         statusText: res.statusText || (res.status === 200 ? 'OK' : res.status === 201 ? 'Created' : 'Response'),
         latencyMs,
         remaining: res.headers.get('X-RateLimit-Remaining') || '119',
-        reqId: res.headers.get('X-Techurity-Request-Id') || 'req_live',
+        reqId: res.headers.get('X-Asra3-Request-Id') || 'req_live',
         sizeBytes: new Blob([rawText]).size,
         headers: resHeaders,
       });
@@ -262,7 +262,7 @@ export default function TryItLiveConsole({ spec, isAr }: TryItLiveConsoleProps) 
 
   // Reactive Multi-Language Code Snippets Generator
   const reactiveSnippets = useMemo(() => {
-    const origin = typeof window !== 'undefined' ? window.location.origin : 'https://techurity.si';
+    const origin = typeof window !== 'undefined' ? window.location.origin : 'https://asra3.com';
     const fullUrl = `${origin}${computedApiPath}`;
     const hasBody = ['POST', 'PUT', 'PATCH'].includes(spec.method) && bodyText.trim().length > 0;
 
@@ -271,7 +271,7 @@ export default function TryItLiveConsole({ spec, isAr }: TryItLiveConsoleProps) 
     if (authMode === 'bearer') {
       curl += `  -H "Authorization: Bearer ${apiKey.trim() || 'tk_live_org_workspace_9f8e7d6c5b4a3'}" \\\n`;
     } else {
-      curl += `  --cookie "techurity_session=<active_session_cookie>" \\\n`;
+      curl += `  --cookie "asra3_session=<active_session_cookie>" \\\n`;
     }
     curl += `  -H "Content-Type: application/json"`;
     if (hasBody) {
@@ -279,7 +279,7 @@ export default function TryItLiveConsole({ spec, isAr }: TryItLiveConsoleProps) 
     }
 
     // 2. JavaScript Fetch Snippet
-    let js = `// Techurity & Zernio API v1 — JavaScript Fetch\n`;
+    let js = `// Asra3 & Zernio API v1 — JavaScript Fetch\n`;
     js += `const response = await fetch('${fullUrl}', {\n`;
     js += `  method: '${spec.method}',\n`;
     js += `  headers: {\n`;
@@ -289,7 +289,7 @@ export default function TryItLiveConsole({ spec, isAr }: TryItLiveConsoleProps) 
     js += `    'Content-Type': 'application/json',\n`;
     js += `  },\n`;
     if (authMode === 'cookie') {
-      js += `  credentials: 'include', // Automatically passes active techurity_session cookie\n`;
+      js += `  credentials: 'include', // Automatically passes active asra3_session cookie\n`;
     }
     if (hasBody) {
       js += `  body: JSON.stringify(${bodyText}),\n`;
@@ -299,7 +299,7 @@ export default function TryItLiveConsole({ spec, isAr }: TryItLiveConsoleProps) 
     js += `console.log(result);`;
 
     // 3. Python Requests Snippet
-    let py = `# Techurity & Zernio API v1 — Python Requests\n`;
+    let py = `# Asra3 & Zernio API v1 — Python Requests\n`;
     py += `import requests\n\n`;
     py += `url = "${fullUrl}"\n`;
     py += `headers = {\n`;
@@ -309,7 +309,7 @@ export default function TryItLiveConsole({ spec, isAr }: TryItLiveConsoleProps) 
     py += `    "Content-Type": "application/json",\n`;
     py += `}\n`;
     if (authMode === 'cookie') {
-      py += `cookies = {"techurity_session": "<active_session_cookie>"}\n`;
+      py += `cookies = {"asra3_session": "<active_session_cookie>"}\n`;
     }
     if (hasBody) {
       py += `payload = ${bodyText}\n\n`;
@@ -478,8 +478,8 @@ export default function TryItLiveConsole({ spec, isAr }: TryItLiveConsoleProps) 
                 </div>
                 <p className="text-[11px] text-[var(--text-secondary)] leading-relaxed">
                   {isAr
-                    ? 'في هذا النمط، تُرسل الطلبات بدون ترويسة Authorization مع تفعيل credentials: "include"، ليتم التحقق تلقائياً من كوكي techurity_session.'
-                    : 'Requests dispatch without Authorization header using credentials: "include", authenticating via the browser\'s techurity_session cookie.'}
+                    ? 'في هذا النمط، تُرسل الطلبات بدون ترويسة Authorization مع تفعيل credentials: "include"، ليتم التحقق تلقائياً من كوكي asra3_session.'
+                    : 'Requests dispatch without Authorization header using credentials: "include", authenticating via the browser\'s asra3_session cookie.'}
                 </p>
               </div>
             )}

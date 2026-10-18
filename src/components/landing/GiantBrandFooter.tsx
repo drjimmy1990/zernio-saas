@@ -199,7 +199,7 @@ export default function GiantBrandFooter() {
             letterSpacing: '0.08em',
           }}
         >
-          TECHURITY
+          ASRA3
         </div>
         <div className="mt-3 text-xs sm:text-sm font-bold tracking-wide text-[var(--text-secondary)]">
           {copy.brandSubtitle}
@@ -371,7 +371,7 @@ export default function GiantBrandFooter() {
 
           <div>
             © {new Date().getFullYear()}{' '}
-            <strong dir="ltr">Techurity (techurity.si)</strong> —{' '}
+            <strong dir="ltr">Asra3 (asra3.com)</strong> —{' '}
             {copy.copyrightSuffix}
           </div>
         </div>

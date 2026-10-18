@@ -15,7 +15,7 @@
  *    - Advanced Analytics: Best Time to Post Heatmap, Content Decay, and Inbox SLAs
  * 3. Dual Authentication & Comprehensive Error Handling (Group 8):
  *    - Bearer Token authentication (tk_live_...)
- *    - Session Cookie authentication (techurity_session=...)
+ *    - Session Cookie authentication (asra3_session=...)
  *    - 401 Unauthorized (missing auth & invalid token)
  *    - 400 Bad Request (malformed JSON, validation failure, invalid phone, active workflow immutability guard)
  *    - 404 Not Found (non-existent account health, non-existent workflow)
@@ -139,8 +139,8 @@ async function main() {
     );
 
     const connectAccRes = await request('POST', '/api/v1/connect/facebook', {
-      username: '@techurity_official',
-      displayName: 'Techurity Cloud (Facebook)',
+      username: '@asra3_official',
+      displayName: 'Asra3 Cloud (Facebook)',
     });
     const connectedAccId = connectAccRes.data.data?.id || 'acc_fb_primary';
     record(
@@ -509,7 +509,7 @@ async function main() {
       profileId: 'prf_default',
       name: 'Spring Promotional Blast',
       platform: 'whatsapp',
-      message: 'Exclusive spring release offer: https://techurity.co/spring',
+      message: 'Exclusive spring release offer: https://asra3.co/spring',
     });
     const broadcastId = broadcastRes.data.broadcast?.id;
     record(
@@ -689,7 +689,7 @@ async function main() {
     const otpSendRes = await request('POST', '/api/v1/verify', {
       to: '+14159820011',
       channel: 'sms',
-      brandName: 'Techurity Cloud',
+      brandName: 'Asra3 Cloud',
       codeLength: 6,
     });
     const verificationId = otpSendRes.data.verificationId;
@@ -709,7 +709,7 @@ async function main() {
     );
 
     const brandIdRes = await request('POST', '/api/v1/branded-calling/identities', {
-      displayName: 'Techurity Fraud Alert',
+      displayName: 'Asra3 Fraud Alert',
       callReasons: ['Suspicious Activity Verification', 'Transaction Alert'],
       logoUrl: 'https://assets.zernio.com/logo.png',
     });
@@ -858,7 +858,7 @@ async function main() {
     const leadFormRes = await request('POST', '/api/v1/lead-gen/forms', {
       accountId: 'acc_fb_01',
       name: 'Enterprise Demo Request Form',
-      privacyPolicyUrl: 'https://techurity.co/privacy',
+      privacyPolicyUrl: 'https://asra3.co/privacy',
     });
     const formId = leadFormRes.data.form?.id;
     record(
@@ -1000,16 +1000,16 @@ async function main() {
       }),
     });
     const setCookieHeader = signupRes.headers.get('set-cookie') || '';
-    const cookieMatch = setCookieHeader.match(/techurity_session=([^;]+)/);
+    const cookieMatch = setCookieHeader.match(/asra3_session=([^;]+)/);
     const sessionCookie = cookieMatch ? cookieMatch[1] : '';
 
     if (sessionCookie) {
       const sessionMeRes = await request('GET', '/api/v1/me', null, {
         Authorization: '',
-        Cookie: `techurity_session=${sessionCookie}`,
+        Cookie: `asra3_session=${sessionCookie}`,
       });
       record(
-        'Dual Auth: Authenticates via session cookie (techurity_session) without Bearer token',
+        'Dual Auth: Authenticates via session cookie (asra3_session) without Bearer token',
         sessionMeRes.status === 200 && sessionMeRes.data.data?.auth?.keyName === 'Interactive Session',
         `auth: ${sessionMeRes.data.data?.auth?.keyName}`
       );

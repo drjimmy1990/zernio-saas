@@ -36,7 +36,7 @@ const zernio = new Zernio(process.env.ZERNIO_API_KEY);
 // 1 call to 18 channels + WhatsApp template broadcast
 const post = await zernio.posts.create({
   content: 'Omnichannel launch live worldwide! 🚀',
-  mediaUrls: ['https://cdn.techurity.si/launch.mp4'],
+  mediaUrls: ['https://cdn.asra3.com/launch.mp4'],
   platforms: ['instagram', 'tiktok', 'linkedin', 'whatsapp'],
   metadata: {
     whatsapp: { templateName: 'winter_sale_50' }
@@ -58,7 +58,7 @@ client = Zernio(api_key=os.environ.get("ZERNIO_API_KEY"))
 # Publish across social channels and telephony
 response = client.posts.create(
     content="Omnichannel launch live worldwide! 🚀",
-    media_urls=["https://cdn.techurity.si/launch.mp4"],
+    media_urls=["https://cdn.asra3.com/launch.mp4"],
     platforms=["instagram", "tiktok", "linkedin", "whatsapp"],
     schedule="immediate"
 )
@@ -104,7 +104,7 @@ $zernio = new \\Zernio\\Client(getenv('ZERNIO_API_KEY'));
 $post = $zernio->posts->create([
     'content'   => 'Omnichannel launch live worldwide! 🚀',
     'platforms' => ['instagram', 'tiktok', 'linkedin', 'whatsapp'],
-    'mediaUrls' => ['https://cdn.techurity.si/launch.mp4'],
+    'mediaUrls' => ['https://cdn.asra3.com/launch.mp4'],
 ]);
 
 echo "Status: " . $post->status;`,
@@ -121,7 +121,7 @@ client = Zernio::Client.new(api_key: ENV['ZERNIO_API_KEY'])
 post = client.posts.create(
   content: 'Omnichannel launch live worldwide! 🚀',
   platforms: ['instagram', 'tiktok', 'linkedin'],
-  media_urls: ['https://cdn.techurity.si/launch.mp4']
+  media_urls: ['https://cdn.asra3.com/launch.mp4']
 )
 
 puts "Published: #{post.id}"`,
@@ -160,7 +160,7 @@ var client = new ZernioClient(Environment.GetEnvironmentVariable("ZERNIO_API_KEY
 var post = await client.Posts.CreateAsync(new PostCreateOptions {
     Content = "Omnichannel launch live worldwide! 🚀",
     Platforms = new[] { "instagram", "tiktok", "linkedin", "whatsapp" },
-    MediaUrls = new[] { "https://cdn.techurity.si/launch.mp4" }
+    MediaUrls = new[] { "https://cdn.asra3.com/launch.mp4" }
 });
 
 Console.WriteLine($"Status: {post.Status}");`,
@@ -509,7 +509,7 @@ export default function DeveloperHub() {
                     zernio numbers:buy +966548192041 --link-whatsapp
                   </span>
                   <div className="text-emerald-400 mt-1">
-                    ✓ Number acquired and bound to organization #org_techurity.{'\n'}
+                    ✓ Number acquired and bound to organization #org_asra3.{'\n'}
                     ✓ WhatsApp Business Cloud API activated. Template sync complete.
                   </div>
                 </div>

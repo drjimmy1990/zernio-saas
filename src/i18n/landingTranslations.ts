@@ -333,7 +333,7 @@ const AR_COPY: LandingPageCopy = {
     eyebrow: 'طريقة العمل خطوة بخطوة',
     title: 'كيف تبدأ وتتحكم في كل قنواتك وأرقامك في 3 خطوات؟',
     subtitle:
-      'صممنا Techurity لتعمل معك فوراً بدون أي تعقيد تقني — سواء كنت تدير علامتك التجارية من لوحة التحكم أو تبني تطبيقك عبر الـ API.',
+      'صممنا Asra3 لتعمل معك فوراً بدون أي تعقيد تقني — سواء كنت تدير علامتك التجارية من لوحة التحكم أو تبني تطبيقك عبر الـ API.',
     steps: [
       {
         stepNum: '01',
@@ -435,7 +435,7 @@ const AR_COPY: LandingPageCopy = {
       igSponsored: 'مُموّل • صوت أصلي معتمد',
       igStories: ['قصتك', 'الإطلاق', 'الباقات', 'تحديثات', 'الـ API'],
       igReelTitle: 'إصدار جديد: نظام التسويق والاتصالات الموحد',
-      igReelSub: 'techurity.si • الرد الآلي مفعل',
+      igReelSub: 'asra3.com • الرد الآلي مفعل',
       igLikes: '24,819 إعجاب',
       igCaption:
         'أدر جميع قنواتك التسويقية وأرقامك من مكان واحد. اكتب كلمة "TECH" في التعليقات ليصلك الرابط فوراً في الرسائل الخاصة!',
@@ -443,9 +443,9 @@ const AR_COPY: LandingPageCopy = {
       ttFollowing: 'أتابعهم',
       ttForYou: 'لك (For You)',
       ttLive: 'مباشر',
-      ttVideoTitle: 'كيف تنشر في 18 منصة وتفعّل واتساب بضغطة واحدة عبر Techurity',
+      ttVideoTitle: 'كيف تنشر في 18 منصة وتفعّل واتساب بضغطة واحدة عبر Asra3',
       ttCaption: 'تحكم كامل في حساباتك وأرقامك من لوحة واحدة. الرابط في البايو! ⚡',
-      ttAudio: '🎵 الصوت الأصلي — Techurity Official Sound',
+      ttAudio: '🎵 الصوت الأصلي — Asra3 Official Sound',
       fbTime: 'الآن • 🌍 عام',
       fbPostText:
         'خبر سار لأصحاب المتاجر والشركات! خدمات الأرقام الهاتفية وربط واتساب وأتمتة التسويق متاحة الآن بالكامل. اكتب "عرض" في التعليقات للحصول على كود خصم 50% فوراً في ماسنجر! 🎉',
@@ -459,8 +459,8 @@ const AR_COPY: LandingPageCopy = {
       xPost1:
         '1/2 لماذا تشتت فريقك بين 18 لوحة تحكم مختلفة بينما يمكنك إدارة كل منشور، ورسالة واتساب، ورقم هاتفي سحابي من منصة واحدة؟',
       xPost2:
-        '2/2 مصممة لفرق التسويق الحديثة ووكلاء الذكاء الاصطناعي (Claude Code و Cursor). جرّبها مجاناً الآن عبر techurity.si ⚡',
-      xCardLabel: '🔗 techurity.si — منصة التسويق والاتصالات السحابية الموحدة',
+        '2/2 مصممة لفرق التسويق الحديثة ووكلاء الذكاء الاصطناعي (Claude Code و Cursor). جرّبها مجاناً الآن عبر asra3.com ⚡',
+      xCardLabel: '🔗 asra3.com — منصة التسويق والاتصالات السحابية الموحدة',
       liFollowers: '12,400 متابع • منذ 4 ساعات',
       liPostText:
         'يسعدنا مشاركة الدليل التنفيذي لعام 2026: كيف توحد الشركات الرائدة قنوات التسويق والرد الصوتي الذكي عبر 18 قناة متزامنة.',
@@ -506,7 +506,7 @@ const AR_COPY: LandingPageCopy = {
       metaBadge: 'Meta Cloud API معتمد',
       title: 'حملات واتساب الجماعية والرد الآلي على رقمك',
       desc: 'اربط رقمك المشترى بواتساب للأعمال في خطوات واضحة، وأرسل إشعارات الطلبات والحملات الترويجية بعلامة التوثيق.',
-      storeName: 'متجر Techurity الرسمي',
+      storeName: 'متجر Asra3 الرسمي',
       officialAccount: 'حساب تجاري رسمي موثق',
       msg1Title: '🔔 تم شحن طلبك (#TK-8492)',
       msg1Body:
@@ -549,7 +549,7 @@ const AR_COPY: LandingPageCopy = {
       otpBodyPrefix: 'رمز التحقق الخاص بك هو ',
       otpBodySuffix: '. صالح لمدة 10 دقائق.',
       receivedOn: 'تم الاستلام على الرقم:',
-      outboundSms: 'تم شحن طلبك رقم #4912 بنجاح! رابط التتبع المباشر: https://techurity.si/t/4912',
+      outboundSms: 'تم شحن طلبك رقم #4912 بنجاح! رابط التتبع المباشر: https://asra3.com/t/4912',
       delivered: 'تم التسليم ✓',
       openDashboardLink: 'افتح صندوق الرسائل ولوحة الاتصال في الداش بورد',
     },
@@ -692,7 +692,7 @@ const EN_COPY: LandingPageCopy = {
     stat4Value: '99.99%',
   },
   howItWorks: {
-    eyebrow: 'HOW TECHURITY WORKS',
+    eyebrow: 'HOW ASRA3 WORKS',
     title: 'Go from Zero to Full Omnichannel & Telephony in 3 Guided Steps',
     subtitle:
       'Designed for immediate clarity—operate everything visually from the Customer Dashboard or automate it through our unified REST API & MCP Server.',
@@ -797,7 +797,7 @@ const EN_COPY: LandingPageCopy = {
       igSponsored: 'Sponsored • Original Audio',
       igStories: ['Your Story', 'Launch', 'Pricing', 'API v1', 'Updates'],
       igReelTitle: 'New Release: AI Omnichannel OS',
-      igReelSub: 'techurity.si • Auto-DM Active',
+      igReelSub: 'asra3.com • Auto-DM Active',
       igLikes: '24,819 likes',
       igCaption:
         "Automate your marketing stack with one unified API call. Drop 'TECH' in comments for our developer kit!",
@@ -805,9 +805,9 @@ const EN_COPY: LandingPageCopy = {
       ttFollowing: 'Following',
       ttForYou: 'For You',
       ttLive: 'LIVE',
-      ttVideoTitle: 'How Techurity Deploys to 18 Channels in 1 Request',
+      ttVideoTitle: 'How Asra3 Deploys to 18 Channels in 1 Request',
       ttCaption: 'Full omnichannel control from one unified dashboard. Link in bio! ⚡',
-      ttAudio: '🎵 Techurity Original Audio — Verified Business Sound',
+      ttAudio: '🎵 Asra3 Original Audio — Verified Business Sound',
       fbTime: 'Just now • 🌍 Public',
       fbPostText:
         'Big news for e-commerce brands! Zernio telephony and marketing automation is now fully live. Reply "OFFER" below to receive an exclusive 50% promo code straight to your Messenger! 🎉',
@@ -821,8 +821,8 @@ const EN_COPY: LandingPageCopy = {
       xPost1:
         '1/2 Why manage 18 different APIs when you can orchestrate every post, direct message, and virtual phone number through one unified endpoint?',
       xPost2:
-        '2/2 Built for modern AI agents (Claude Code, Cursor, OpenClaw) and marketing teams alike. Try it free at techurity.si ⚡',
-      xCardLabel: '🔗 techurity.si — The Omnichannel Cloud Platform',
+        '2/2 Built for modern AI agents (Claude Code, Cursor, OpenClaw) and marketing teams alike. Try it free at asra3.com ⚡',
+      xCardLabel: '🔗 asra3.com — The Omnichannel Cloud Platform',
       liFollowers: '12,400 followers • 4h',
       liPostText:
         'Delighted to share our 2026 Enterprise Omnichannel Playbook: How leading brands synchronize marketing and conversational AI across 18 channels.',
@@ -868,7 +868,7 @@ const EN_COPY: LandingPageCopy = {
       metaBadge: 'Verified Meta Cloud API',
       title: 'Broadcasts & Auto-DM on Your Number',
       desc: 'Link your purchased number to WhatsApp Business in guided steps. Trigger verified template broadcasts with blue double-checkmarks.',
-      storeName: 'Techurity Store',
+      storeName: 'Asra3 Store',
       officialAccount: 'Official Business Account',
       msg1Title: '🔔 Order Dispatched (#TK-8492)',
       msg1Body:
@@ -912,7 +912,7 @@ const EN_COPY: LandingPageCopy = {
       otpBodySuffix: '. Valid for 10 minutes.',
       receivedOn: 'Received on:',
       outboundSms:
-        'Your order #4912 has been shipped! Live delivery tracker: https://techurity.si/t/4912',
+        'Your order #4912 has been shipped! Live delivery tracker: https://asra3.com/t/4912',
       delivered: 'Delivered ✓',
       openDashboardLink: 'Open Live SMS & Dialer in Dashboard',
     },
@@ -1027,7 +1027,7 @@ const LOCALIZED_OVERRIDES: Partial<Record<SupportedLocale, Partial<LandingPageCo
     },
     howItWorks: {
       ...EN_COPY.howItWorks,
-      eyebrow: 'CÓMO FUNCIONA TECHURITY',
+      eyebrow: 'CÓMO FUNCIONA ASRA3',
       title: 'Domina tus canales y telefonía en 3 sencillos pasos',
       subtitle:
         'Gestiona todo visualmente desde el panel de control o intégralo mediante nuestra API REST unificada.',
@@ -1044,7 +1044,7 @@ const LOCALIZED_OVERRIDES: Partial<Record<SupportedLocale, Partial<LandingPageCo
     },
     howItWorks: {
       ...EN_COPY.howItWorks,
-      eyebrow: 'COMMENT FONCTIONNE TECHURITY',
+      eyebrow: 'COMMENT FONCTIONNE ASRA3',
       title: 'Déployez vos canaux et numéros virtuels en 3 étapes',
       subtitle:
         'Pilotez tout depuis le tableau de bord client ou automatisez via notre API REST et serveur MCP.',

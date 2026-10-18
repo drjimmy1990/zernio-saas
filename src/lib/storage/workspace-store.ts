@@ -1358,7 +1358,7 @@ export class WorkspaceStore {
       try {
         if (
           ep.url.startsWith('http://localhost') ||
-          ep.url.startsWith('https://techurity.si') ||
+          ep.url.startsWith('https://asra3.com') ||
           ep.url.includes('example.com')
         ) {
           // Simulated instant 200 OK acknowledgement for local/sandbox URLs
@@ -1370,9 +1370,9 @@ export class WorkspaceStore {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',
-              'X-Techurity-Event': eventName,
-              'X-Techurity-Signature': signature,
-              'User-Agent': 'Techurity-Webhook-Engine/1.2',
+              'X-Asra3-Event': eventName,
+              'X-Asra3-Signature': signature,
+              'User-Agent': 'Asra3-Webhook-Engine/1.2',
             },
             body: payloadString,
             signal: controller.signal,
@@ -2139,7 +2139,7 @@ export class WorkspaceStore {
       to: params.to,
       code,
       channel: params.channel || 'sms',
-      brandName: params.brandName || 'Techurity',
+      brandName: params.brandName || 'Asra3',
       status: 'pending',
       attempts: 0,
       expiresAt: new Date(Date.now() + 10 * 60 * 1000).toISOString(),

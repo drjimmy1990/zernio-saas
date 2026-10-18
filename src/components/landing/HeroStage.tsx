@@ -29,7 +29,7 @@ export default function HeroStage() {
   const ArrowIcon = dir === 'rtl' ? ArrowLeft : ArrowRight;
 
   const agentPromptText =
-    'You are configuring Zernio API for Techurity (techurity.si). Connect to POST https://techurity.si/api/services using organizationId and bearer token to manage 18 social channels, virtual phone numbers, WhatsApp Business broadcasts, and AI Voice telephony.';
+    'You are configuring Zernio API for Asra3 (asra3.com). Connect to POST https://asra3.com/api/services using organizationId and bearer token to manage 18 social channels, virtual phone numbers, WhatsApp Business broadcasts, and AI Voice telephony.';
 
   const codeSnippet = `import Zernio from '@zernio/node';
 
@@ -38,7 +38,7 @@ const zernio = new Zernio(process.env.ZERNIO_API_KEY);
 // Broadcast across 18 channels + WhatsApp in 1 API call
 const response = await zernio.posts.create({
   content: 'Major product drop 🚀 Available worldwide today!',
-  mediaUrls: ['https://cdn.techurity.si/assets/launch-reel.mp4'],
+  mediaUrls: ['https://cdn.asra3.com/assets/launch-reel.mp4'],
   platforms: ['instagram', 'tiktok', 'linkedin', 'whatsapp'],
   schedule: 'immediate',
   metadata: {
@@ -211,7 +211,7 @@ console.log(response.status); // 'published_synced'`;
               <span className="h-3 w-3 rounded-full bg-[#febc2e] border border-[#d89e24]" />
               <span className="h-3 w-3 rounded-full bg-[#28c840] border border-[#1aab29]" />
               <span className="ms-2 font-mono text-[11px] text-[var(--text-muted)] hidden sm:inline">
-                techurity.si — POST /v1/posts
+                asra3.com — POST /v1/posts
               </span>
             </div>
             <div className="flex items-center gap-2">
@@ -271,7 +271,7 @@ console.log(response.status); // 'published_synced'`;
                     ,{'\n'}
                     {'  '}mediaUrls: [
                     <span className="text-emerald-300">
-                      &apos;https://cdn.techurity.si/launch.mp4&apos;
+                      &apos;https://cdn.asra3.com/launch.mp4&apos;
                     </span>
                     ],{'\n'}
                     {'  '}platforms: [

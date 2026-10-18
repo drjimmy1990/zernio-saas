@@ -94,8 +94,8 @@ async function main() {
     record('GET /api/v1/accounts/health returns summary and diagnostics', accountsHealthRes.status === 200 && accountsHealthRes.data.summary);
 
     const connectAccRes = await request('POST', '/api/v1/connect/facebook', {
-      username: '@techurity_official',
-      displayName: 'Techurity Cloud (Facebook)',
+      username: '@asra3_official',
+      displayName: 'Asra3 Cloud (Facebook)',
     });
     const connectedAccId = connectAccRes.data.data?.id || 'acc_fb_primary';
 
@@ -330,7 +330,7 @@ async function main() {
       profileId: 'prf_default',
       name: 'Black Friday VIP Early Access',
       platform: 'whatsapp',
-      message: 'Exclusive early access link for VIP members: https://techurity.co/vip',
+      message: 'Exclusive early access link for VIP members: https://asra3.co/vip',
     });
     const broadcastId = broadcastRes.data.broadcast?.id;
     record('POST /api/v1/broadcasts creates bulk broadcast campaign', broadcastRes.status === 201 && broadcastId);
@@ -445,7 +445,7 @@ async function main() {
     const otpSendRes = await request('POST', '/api/v1/verify', {
       to: '+14159820011',
       channel: 'sms',
-      brandName: 'Techurity Cloud',
+      brandName: 'Asra3 Cloud',
       codeLength: 6,
     });
     const verificationId = otpSendRes.data.verificationId;
@@ -467,7 +467,7 @@ async function main() {
     record('POST /api/v1/verify/check validates genuine verification code', otpCheckRes.status === 200 && otpCheckRes.data.verified === true);
 
     const brandIdRes = await request('POST', '/api/v1/branded-calling/identities', {
-      displayName: 'Techurity Fraud Alert',
+      displayName: 'Asra3 Fraud Alert',
       callReasons: ['Suspicious Activity Verification', 'Transaction Alert'],
       logoUrl: 'https://assets.zernio.com/logo.png',
     });
@@ -574,7 +574,7 @@ async function main() {
     const leadFormRes = await request('POST', '/api/v1/lead-gen/forms', {
       accountId: 'acc_fb_01',
       name: 'Enterprise Demo Request Form',
-      privacyPolicyUrl: 'https://techurity.co/privacy',
+      privacyPolicyUrl: 'https://asra3.co/privacy',
     });
     const formId = leadFormRes.data.form?.id;
     record('POST /api/v1/lead-gen/forms creates Instant Lead Form', leadFormRes.status === 201 && formId);

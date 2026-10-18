@@ -307,8 +307,8 @@ export function getLocalizedText(
 
 const dict_ar: TranslationDictionary = {
   "brand": {
-    "name": "Techurity",
-    "domain": "techurity.si",
+    "name": "Asra3",
+    "domain": "asra3.com",
     "tagline": "منصة التسويق والاتصالات السحابية الموحدة — الحسابات الاجتماعية، الإعلانات، الرسائل، الهاتف الذكي والمتاجر"
   },
   "nav": {
@@ -324,11 +324,11 @@ const dict_ar: TranslationDictionary = {
     "signOut": "خروج"
   },
   "hero": {
-    "badge": "منصة موحدة للتسويق والاتصالات + API للمطورين · techurity.si",
+    "badge": "منصة موحدة للتسويق والاتصالات + API للمطورين · asra3.com",
     "titlePart1": "اوصل لعملائك في كل مكان عبر",
     "titleHighlight": "منصة واحدة ومفتاح API واحد",
     "titlePart2": "بدون تعقيد أو انتظار موافقات المنصات.",
-    "subtitle": "تربط Techurity بين 18 منصة تواصل ومدونات، و8 شبكات إعلانية، وصندوق رسائل موحد (واتساب وإنستغرام)، وأرقام هاتفية ووكيل صوتي ذكي، ومتاجر إلكترونية — جاهزة للاستخدام المباشر أو الربط البرمجي في دقائق.",
+    "subtitle": "تربط Asra3 بين 18 منصة تواصل ومدونات، و8 شبكات إعلانية، وصندوق رسائل موحد (واتساب وإنستغرام)، وأرقام هاتفية ووكيل صوتي ذكي، ومتاجر إلكترونية — جاهزة للاستخدام المباشر أو الربط البرمجي في دقائق.",
     "ctaStart": "ابدأ مجاناً الآن",
     "ctaWorkspace": "افتح لوحة التحكم",
     "ctaDocs": "توثيق الـ API للمطورين",
@@ -340,7 +340,7 @@ const dict_ar: TranslationDictionary = {
   "subServicesSection": {
     "eyebrow": "كل ما تحتاجه في مكان واحد",
     "title": "8 منتجات متكاملة لتنمية أعمالك أو بناء تطبيقك",
-    "subtitle": "استخدمها مباشرة من لوحة التحكم السهلة، أو اربطها بتطبيقك وموقعك عبر واجهة Techurity API.",
+    "subtitle": "استخدمها مباشرة من لوحة التحكم السهلة، أو اربطها بتطبيقك وموقعك عبر واجهة Asra3 API.",
     "openInWorkspace": "جرّبها في لوحة التحكم",
     "viewApiDocs": "مرجع الـ API",
     "services": {
@@ -427,7 +427,7 @@ const dict_ar: TranslationDictionary = {
         "tagline": "مساعد ذكي لفحص حساباتك ومنشوراتك + مفاتيح API لربط تطبيقاتك",
         "bullets": [
           "اسأل المساعد الذكي عن سبب تعذر أي منشور أو حالة أي حساب وسيعطيك الحل فوراً",
-          "إنشاء مفاتيح Techurity API لربط موقعك أو تطبيقك أو وكيل الذكاء الاصطناعي الخاص بك",
+          "إنشاء مفاتيح Asra3 API لربط موقعك أو تطبيقك أو وكيل الذكاء الاصطناعي الخاص بك",
           "إعداد روابط Webhooks لاستقبال إشعارات فورية عند وصول رسالة أو نشر محتوى"
         ]
       }
@@ -485,20 +485,20 @@ const dict_ar: TranslationDictionary = {
   },
   "faqSection": {
     "eyebrow": "الأسئلة الشائعة",
-    "title": "كل ما تريد معرفته عن منصة Techurity (techurity.si)",
+    "title": "كل ما تريد معرفته عن منصة Asra3 (asra3.com)",
     "subtitle": "إجابات واضحة حول كيفية استخدام المنصة أو ربطها برمجياً عبر الـ API.",
     "items": [
       {
-        "q": "ما هي منصة Techurity (techurity.si) وماذا تقدم؟",
-        "a": "منصة Techurity (techurity.si) هي منصة تسويق واتصالات موحدة تتيح لك ربط وإدارة 18 قناة تواصل ومدونة، و8 شبكات إعلانية، وصندوق رسائل موحد (واتساب وإنستغرام)، وأرقام هاتفية مع وكيل صوتي ذكي، ومتاجر إلكترونية — سواء من خلال لوحة تحكم سهلة الاستخدام أو عبر واجهة برمجية (REST API) للمطورين."
+        "q": "ما هي منصة Asra3 (asra3.com) وماذا تقدم؟",
+        "a": "منصة Asra3 (asra3.com) هي منصة تسويق واتصالات موحدة تتيح لك ربط وإدارة 18 قناة تواصل ومدونة، و8 شبكات إعلانية، وصندوق رسائل موحد (واتساب وإنستغرام)، وأرقام هاتفية مع وكيل صوتي ذكي، ومتاجر إلكترونية — سواء من خلال لوحة تحكم سهلة الاستخدام أو عبر واجهة برمجية (REST API) للمطورين."
       },
       {
-        "q": "هل يمكنني استخدام Techurity بدون خبرة برمجية؟",
+        "q": "هل يمكنني استخدام Asra3 بدون خبرة برمجية؟",
         "a": "بكل تأكيد! صممنا لوحة التحكم (/dashboard) لتكون في غاية البساطة؛ تضغط على المنصة (مثل إنستغرام أو تيك توك أو شوبيفاي) فترتبط بحسابك فوراً، وتبدأ بنشر المحتوى أو الرد على الرسائل أو إطلاق الإعلانات بدون أي كود."
       },
       {
-        "q": "هل يمكنني استخدام Techurity كمزود خدمة (Third-Party API) داخل تطبيقي أو موقعي؟",
-        "a": "نعم، إذا كنت مطوراً أو تبني نظاماً أو وكيل ذكاء اصطناعي (AI Agent)، يمكنك استخراج مفتاح API من حسابك واستخدام نقطة الاتصال https://techurity.si/api/v1 لربط حسابات المستخدمين وجدولة المنشورات وإرسال الرسائل برمجياً."
+        "q": "هل يمكنني استخدام Asra3 كمزود خدمة (Third-Party API) داخل تطبيقي أو موقعي؟",
+        "a": "نعم، إذا كنت مطوراً أو تبني نظاماً أو وكيل ذكاء اصطناعي (AI Agent)، يمكنك استخراج مفتاح API من حسابك واستخدام نقطة الاتصال https://asra3.com/api/v1 لربط حسابات المستخدمين وجدولة المنشورات وإرسال الرسائل برمجياً."
       },
       {
         "q": "ما هي القنوات والشبكات التي تدعمها المنصة حالياً؟",
@@ -592,9 +592,9 @@ const dict_ar: TranslationDictionary = {
     "colMargin": "صافي الربح"
   },
   "docs": {
-    "badge": "توثيق المطورين الرسمي · techurity.si/docs",
-    "title": "توثيق واجهة البرمجة (Techurity API Documentation)",
-    "subtitle": "أنشئ مفتاح API، واربط حساباً، وجدول أول منشور لك في 5 طلبات فقط عبر واجهة Techurity الموحدة.",
+    "badge": "توثيق المطورين الرسمي · asra3.com/docs",
+    "title": "توثيق واجهة البرمجة (Asra3 API Documentation)",
+    "subtitle": "أنشئ مفتاح API، واربط حساباً، وجدول أول منشور لك في 5 طلبات فقط عبر واجهة Asra3 الموحدة.",
     "baseUrlLabel": "رابط الـ API الأساسي (Base URL)",
     "authTitle": "المصادقة ومفاتيح الـ API",
     "authDesc": "مرر مفتاحك السري في ترويسة Authorization: Bearer tk_live_... في جميع الطلبات.",
@@ -641,7 +641,7 @@ const dict_ar: TranslationDictionary = {
   "auth": {
         "loginTitle": "تسجيل الدخول إلى حسابك",
         "loginSubtitle": "أدخل بيانات اعتمادك للوصول إلى مساحة عملك المعزولة وإدارة قنواتك وأرقامك الهاتفية.",
-        "signupTitle": "إنشاء حساب جديد في Techurity",
+        "signupTitle": "إنشاء حساب جديد في Asra3",
         "signupSubtitle": "اربط حساباتك الاجتماعية، جدول منشوراتك، أدر رسائلك وإعلاناتك، أو احصل على مفتاح API فور التسجيل.",
         "emailLabel": "البريد الإلكتروني للعمل",
         "passwordLabel": "كلمة المرور",
@@ -673,7 +673,7 @@ const dict_ar: TranslationDictionary = {
         "companyNamePlaceholder": "متجر أو شركة...",
         "whatYouGet1": "ربط حساباتك في 18 منصة (إنستغرام، تيك توك، فيسبوك، إكس، لينكدإن، يوتيوب، واتساب، شوبيفاي...) بضغطة زر.",
         "whatYouGet2": "نشر وجدولة المحتوى والـ Reels والرد التلقائي على التعليقات والرسائل.",
-        "whatYouGet3": "مفتاح Techurity API جاهز إذا كنت مطوراً وتريد ربط خدماتنا بموقعك أو تطبيقك.",
+        "whatYouGet3": "مفتاح Asra3 API جاهز إذا كنت مطوراً وتريد ربط خدماتنا بموقعك أو تطبيقك.",
         "exploreApiDocs": "استعرض توثيق الـ API للمطورين"
     },
   "showcase": {
@@ -694,8 +694,8 @@ const dict_ar: TranslationDictionary = {
 
 const dict_en: TranslationDictionary = {
   "brand": {
-    "name": "Techurity",
-    "domain": "techurity.si",
+    "name": "Asra3",
+    "domain": "asra3.com",
     "tagline": "Unified Marketing, Social, Ads, Messaging & AI Telephony Platform + Developer API"
   },
   "nav": {
@@ -711,11 +711,11 @@ const dict_en: TranslationDictionary = {
     "signOut": "Logout"
   },
   "hero": {
-    "badge": "Unified Marketing & Messaging Cloud + Developer API · techurity.si",
+    "badge": "Unified Marketing & Messaging Cloud + Developer API · asra3.com",
     "titlePart1": "Reach Your Customers Everywhere With",
     "titleHighlight": "One Platform & One API Key",
     "titlePart2": "Skip Months of Platform Approvals.",
-    "subtitle": "Techurity (techurity.si) connects 18 social & blog channels, 8 paid ad networks, a unified WhatsApp/Instagram inbox, global phone numbers with AI voice agents, and e-commerce stores — ready to use in our clean dashboard or integrate via REST API in minutes.",
+    "subtitle": "Asra3 (asra3.com) connects 18 social & blog channels, 8 paid ad networks, a unified WhatsApp/Instagram inbox, global phone numbers with AI voice agents, and e-commerce stores — ready to use in our clean dashboard or integrate via REST API in minutes.",
     "ctaStart": "Start for Free",
     "ctaWorkspace": "Open Dashboard",
     "ctaDocs": "Read API Docs",
@@ -727,7 +727,7 @@ const dict_en: TranslationDictionary = {
   "subServicesSection": {
     "eyebrow": "Complete Product Suite",
     "title": "8 Integrated Products — Use in Dashboard or via API",
-    "subtitle": "Manage your channels directly from our effortless workspace, or build on top of Techurity as your third-party marketing API.",
+    "subtitle": "Manage your channels directly from our effortless workspace, or build on top of Asra3 as your third-party marketing API.",
     "openInWorkspace": "Open in Dashboard",
     "viewApiDocs": "API Reference",
     "services": {
@@ -814,7 +814,7 @@ const dict_en: TranslationDictionary = {
         "tagline": "Instant AI troubleshooting for your accounts + API keys for developers",
         "bullets": [
           "Ask the AI Assistant why a post failed or check account health in one click",
-          "Generate Techurity API keys (tk_live_...) to integrate our services into your app",
+          "Generate Asra3 API keys (tk_live_...) to integrate our services into your app",
           "Configure real-time webhooks for incoming messages and published posts"
         ]
       }
@@ -823,7 +823,7 @@ const dict_en: TranslationDictionary = {
   "pricingSection": {
     "eyebrow": "Simple, Transparent Pricing",
     "title": "Start Free and Scale as You Grow",
-    "subtitle": "Every plan includes full access to both our web dashboard and the Techurity REST API.",
+    "subtitle": "Every plan includes full access to both our web dashboard and the Asra3 REST API.",
     "perMonth": "/ month",
     "choosePlan": "Get Started",
     "popularBadge": "Most Popular",
@@ -872,20 +872,20 @@ const dict_en: TranslationDictionary = {
   },
   "faqSection": {
     "eyebrow": "Frequently Asked Questions",
-    "title": "Everything You Need to Know About Techurity (techurity.si)",
+    "title": "Everything You Need to Know About Asra3 (asra3.com)",
     "subtitle": "Clear answers on how to use the dashboard or integrate our API into your product.",
     "items": [
       {
-        "q": "What is Techurity (techurity.si)?",
-        "a": "Techurity (techurity.si) is an all-in-one marketing and communications platform + developer API. It lets you connect 18 social and blog platforms, manage a unified WhatsApp/Instagram inbox, run ads across 8 networks, and operate cloud phone numbers with AI voice agents from one dashboard or a single REST API key."
+        "q": "What is Asra3 (asra3.com)?",
+        "a": "Asra3 (asra3.com) is an all-in-one marketing and communications platform + developer API. It lets you connect 18 social and blog platforms, manage a unified WhatsApp/Instagram inbox, run ads across 8 networks, and operate cloud phone numbers with AI voice agents from one dashboard or a single REST API key."
       },
       {
-        "q": "Can I use Techurity without writing any code?",
+        "q": "Can I use Asra3 without writing any code?",
         "a": "Yes! Our web dashboard (/dashboard) is built for everyday businesses, marketers, and creators. You can connect your accounts in one click, schedule posts, reply to messages, and launch ads with zero technical setup."
       },
       {
-        "q": "Can I integrate Techurity as a third-party API in my own app or AI agent?",
-        "a": "Absolutely. Developers can generate an API key (tk_live_...) and call https://techurity.si/api/v1 to connect user accounts, schedule content, read analytics, and send WhatsApp/SMS messages programmatically."
+        "q": "Can I integrate Asra3 as a third-party API in my own app or AI agent?",
+        "a": "Absolutely. Developers can generate an API key (tk_live_...) and call https://asra3.com/api/v1 to connect user accounts, schedule content, read analytics, and send WhatsApp/SMS messages programmatically."
       },
       {
         "q": "Which platforms and ad networks are supported?",
@@ -979,9 +979,9 @@ const dict_en: TranslationDictionary = {
     "colMargin": "Net Profit"
   },
   "docs": {
-    "badge": "Official Developer Documentation · techurity.si/docs",
-    "title": "Techurity API Documentation",
-    "subtitle": "Create an API key, connect an account, and schedule your first post with 5 calls to the Techurity API.",
+    "badge": "Official Developer Documentation · asra3.com/docs",
+    "title": "Asra3 API Documentation",
+    "subtitle": "Create an API key, connect an account, and schedule your first post with 5 calls to the Asra3 API.",
     "baseUrlLabel": "Base URL",
     "authTitle": "Authentication & API Keys",
     "authDesc": "Send your API key in the Authorization: Bearer tk_live_... header on every request.",
@@ -1028,7 +1028,7 @@ const dict_en: TranslationDictionary = {
   "auth": {
         "loginTitle": "Sign In to Your Workspace",
         "loginSubtitle": "Enter your credentials to access your isolated customer workspace and manage channels & telephony.",
-        "signupTitle": "Create Your Techurity Account",
+        "signupTitle": "Create Your Asra3 Account",
         "signupSubtitle": "Connect your social channels, schedule posts, manage messages & ads, or grab your API key right away.",
         "emailLabel": "Work Email",
         "passwordLabel": "Password",
@@ -1060,7 +1060,7 @@ const dict_en: TranslationDictionary = {
         "companyNamePlaceholder": "My Brand",
         "whatYouGet1": "1-click connection for 18 platforms (Instagram, TikTok, LinkedIn, YouTube, WhatsApp, Shopify & more).",
         "whatYouGet2": "Schedule posts & Reels, reply to unified inbox messages, and enable Comment-to-DM.",
-        "whatYouGet3": "Instant Techurity API Key (tk_live_...) if you want to integrate our endpoints into your own app.",
+        "whatYouGet3": "Instant Asra3 API Key (tk_live_...) if you want to integrate our endpoints into your own app.",
         "exploreApiDocs": "Explore Developer API Docs"
     },
   "showcase": {
@@ -1081,8 +1081,8 @@ const dict_en: TranslationDictionary = {
 
 const dict_es: TranslationDictionary = {
   "brand": {
-    "name": "Techurity",
-    "domain": "techurity.si",
+    "name": "Asra3",
+    "domain": "asra3.com",
     "tagline": "Plataforma Unificada de Redes Sociales, Publicidad, Mensajería, Telefonía IA y API para Desarrolladores"
   },
   "nav": {
@@ -1098,11 +1098,11 @@ const dict_es: TranslationDictionary = {
     "signOut": "Salir"
   },
   "hero": {
-    "badge": "Nube Unificada de Marketing y Mensajería + API para Desarrolladores · techurity.si",
+    "badge": "Nube Unificada de Marketing y Mensajería + API para Desarrolladores · asra3.com",
     "titlePart1": "Llega a Tus Clientes en Todas Partes con",
     "titleHighlight": "Una Plataforma y Una API",
     "titlePart2": "Sin Esperar Meses por Aprobaciones.",
-    "subtitle": "Techurity (techurity.si) conecta 18 redes sociales y blogs, 8 redes de publicidad, buzón unificado de WhatsApp/Instagram, números internacionales con agentes de voz IA y comercio electrónico: listo para usar en tu panel o integrar mediante API REST en minutos.",
+    "subtitle": "Asra3 (asra3.com) conecta 18 redes sociales y blogs, 8 redes de publicidad, buzón unificado de WhatsApp/Instagram, números internacionales con agentes de voz IA y comercio electrónico: listo para usar en tu panel o integrar mediante API REST en minutos.",
     "ctaStart": "Comenzar Gratis",
     "ctaWorkspace": "Abrir Panel",
     "ctaDocs": "Documentación API",
@@ -1114,7 +1114,7 @@ const dict_es: TranslationDictionary = {
   "subServicesSection": {
     "eyebrow": "Suite Integral de Productos",
     "title": "8 Productos Integrados: Úsalos en el Panel o vía API",
-    "subtitle": "Gestiona todos tus canales directamente desde nuestro panel intuitivo o construye sobre Techurity como tu API externa de marketing.",
+    "subtitle": "Gestiona todos tus canales directamente desde nuestro panel intuitivo o construye sobre Asra3 como tu API externa de marketing.",
     "openInWorkspace": "Abrir en el Panel",
     "viewApiDocs": "Referencia de la API",
     "services": {
@@ -1201,7 +1201,7 @@ const dict_es: TranslationDictionary = {
         "tagline": "Diagnóstico inmediato con IA para tus canales + claves de API para desarrolladores",
         "bullets": [
           "Pregunta al Asistente IA la causa de fallos en posts o verifica el estado de cuentas en 1 clic",
-          "Genera claves de API Techurity (tk_live_...) para conectar servicios a tu app",
+          "Genera claves de API Asra3 (tk_live_...) para conectar servicios a tu app",
           "Configura webhooks en tiempo real para mensajes entrantes y contenido publicado"
         ]
       }
@@ -1210,7 +1210,7 @@ const dict_es: TranslationDictionary = {
   "pricingSection": {
     "eyebrow": "Precios Claros y Transparentes",
     "title": "Empieza Gratis y Escala a tu Ritmo",
-    "subtitle": "Todos los planes incluyen acceso completo tanto al panel web como a la API REST de Techurity.",
+    "subtitle": "Todos los planes incluyen acceso completo tanto al panel web como a la API REST de Asra3.",
     "perMonth": "/ mes",
     "choosePlan": "Comenzar Ahora",
     "popularBadge": "Más Popular",
@@ -1259,20 +1259,20 @@ const dict_es: TranslationDictionary = {
   },
   "faqSection": {
     "eyebrow": "Preguntas Frecuentes",
-    "title": "Todo lo que Necesitas Saber Sobre Techurity (techurity.si)",
+    "title": "Todo lo que Necesitas Saber Sobre Asra3 (asra3.com)",
     "subtitle": "Respuestas directas sobre cómo utilizar la plataforma o integrarla mediante API.",
     "items": [
       {
-        "q": "¿Qué es Techurity (techurity.si) y qué ventajas ofrece?",
-        "a": "Techurity (techurity.si) es una plataforma integral de marketing, comunicaciones y API para desarrolladores. Te permite conectar 18 redes sociales y blogs, gestionar un buzón unificado de WhatsApp e Instagram, lanzar publicidad en 8 plataformas y operar telefonía virtual con agentes de voz IA desde un solo panel o mediante una clave API REST."
+        "q": "¿Qué es Asra3 (asra3.com) y qué ventajas ofrece?",
+        "a": "Asra3 (asra3.com) es una plataforma integral de marketing, comunicaciones y API para desarrolladores. Te permite conectar 18 redes sociales y blogs, gestionar un buzón unificado de WhatsApp e Instagram, lanzar publicidad en 8 plataformas y operar telefonía virtual con agentes de voz IA desde un solo panel o mediante una clave API REST."
       },
       {
-        "q": "¿Puedo usar Techurity sin conocimientos técnicos ni de programación?",
+        "q": "¿Puedo usar Asra3 sin conocimientos técnicos ni de programación?",
         "a": "¡Totalmente! Nuestro panel web (/dashboard) está concebido para empresas, creadores y equipos de marketing. Puedes vincular tus cuentas en un clic, programar publicaciones, responder mensajes y activar campañas sin escribir código."
       },
       {
-        "q": "¿Puedo integrar Techurity como API de terceros en mi propia aplicación o agente de IA?",
-        "a": "Sin duda. Los desarrolladores pueden emitir una clave de API (tk_live_...) e interactuar con https://techurity.si/api/v1 para vincular cuentas de clientes, programar contenido, consultar métricas y enviar mensajes de WhatsApp/SMS de manera programática."
+        "q": "¿Puedo integrar Asra3 como API de terceros en mi propia aplicación o agente de IA?",
+        "a": "Sin duda. Los desarrolladores pueden emitir una clave de API (tk_live_...) e interactuar con https://asra3.com/api/v1 para vincular cuentas de clientes, programar contenido, consultar métricas y enviar mensajes de WhatsApp/SMS de manera programática."
       },
       {
         "q": "¿Qué plataformas sociales y redes publicitarias son compatibles?",
@@ -1366,8 +1366,8 @@ const dict_es: TranslationDictionary = {
     "colMargin": "Beneficio Neto"
   },
   "docs": {
-    "badge": "Documentación Oficial para Desarrolladores · techurity.si/docs",
-    "title": "Documentación de la API de Techurity",
+    "badge": "Documentación Oficial para Desarrolladores · asra3.com/docs",
+    "title": "Documentación de la API de Asra3",
     "subtitle": "Crea una clave de API, conecta una cuenta y programa tu primer post en 5 llamadas con la API unificada.",
     "baseUrlLabel": "URL Base de la API",
     "authTitle": "Autenticación y Claves de API",
@@ -1415,7 +1415,7 @@ const dict_es: TranslationDictionary = {
   "auth": {
         "loginTitle": "Inicia sesión en tu espacio de trabajo",
         "loginSubtitle": "Ingresa tus credenciales para acceder a tu espacio aislado de cliente y administrar canales y telefonía.",
-        "signupTitle": "Crea tu cuenta de Techurity",
+        "signupTitle": "Crea tu cuenta de Asra3",
         "signupSubtitle": "Conecta tus canales sociales, programa publicaciones, administra mensajes y anuncios o genera tu clave API al instante.",
         "emailLabel": "Correo electrónico laboral",
         "passwordLabel": "Contraseña",
@@ -1447,7 +1447,7 @@ const dict_es: TranslationDictionary = {
         "companyNamePlaceholder": "Mi Empresa",
         "whatYouGet1": "Conexión en 1 clic para 18 plataformas (Instagram, TikTok, LinkedIn, YouTube, WhatsApp, Shopify y más).",
         "whatYouGet2": "Programa publicaciones y Reels, responde mensajes en bandeja unificada y activa Comment-to-DM.",
-        "whatYouGet3": "Clave API de Techurity al instante (tk_live_...) para integrar con tus aplicaciones.",
+        "whatYouGet3": "Clave API de Asra3 al instante (tk_live_...) para integrar con tus aplicaciones.",
         "exploreApiDocs": "Explorar documentación de API para desarrolladores"
     },
   "showcase": {
@@ -1468,8 +1468,8 @@ const dict_es: TranslationDictionary = {
 
 const dict_fr: TranslationDictionary = {
   "brand": {
-    "name": "Techurity",
-    "domain": "techurity.si",
+    "name": "Asra3",
+    "domain": "asra3.com",
     "tagline": "Plateforme Unifiée Réseaux Sociaux, Publicités, Messagerie, Téléphonie IA & API Développeur"
   },
   "nav": {
@@ -1485,11 +1485,11 @@ const dict_fr: TranslationDictionary = {
     "signOut": "Sortir"
   },
   "hero": {
-    "badge": "Cloud Unifié Marketing & Messagerie + API Développeur · techurity.si",
+    "badge": "Cloud Unifié Marketing & Messagerie + API Développeur · asra3.com",
     "titlePart1": "Touchez Vos Clients Partout avec",
     "titleHighlight": "Une Seule Plateforme & API",
     "titlePart2": "Sans Attendre des Mois d'Approbation.",
-    "subtitle": "Techurity (techurity.si) relie 18 réseaux sociaux et blogs, 8 régies publicitaires, une boîte de réception unifiée WhatsApp/Instagram, des numéros cloud avec agents vocaux IA et le e-commerce — utilisable depuis le tableau de bord ou intégrable via API REST en quelques minutes.",
+    "subtitle": "Asra3 (asra3.com) relie 18 réseaux sociaux et blogs, 8 régies publicitaires, une boîte de réception unifiée WhatsApp/Instagram, des numéros cloud avec agents vocaux IA et le e-commerce — utilisable depuis le tableau de bord ou intégrable via API REST en quelques minutes.",
     "ctaStart": "Commencer Gratuitement",
     "ctaWorkspace": "Ouvrir le Tableau de Bord",
     "ctaDocs": "Documentation API",
@@ -1501,7 +1501,7 @@ const dict_fr: TranslationDictionary = {
   "subServicesSection": {
     "eyebrow": "Suite Complète de Produits",
     "title": "8 Produits Intégrés — Utilisez le Dashboard ou l'API",
-    "subtitle": "Gérez vos canaux directement depuis notre espace fluide ou appuyez-vous sur Techurity comme API marketing tierce.",
+    "subtitle": "Gérez vos canaux directement depuis notre espace fluide ou appuyez-vous sur Asra3 comme API marketing tierce.",
     "openInWorkspace": "Ouvrir dans le Dashboard",
     "viewApiDocs": "Référence API",
     "services": {
@@ -1588,7 +1588,7 @@ const dict_fr: TranslationDictionary = {
         "tagline": "Dépannage instantané par IA pour vos comptes + clés d'accès API pour vos apps",
         "bullets": [
           "Demandez à l'Assistant IA la raison d'un échec de publication ou vérifiez un compte",
-          "Générez des clés API Techurity (tk_live_...) pour intégrer nos services",
+          "Générez des clés API Asra3 (tk_live_...) pour intégrer nos services",
           "Configurez des webhooks en temps réel pour messages et publications"
         ]
       }
@@ -1597,7 +1597,7 @@ const dict_fr: TranslationDictionary = {
   "pricingSection": {
     "eyebrow": "Tarifs Simples et Transparents",
     "title": "Commencez Gratuitement et Évoluez à Votre Rythme",
-    "subtitle": "Chaque forfait inclut un accès complet à l'interface web ainsi qu'à l'API REST Techurity.",
+    "subtitle": "Chaque forfait inclut un accès complet à l'interface web ainsi qu'à l'API REST Asra3.",
     "perMonth": "/ mois",
     "choosePlan": "Démarrer",
     "popularBadge": "Le Plus Populaire",
@@ -1646,20 +1646,20 @@ const dict_fr: TranslationDictionary = {
   },
   "faqSection": {
     "eyebrow": "Foire Aux Questions",
-    "title": "Tout ce que Vous Devez Savoir sur Techurity (techurity.si)",
+    "title": "Tout ce que Vous Devez Savoir sur Asra3 (asra3.com)",
     "subtitle": "Des explications claires pour utiliser la plateforme ou brancher notre API.",
     "items": [
       {
-        "q": "Qu'est-ce que Techurity (techurity.si) et que permet-elle de faire ?",
-        "a": "Techurity (techurity.si) est une plateforme globale de marketing, de messagerie et une API pour développeurs. Elle vous permet de connecter 18 réseaux sociaux et blogs, de gérer une boîte de réception unifiée WhatsApp/Instagram, de diffuser des annonces sur 8 réseaux et d'opérer des numéros virtuels avec agents vocaux IA, depuis un seul tableau de bord ou via une clé d'API REST."
+        "q": "Qu'est-ce que Asra3 (asra3.com) et que permet-elle de faire ?",
+        "a": "Asra3 (asra3.com) est une plateforme globale de marketing, de messagerie et une API pour développeurs. Elle vous permet de connecter 18 réseaux sociaux et blogs, de gérer une boîte de réception unifiée WhatsApp/Instagram, de diffuser des annonces sur 8 réseaux et d'opérer des numéros virtuels avec agents vocaux IA, depuis un seul tableau de bord ou via une clé d'API REST."
       },
       {
-        "q": "Puis-je utiliser Techurity sans compétences techniques ni codage ?",
+        "q": "Puis-je utiliser Asra3 sans compétences techniques ni codage ?",
         "a": "Absolument ! Notre tableau de bord web (/dashboard) a été conçu pour les entreprises, créateurs et responsables marketing. Connectez vos comptes en un clic, programmez vos publications, répondez aux messages et pilotez vos annonces sans toucher au code."
       },
       {
-        "q": "Puis-je intégrer Techurity comme API tierce dans mon application ou mon agent IA ?",
-        "a": "Tout à fait. Les développeurs peuvent générer une clé API (tk_live_...) et interroger https://techurity.si/api/v1 pour associer des comptes utilisateurs, planifier du contenu, consulter les métriques et envoyer des messages WhatsApp/SMS par programmation."
+        "q": "Puis-je intégrer Asra3 comme API tierce dans mon application ou mon agent IA ?",
+        "a": "Tout à fait. Les développeurs peuvent générer une clé API (tk_live_...) et interroger https://asra3.com/api/v1 pour associer des comptes utilisateurs, planifier du contenu, consulter les métriques et envoyer des messages WhatsApp/SMS par programmation."
       },
       {
         "q": "Quelles sont les plateformes et régies publicitaires prises en charge ?",
@@ -1753,8 +1753,8 @@ const dict_fr: TranslationDictionary = {
     "colMargin": "Marge Nette"
   },
   "docs": {
-    "badge": "Documentation Officielle Développeur · techurity.si/docs",
-    "title": "Documentation de l'API Techurity",
+    "badge": "Documentation Officielle Développeur · asra3.com/docs",
+    "title": "Documentation de l'API Asra3",
     "subtitle": "Générez une clé API, connectez un compte et planifiez votre première publication en 5 requêtes.",
     "baseUrlLabel": "URL de Base de l'API",
     "authTitle": "Authentification & Clés API",
@@ -1802,7 +1802,7 @@ const dict_fr: TranslationDictionary = {
   "auth": {
         "loginTitle": "Connexion à votre espace de travail",
         "loginSubtitle": "Entrez vos identifiants pour accéder à votre espace client isolé et gérer canaux et téléphonie.",
-        "signupTitle": "Créez votre compte Techurity",
+        "signupTitle": "Créez votre compte Asra3",
         "signupSubtitle": "Connectez vos réseaux, planifiez vos publications, gérez messages et publicités, ou obtenez votre clé API immédiatement.",
         "emailLabel": "E-mail professionnel",
         "passwordLabel": "Mot de passe",
@@ -1834,7 +1834,7 @@ const dict_fr: TranslationDictionary = {
         "companyNamePlaceholder": "Mon Entreprise",
         "whatYouGet1": "Connexion en 1 clic pour 18 plateformes (Instagram, TikTok, LinkedIn, YouTube, WhatsApp, Shopify, etc.).",
         "whatYouGet2": "Planifiez des posts & Reels, répondez depuis la boîte unifiée et activez Comment-to-DM.",
-        "whatYouGet3": "Clé API Techurity instantanée (tk_live_...) pour intégrer nos services dans vos applications.",
+        "whatYouGet3": "Clé API Asra3 instantanée (tk_live_...) pour intégrer nos services dans vos applications.",
         "exploreApiDocs": "Explorer la documentation API pour développeurs"
     },
   "showcase": {
@@ -1855,8 +1855,8 @@ const dict_fr: TranslationDictionary = {
 
 const dict_de: TranslationDictionary = {
   "brand": {
-    "name": "Techurity",
-    "domain": "techurity.si",
+    "name": "Asra3",
+    "domain": "asra3.com",
     "tagline": "All-in-One Plattform & Entwickler-API für Social Media, Ads, Messaging, KI-Telefonie & E-Commerce"
   },
   "nav": {
@@ -1872,11 +1872,11 @@ const dict_de: TranslationDictionary = {
     "signOut": "Abmelden"
   },
   "hero": {
-    "badge": "Einheitliche Marketing- & Messaging-Cloud + Entwickler-API · techurity.si",
+    "badge": "Einheitliche Marketing- & Messaging-Cloud + Entwickler-API · asra3.com",
     "titlePart1": "Erreichen Sie Ihre Kunden Überall mit",
     "titleHighlight": "Einer Plattform & Einer API",
     "titlePart2": "Ohne Monatelange Wartezeiten auf Freigaben.",
-    "subtitle": "Techurity (techurity.si) verbindet 18 soziale Kanäle und Blogs, 8 Werbenetzwerke, einen einheitlichen WhatsApp/Instagram-Posteingang, globale Rufnummern mit KI-Sprachagenten und Online-Shops – direkt nutzbar im Dashboard oder per REST-API in wenigen Minuten.",
+    "subtitle": "Asra3 (asra3.com) verbindet 18 soziale Kanäle und Blogs, 8 Werbenetzwerke, einen einheitlichen WhatsApp/Instagram-Posteingang, globale Rufnummern mit KI-Sprachagenten und Online-Shops – direkt nutzbar im Dashboard oder per REST-API in wenigen Minuten.",
     "ctaStart": "Kostenlos Starten",
     "ctaWorkspace": "Dashboard Öffnen",
     "ctaDocs": "API-Dokumentation",
@@ -1888,7 +1888,7 @@ const dict_de: TranslationDictionary = {
   "subServicesSection": {
     "eyebrow": "Umfassende Produktsuite",
     "title": "8 Integrierte Produkte — Im Dashboard oder via API",
-    "subtitle": "Verwalten Sie Ihre Kanäle direkt in unserem übersichtlichen Arbeitsbereich oder integrieren Sie Techurity als Ihre Marketing-API.",
+    "subtitle": "Verwalten Sie Ihre Kanäle direkt in unserem übersichtlichen Arbeitsbereich oder integrieren Sie Asra3 als Ihre Marketing-API.",
     "openInWorkspace": "Im Dashboard Öffnen",
     "viewApiDocs": "API-Referenz",
     "services": {
@@ -1975,7 +1975,7 @@ const dict_de: TranslationDictionary = {
         "tagline": "Sofortige KI-Fehlerdiagnose für Ihre Konten + API-Schlüssel für Entwickler",
         "bullets": [
           "Fragen Sie den KI-Assistenten nach Gründen für Beitragsfehler oder prüfen Sie Konten per Klick",
-          "Techurity API-Schlüssel (tk_live_...) generieren, um Funktionen in eigene Apps einzubetten",
+          "Asra3 API-Schlüssel (tk_live_...) generieren, um Funktionen in eigene Apps einzubetten",
           "Echtzeit-Webhooks für eingehende Nachrichten und veröffentlichte Beiträge einrichten"
         ]
       }
@@ -1984,7 +1984,7 @@ const dict_de: TranslationDictionary = {
   "pricingSection": {
     "eyebrow": "Transparente Preisgestaltung",
     "title": "Kostenlos Starten und Flexibel Wachsen",
-    "subtitle": "Jeder Tarif beinhaltet uneingeschränkten Zugriff auf das Web-Dashboard sowie die Techurity REST-API.",
+    "subtitle": "Jeder Tarif beinhaltet uneingeschränkten Zugriff auf das Web-Dashboard sowie die Asra3 REST-API.",
     "perMonth": "/ Monat",
     "choosePlan": "Jetzt Starten",
     "popularBadge": "Am Beliebtesten",
@@ -2033,20 +2033,20 @@ const dict_de: TranslationDictionary = {
   },
   "faqSection": {
     "eyebrow": "Häufig Gestellte Fragen",
-    "title": "Alles Wissenswerte über Techurity (techurity.si)",
+    "title": "Alles Wissenswerte über Asra3 (asra3.com)",
     "subtitle": "Präzise Antworten zur Nutzung des Dashboards oder zur Einbindung unserer Entwickler-API.",
     "items": [
       {
-        "q": "Was ist Techurity (techurity.si) und welche Vorteile bietet die Plattform?",
-        "a": "Techurity (techurity.si) ist eine ganzheitliche Marketing-, Kommunikations- und Entwicklerplattform. Sie ermöglicht es Ihnen, 18 soziale Netzwerke und Blogs anzubinden, einen gemeinsamen WhatsApp/Instagram-Posteingang zu betreiben, Werbeanzeigen auf 8 Netzwerken zu steuern und virtuelle Rufnummern mit KI-Sprachagenten zu nutzen – wahlweise über eine intuitive Weboberfläche oder per REST-API."
+        "q": "Was ist Asra3 (asra3.com) und welche Vorteile bietet die Plattform?",
+        "a": "Asra3 (asra3.com) ist eine ganzheitliche Marketing-, Kommunikations- und Entwicklerplattform. Sie ermöglicht es Ihnen, 18 soziale Netzwerke und Blogs anzubinden, einen gemeinsamen WhatsApp/Instagram-Posteingang zu betreiben, Werbeanzeigen auf 8 Netzwerken zu steuern und virtuelle Rufnummern mit KI-Sprachagenten zu nutzen – wahlweise über eine intuitive Weboberfläche oder per REST-API."
       },
       {
-        "q": "Kann ich Techurity ohne Programmierkenntnisse nutzen?",
+        "q": "Kann ich Asra3 ohne Programmierkenntnisse nutzen?",
         "a": "Ja, absolut! Unser Dashboard (/dashboard) wurde speziell für Unternehmen, Creator und Marketing-Teams entwickelt. Sie können Konten mit einem einzigen Klick verknüpfen, Inhalte vorausplanen, Nachrichten beantworten und Anzeigen schalten – ganz ohne Programmieraufwand."
       },
       {
-        "q": "Kann ich Techurity als Third-Party-API in meine eigene Software oder KI-Agenten einbinden?",
-        "a": "Selbstverständlich. Entwickler können einen API-Schlüssel (tk_live_...) erstellen und über https://techurity.si/api/v1 Konten verknüpfen, Beiträge veröffentlichen, Kennzahlen abfragen und WhatsApp/SMS-Nachrichten automatisiert versenden."
+        "q": "Kann ich Asra3 als Third-Party-API in meine eigene Software oder KI-Agenten einbinden?",
+        "a": "Selbstverständlich. Entwickler können einen API-Schlüssel (tk_live_...) erstellen und über https://asra3.com/api/v1 Konten verknüpfen, Beiträge veröffentlichen, Kennzahlen abfragen und WhatsApp/SMS-Nachrichten automatisiert versenden."
       },
       {
         "q": "Welche sozialen Plattformen und Werbenetzwerke werden unterstützt?",
@@ -2140,8 +2140,8 @@ const dict_de: TranslationDictionary = {
     "colMargin": "Nettogewinn"
   },
   "docs": {
-    "badge": "Offizielle Entwicklerdokumentation · techurity.si/docs",
-    "title": "Techurity API-Dokumentation",
+    "badge": "Offizielle Entwicklerdokumentation · asra3.com/docs",
+    "title": "Asra3 API-Dokumentation",
     "subtitle": "Generieren Sie einen API-Schlüssel, binden Sie ein Konto an und veröffentlichen Sie Ihren ersten Beitrag in 5 Aufrufen.",
     "baseUrlLabel": "Basis-URL der API",
     "authTitle": "Authentifizierung & API-Schlüssel",
@@ -2189,7 +2189,7 @@ const dict_de: TranslationDictionary = {
   "auth": {
         "loginTitle": "In Ihren Arbeitsbereich einloggen",
         "loginSubtitle": "Geben Sie Ihre Zugangsdaten ein, um auf Ihren isolierten Mandantenbereich zuzugreifen und Kanäle sowie Telefonie zu verwalten.",
-        "signupTitle": "Erstellen Sie Ihr Techurity-Konto",
+        "signupTitle": "Erstellen Sie Ihr Asra3-Konto",
         "signupSubtitle": "Verbinden Sie Ihre Kanäle, planen Sie Beiträge, verwalten Sie Nachrichten & Anzeigen oder fordern Sie sofort Ihren API-Schlüssel an.",
         "emailLabel": "Geschäftliche E-Mail",
         "passwordLabel": "Passwort",
@@ -2221,7 +2221,7 @@ const dict_de: TranslationDictionary = {
         "companyNamePlaceholder": "Meine Marke",
         "whatYouGet1": "1-Klick-Verbindung für 18 Plattformen (Instagram, TikTok, LinkedIn, YouTube, WhatsApp, Shopify u.v.m.).",
         "whatYouGet2": "Beiträge & Reels planen, im Posteingang antworten und Comment-to-DM aktivieren.",
-        "whatYouGet3": "Sofortiger Techurity API-Schlüssel (tk_live_...) zur Integration in Ihre eigenen Anwendungen.",
+        "whatYouGet3": "Sofortiger Asra3 API-Schlüssel (tk_live_...) zur Integration in Ihre eigenen Anwendungen.",
         "exploreApiDocs": "Entwickler-API-Dokumentation erkunden"
     },
   "showcase": {
@@ -2242,8 +2242,8 @@ const dict_de: TranslationDictionary = {
 
 const dict_pt_BR: TranslationDictionary = {
   "brand": {
-    "name": "Techurity",
-    "domain": "techurity.si",
+    "name": "Asra3",
+    "domain": "asra3.com",
     "tagline": "Plataforma Unificada de Redes Sociais, Anúncios, Mensagens, Telefonia IA e API para Desenvolvedores"
   },
   "nav": {
@@ -2259,11 +2259,11 @@ const dict_pt_BR: TranslationDictionary = {
     "signOut": "Encerrar sessão"
   },
   "hero": {
-    "badge": "Nuvem Unificada de Marketing e Mensagens + API para Desenvolvedores · techurity.si",
+    "badge": "Nuvem Unificada de Marketing e Mensagens + API para Desenvolvedores · asra3.com",
     "titlePart1": "Alcance Seus Clientes em Qualquer Lugar com",
     "titleHighlight": "Uma Plataforma e Uma API",
     "titlePart2": "Sem Esperar Meses por Aprovações.",
-    "subtitle": "A Techurity (techurity.si) conecta 18 redes sociais e blogs, 8 redes de anúncios, caixa de entrada unificada de WhatsApp/Instagram, números globais com agentes de voz IA e e-commerce — pronto para usar no painel ou integrar via API REST em poucos minutos.",
+    "subtitle": "A Asra3 (asra3.com) conecta 18 redes sociais e blogs, 8 redes de anúncios, caixa de entrada unificada de WhatsApp/Instagram, números globais com agentes de voz IA e e-commerce — pronto para usar no painel ou integrar via API REST em poucos minutos.",
     "ctaStart": "Começar Grátis",
     "ctaWorkspace": "Abrir Painel",
     "ctaDocs": "Documentação da API",
@@ -2275,7 +2275,7 @@ const dict_pt_BR: TranslationDictionary = {
   "subServicesSection": {
     "eyebrow": "Suite Completa de Produtos",
     "title": "8 Produtos Integrados — Use no Painel ou via API",
-    "subtitle": "Gerencie seus canais diretamente pelo nosso painel intuitivo ou construa sua solução sobre a Techurity como sua API de marketing.",
+    "subtitle": "Gerencie seus canais diretamente pelo nosso painel intuitivo ou construa sua solução sobre a Asra3 como sua API de marketing.",
     "openInWorkspace": "Abrir no Painel",
     "viewApiDocs": "Referência da API",
     "services": {
@@ -2362,7 +2362,7 @@ const dict_pt_BR: TranslationDictionary = {
         "tagline": "Diagnóstico imediato com IA para suas contas + chaves de API para seu app",
         "bullets": [
           "Pergunte ao Assistente IA a razão de falhas em posts ou valide o status de contas",
-          "Gere chaves de API Techurity (tk_live_...) para integrar serviços à sua plataforma",
+          "Gere chaves de API Asra3 (tk_live_...) para integrar serviços à sua plataforma",
           "Configure webhooks em tempo real para novas mensagens e postagens publicadas"
         ]
       }
@@ -2371,7 +2371,7 @@ const dict_pt_BR: TranslationDictionary = {
   "pricingSection": {
     "eyebrow": "Preços Transparentes e Sem Surpresas",
     "title": "Comece Gratuitamente e Escale Conforme Cresce",
-    "subtitle": "Todos os planos contam com acesso integral ao painel web e à API REST da Techurity.",
+    "subtitle": "Todos os planos contam com acesso integral ao painel web e à API REST da Asra3.",
     "perMonth": "/ mês",
     "choosePlan": "Começar Agora",
     "popularBadge": "Mais Popular",
@@ -2420,20 +2420,20 @@ const dict_pt_BR: TranslationDictionary = {
   },
   "faqSection": {
     "eyebrow": "Perguntas Frequentes",
-    "title": "Tudo o que Você Precisa Saber Sobre a Techurity (techurity.si)",
+    "title": "Tudo o que Você Precisa Saber Sobre a Asra3 (asra3.com)",
     "subtitle": "Respostas claras sobre como operar no painel ou integrar nossa API ao seu negócio.",
     "items": [
       {
-        "q": "O que é a Techurity (techurity.si) e quais soluções ela entrega?",
-        "a": "A Techurity (techurity.si) é uma plataforma completa de marketing, comunicação e API para desenvolvedores. Ela reúne 18 redes sociais e blogs, uma caixa de entrada unificada de WhatsApp/Instagram, gestão de anúncios em 8 redes e telefonia em nuvem com agentes de voz IA, tudo controlável via painel intuitivo ou por uma única chave de API REST."
+        "q": "O que é a Asra3 (asra3.com) e quais soluções ela entrega?",
+        "a": "A Asra3 (asra3.com) é uma plataforma completa de marketing, comunicação e API para desenvolvedores. Ela reúne 18 redes sociais e blogs, uma caixa de entrada unificada de WhatsApp/Instagram, gestão de anúncios em 8 redes e telefonia em nuvem com agentes de voz IA, tudo controlável via painel intuitivo ou por uma única chave de API REST."
       },
       {
-        "q": "Posso utilizar a Techurity sem possuir conhecimentos de programação?",
+        "q": "Posso utilizar a Asra3 sem possuir conhecimentos de programação?",
         "a": "Com certeza! Nosso painel web (/dashboard) foi desenhado para empresas, criadores e equipes de marketing. Você vincula contas em um clique, agenda conteúdos, responde mensagens e publica anúncios sem tocar em código."
       },
       {
-        "q": "É possível integrar a Techurity como API externa no meu software ou agente de IA?",
-        "a": "Sim, perfeitamente. Desenvolvedores podem gerar uma chave de API (tk_live_...) e chamar https://techurity.si/api/v1 para vincular contas de clientes, programar postagens, consultar relatórios e disparar mensagens de WhatsApp/SMS de forma automatizada."
+        "q": "É possível integrar a Asra3 como API externa no meu software ou agente de IA?",
+        "a": "Sim, perfeitamente. Desenvolvedores podem gerar uma chave de API (tk_live_...) e chamar https://asra3.com/api/v1 para vincular contas de clientes, programar postagens, consultar relatórios e disparar mensagens de WhatsApp/SMS de forma automatizada."
       },
       {
         "q": "Quais canais sociais e plataformas de anúncios são suportados?",
@@ -2527,8 +2527,8 @@ const dict_pt_BR: TranslationDictionary = {
     "colMargin": "Lucro Líquido"
   },
   "docs": {
-    "badge": "Documentação Oficial para Desenvolvedores · techurity.si/docs",
-    "title": "Documentação da API Techurity",
+    "badge": "Documentação Oficial para Desenvolvedores · asra3.com/docs",
+    "title": "Documentação da API Asra3",
     "subtitle": "Gere uma chave de API, conecte uma conta e agende sua primeira postagem com 5 chamadas simples.",
     "baseUrlLabel": "URL Base da API",
     "authTitle": "Autenticação e Chaves de API",
@@ -2576,7 +2576,7 @@ const dict_pt_BR: TranslationDictionary = {
   "auth": {
         "loginTitle": "Entrar no seu espaço de trabalho",
         "loginSubtitle": "Insira suas credenciais para acessar seu espaço isolado de cliente e gerenciar canais e telefonia.",
-        "signupTitle": "Crie sua conta Techurity",
+        "signupTitle": "Crie sua conta Asra3",
         "signupSubtitle": "Conecte seus canais sociais, agende postagens, gerencie mensagens e anúncios ou obtenha sua chave de API instantaneamente.",
         "emailLabel": "E-mail profissional",
         "passwordLabel": "Senha",
@@ -2608,7 +2608,7 @@ const dict_pt_BR: TranslationDictionary = {
         "companyNamePlaceholder": "Minha Marca",
         "whatYouGet1": "Conexão em 1 clique para 18 plataformas (Instagram, TikTok, LinkedIn, YouTube, WhatsApp, Shopify e mais).",
         "whatYouGet2": "Agende posts & Reels, responda mensagens na caixa unificada e ative Comment-to-DM.",
-        "whatYouGet3": "Chave de API Techurity instantânea (tk_live_...) para integrar com seus sistemas.",
+        "whatYouGet3": "Chave de API Asra3 instantânea (tk_live_...) para integrar com seus sistemas.",
         "exploreApiDocs": "Explorar documentação da API para desenvolvedores"
     },
   "showcase": {
@@ -2629,8 +2629,8 @@ const dict_pt_BR: TranslationDictionary = {
 
 const dict_tr: TranslationDictionary = {
   "brand": {
-    "name": "Techurity",
-    "domain": "techurity.si",
+    "name": "Asra3",
+    "domain": "asra3.com",
     "tagline": "Sosyal Medya, Reklam, Mesajlaşma, Yapay Zeka Telefon ve Geliştirici API için Birleşik Platform"
   },
   "nav": {
@@ -2646,11 +2646,11 @@ const dict_tr: TranslationDictionary = {
     "signOut": "Çıkış"
   },
   "hero": {
-    "badge": "Birleşik Pazarlama ve Mesajlaşma Bulutu + Geliştirici API · techurity.si",
+    "badge": "Birleşik Pazarlama ve Mesajlaşma Bulutu + Geliştirici API · asra3.com",
     "titlePart1": "Müşterilerinize Her Yerden",
     "titleHighlight": "Tek Platform ve Tek API",
     "titlePart2": "İle Hemen Ulaşın.",
-    "subtitle": "Techurity (techurity.si); 18 sosyal kanal ve blogu, 8 reklam ağını, birleşik WhatsApp/Instagram gelen kutusunu, yapay zeka sesli asistanlı küresel telefon numaralarını ve e-ticareti birleştirir — ister kontrol panelinden hemen kullanın, ister dakikalar içinde REST API ile entegre edin.",
+    "subtitle": "Asra3 (asra3.com); 18 sosyal kanal ve blogu, 8 reklam ağını, birleşik WhatsApp/Instagram gelen kutusunu, yapay zeka sesli asistanlı küresel telefon numaralarını ve e-ticareti birleştirir — ister kontrol panelinden hemen kullanın, ister dakikalar içinde REST API ile entegre edin.",
     "ctaStart": "Ücretsiz Başla",
     "ctaWorkspace": "Paneli Aç",
     "ctaDocs": "API Dokümanları",
@@ -2662,7 +2662,7 @@ const dict_tr: TranslationDictionary = {
   "subServicesSection": {
     "eyebrow": "Kapsamlı Ürün Paketi",
     "title": "8 Entegre Ürün — İster Panelden İster API ile Kullanın",
-    "subtitle": "Tüm kanallarınızı kullanıcı dostu çalışma alanımızdan doğrudan yönetin veya Techurity platformunu pazarlama API altyapınız olarak kullanın.",
+    "subtitle": "Tüm kanallarınızı kullanıcı dostu çalışma alanımızdan doğrudan yönetin veya Asra3 platformunu pazarlama API altyapınız olarak kullanın.",
     "openInWorkspace": "Panelde Aç",
     "viewApiDocs": "API Referansı",
     "services": {
@@ -2749,7 +2749,7 @@ const dict_tr: TranslationDictionary = {
         "tagline": "Hesaplarınız için anında yapay zeka sorun giderme + uygulamanız için API anahtarları",
         "bullets": [
           "AI Asistan'a bir gönderinin neden başarısız olduğunu sorun veya hesap sağlığını denetleyin",
-          "Hizmetlerimizi uygulamanıza bağlamak için Techurity API anahtarları (tk_live_...) oluşturun",
+          "Hizmetlerimizi uygulamanıza bağlamak için Asra3 API anahtarları (tk_live_...) oluşturun",
           "Gelen mesajlar ve yayınlanan içerikler için gerçek zamanlı webhook'lar yapılandırın"
         ]
       }
@@ -2758,7 +2758,7 @@ const dict_tr: TranslationDictionary = {
   "pricingSection": {
     "eyebrow": "Şeffaf ve Esnek Fiyatlandırma",
     "title": "Ücretsiz Başlayın, İhtiyacınıza Göre Büyütün",
-    "subtitle": "Her plan hem kullanıcı dostu web paneline hem de Techurity REST API'sine tam erişim içerir.",
+    "subtitle": "Her plan hem kullanıcı dostu web paneline hem de Asra3 REST API'sine tam erişim içerir.",
     "perMonth": "/ ay",
     "choosePlan": "Hemen Başla",
     "popularBadge": "En Popüler",
@@ -2807,20 +2807,20 @@ const dict_tr: TranslationDictionary = {
   },
   "faqSection": {
     "eyebrow": "Sıkça Sorulan Sorular",
-    "title": "Techurity (techurity.si) Hakkında Bilmeniz Gereken Her Şey",
+    "title": "Asra3 (asra3.com) Hakkında Bilmeniz Gereken Her Şey",
     "subtitle": "Kontrol panelinin kullanımı ve API entegrasyonuna dair açık ve net yanıtlar.",
     "items": [
       {
-        "q": "Techurity (techurity.si) nedir ve işletmelere ne sağlar?",
-        "a": "Techurity (techurity.si); 18 sosyal medya ve blog kanalını bağlamanızı, birleşik WhatsApp/Instagram mesajlarını yönetmenizi, 8 ağda reklam yayınlamanızı ve yapay zekalı bulut telefon hatları işletmenizi sağlayan hepsi bir arada bir pazarlama ve geliştirici API platformudur."
+        "q": "Asra3 (asra3.com) nedir ve işletmelere ne sağlar?",
+        "a": "Asra3 (asra3.com); 18 sosyal medya ve blog kanalını bağlamanızı, birleşik WhatsApp/Instagram mesajlarını yönetmenizi, 8 ağda reklam yayınlamanızı ve yapay zekalı bulut telefon hatları işletmenizi sağlayan hepsi bir arada bir pazarlama ve geliştirici API platformudur."
       },
       {
-        "q": "Techurity'yi kodlama bilmeden kullanabilir miyim?",
+        "q": "Asra3'yi kodlama bilmeden kullanabilir miyim?",
         "a": "Kesinlikle evet! Web kontrol panelimiz (/dashboard) işletmeler, pazarlamacılar ve içerik üreticileri için özel olarak tasarlandı. Tek tıkla hesap bağlayabilir, gönderileri planlayabilir, mesajlara yanıt verebilir ve kod yazmadan reklam başlatabilirsiniz."
       },
       {
-        "q": "Techurity'yi kendi uygulamamda veya yapay zeka ajanımda üçüncü taraf API olarak kullanabilir miyim?",
-        "a": "Elbette. Geliştiriciler bir API anahtarı (tk_live_...) oluşturarak https://techurity.si/api/v1 üzerinden kullanıcı hesaplarını bağlayabilir, içerik planlayabilir, analitikleri çekebilir ve WhatsApp/SMS mesajlarını programatik olarak gönderebilir."
+        "q": "Asra3'yi kendi uygulamamda veya yapay zeka ajanımda üçüncü taraf API olarak kullanabilir miyim?",
+        "a": "Elbette. Geliştiriciler bir API anahtarı (tk_live_...) oluşturarak https://asra3.com/api/v1 üzerinden kullanıcı hesaplarını bağlayabilir, içerik planlayabilir, analitikleri çekebilir ve WhatsApp/SMS mesajlarını programatik olarak gönderebilir."
       },
       {
         "q": "Hangi sosyal platformlar ve reklam ağları destekleniyor?",
@@ -2914,8 +2914,8 @@ const dict_tr: TranslationDictionary = {
     "colMargin": "Net Kâr"
   },
   "docs": {
-    "badge": "Resmi Geliştirici Dokümantasyonu · techurity.si/docs",
-    "title": "Techurity API Dokümantasyonu",
+    "badge": "Resmi Geliştirici Dokümantasyonu · asra3.com/docs",
+    "title": "Asra3 API Dokümantasyonu",
     "subtitle": "Bir API anahtarı alın, bir hesap bağlayın ve 5 çağrıda ilk gönderinizi planlayın.",
     "baseUrlLabel": "Temel API Adresi (Base URL)",
     "authTitle": "Kimlik Doğrulama ve API Anahtarları",
@@ -2963,7 +2963,7 @@ const dict_tr: TranslationDictionary = {
   "auth": {
         "loginTitle": "Çalışma Alanınıza Giriş Yapın",
         "loginSubtitle": "Yalıtılmış müşteri çalışma alanınıza erişmek ve kanalları ile telefon hatlarınızı yönetmek için bilgilerinizi girin.",
-        "signupTitle": "Techurity Hesabınızı Oluşturun",
+        "signupTitle": "Asra3 Hesabınızı Oluşturun",
         "signupSubtitle": "Sosyal kanallarınızı bağlayın, gönderileri planlayın, mesaj ve reklamları yönetin veya hemen API anahtarınızı alın.",
         "emailLabel": "İş E-postası",
         "passwordLabel": "Şifre",
@@ -2995,7 +2995,7 @@ const dict_tr: TranslationDictionary = {
         "companyNamePlaceholder": "Markam",
         "whatYouGet1": "18 platform için tek tıkla bağlantı (Instagram, TikTok, LinkedIn, YouTube, WhatsApp, Shopify ve daha fazlası).",
         "whatYouGet2": "Gönderi & Reels planlayın, birleşik gelen kutusundan yanıtlayın ve Comment-to-DM özelliğini etkinleştirin.",
-        "whatYouGet3": "Kendi uygulamanıza entegre etmek için anında Techurity API Anahtarı (tk_live_...).",
+        "whatYouGet3": "Kendi uygulamanıza entegre etmek için anında Asra3 API Anahtarı (tk_live_...).",
         "exploreApiDocs": "Geliştirici API Dokümantasyonunu İnceleyin"
     },
   "showcase": {
@@ -3016,8 +3016,8 @@ const dict_tr: TranslationDictionary = {
 
 const dict_ru: TranslationDictionary = {
   "brand": {
-    "name": "Techurity",
-    "domain": "techurity.si",
+    "name": "Asra3",
+    "domain": "asra3.com",
     "tagline": "Единая облачная платформа и API для соцсетей, рекламы, мессенджеров, голосового ИИ и интернет-магазинов"
   },
   "nav": {
@@ -3033,11 +3033,11 @@ const dict_ru: TranslationDictionary = {
     "signOut": "Выход"
   },
   "hero": {
-    "badge": "Единое облако маркетинга и коммуникаций + API для разработчиков · techurity.si",
+    "badge": "Единое облако маркетинга и коммуникаций + API для разработчиков · asra3.com",
     "titlePart1": "Будьте на связи с клиентами везде через",
     "titleHighlight": "единую платформу и один API",
     "titlePart2": "без долгих согласований и бюрократии.",
-    "subtitle": "Techurity (techurity.si) объединяет 18 соцсетей и блогов, 8 рекламных сетей, общий входящий ящик WhatsApp/Instagram, международную телефонию с голосовым ИИ и интернет-магазины: готово к работе через удобный интерфейс или интеграцию по REST API за считанные минуты.",
+    "subtitle": "Asra3 (asra3.com) объединяет 18 соцсетей и блогов, 8 рекламных сетей, общий входящий ящик WhatsApp/Instagram, международную телефонию с голосовым ИИ и интернет-магазины: готово к работе через удобный интерфейс или интеграцию по REST API за считанные минуты.",
     "ctaStart": "Начать бесплатно",
     "ctaWorkspace": "Открыть панель",
     "ctaDocs": "Документация API",
@@ -3049,7 +3049,7 @@ const dict_ru: TranslationDictionary = {
   "subServicesSection": {
     "eyebrow": "Полный комплекс инструментов",
     "title": "8 интегрированных продуктов — используйте в веб-панели или через API",
-    "subtitle": "Управляйте всеми каналами в едином удобном интерфейсе или встраивайте Techurity как ваш внешний маркетинговый API.",
+    "subtitle": "Управляйте всеми каналами в едином удобном интерфейсе или встраивайте Asra3 как ваш внешний маркетинговый API.",
     "openInWorkspace": "Открыть в панели",
     "viewApiDocs": "Справочник API",
     "services": {
@@ -3136,7 +3136,7 @@ const dict_ru: TranslationDictionary = {
         "tagline": "Мгновенная ИИ-диагностика ваших каналов + API-ключи для интеграции в сторонние приложения",
         "bullets": [
           "Спросите ИИ-ассистента о причине ошибки публикации или проверьте здоровье аккаунтов",
-          "Генерируйте API-ключи Techurity (tk_live_...) для подключения к вашему сервису",
+          "Генерируйте API-ключи Asra3 (tk_live_...) для подключения к вашему сервису",
           "Настраивайте вебхуки реального времени для входящих сообщений и постов"
         ]
       }
@@ -3145,7 +3145,7 @@ const dict_ru: TranslationDictionary = {
   "pricingSection": {
     "eyebrow": "Прозрачные и понятные тарифы",
     "title": "Начните бесплатно и масштабируйтесь по мере роста",
-    "subtitle": "Каждый тариф включает полный доступ к панели управления и ко всем возможностям Techurity REST API.",
+    "subtitle": "Каждый тариф включает полный доступ к панели управления и ко всем возможностям Asra3 REST API.",
     "perMonth": "/ месяц",
     "choosePlan": "Выбрать тариф",
     "popularBadge": "Хит продаж",
@@ -3194,20 +3194,20 @@ const dict_ru: TranslationDictionary = {
   },
   "faqSection": {
     "eyebrow": "Часто задаваемые вопросы",
-    "title": "Всё, что вам нужно знать о платформе Techurity (techurity.si)",
+    "title": "Всё, что вам нужно знать о платформе Asra3 (asra3.com)",
     "subtitle": "Прямые ответы на вопросы об использовании веб-интерфейса и программного API.",
     "items": [
       {
-        "q": "Что представляет собой платформа Techurity (techurity.si)?",
-        "a": "Techurity (techurity.si) — это универсальная платформа маркетинга, коммуникаций и API для разработчиков. Она позволяет объединить 18 соцсетей и блогов, обрабатывать сообщения WhatsApp/Instagram в едином ящике, вести рекламу в 8 сетях и пользоваться виртуальными телефонными номерами с голосовым ИИ."
+        "q": "Что представляет собой платформа Asra3 (asra3.com)?",
+        "a": "Asra3 (asra3.com) — это универсальная платформа маркетинга, коммуникаций и API для разработчиков. Она позволяет объединить 18 соцсетей и блогов, обрабатывать сообщения WhatsApp/Instagram в едином ящике, вести рекламу в 8 сетях и пользоваться виртуальными телефонными номерами с голосовым ИИ."
       },
       {
-        "q": "Могу ли я использовать Techurity, если не умею программировать?",
+        "q": "Могу ли я использовать Asra3, если не умею программировать?",
         "a": "Конечно! Наша панель управления (/dashboard) создана для бизнеса, маркетологов и создателей контента. Вы можете привязать аккаунты в 1 клик, планировать контент, отвечать клиентам и запускать рекламу без единой строчки кода."
       },
       {
-        "q": "Можно ли интегрировать Techurity как сторонний API в своё приложение или ИИ-агента?",
-        "a": "Безусловно. Разработчики могут выпустить API-ключ (tk_live_...) и отправлять запросы к https://techurity.si/api/v1 для подключения аккаунтов пользователей, планирования постов, чтения метрик и автоматической отправки сообщений WhatsApp/SMS."
+        "q": "Можно ли интегрировать Asra3 как сторонний API в своё приложение или ИИ-агента?",
+        "a": "Безусловно. Разработчики могут выпустить API-ключ (tk_live_...) и отправлять запросы к https://asra3.com/api/v1 для подключения аккаунтов пользователей, планирования постов, чтения метрик и автоматической отправки сообщений WhatsApp/SMS."
       },
       {
         "q": "Какие социальные сети и рекламные площадки поддерживаются?",
@@ -3301,8 +3301,8 @@ const dict_ru: TranslationDictionary = {
     "colMargin": "Чистая прибыль"
   },
   "docs": {
-    "badge": "Официальная документация для разработчиков · techurity.si/docs",
-    "title": "Документация по API Techurity",
+    "badge": "Официальная документация для разработчиков · asra3.com/docs",
+    "title": "Документация по API Asra3",
     "subtitle": "Создайте API-ключ, подключите аккаунт и запланируйте первую публикацию за 5 запросов.",
     "baseUrlLabel": "Базовый URL API",
     "authTitle": "Аутентификация и API-ключи",
@@ -3350,7 +3350,7 @@ const dict_ru: TranslationDictionary = {
   "auth": {
         "loginTitle": "Вход в рабочее пространство",
         "loginSubtitle": "Введите учетные данные для доступа к изолированному рабочему пространству и управлению каналами и телефонией.",
-        "signupTitle": "Создать аккаунт Techurity",
+        "signupTitle": "Создать аккаунт Asra3",
         "signupSubtitle": "Подключайте соцсети, планируйте публикации, управляйте сообщениями и рекламой или сразу получите API-ключ.",
         "emailLabel": "Рабочий e-mail",
         "passwordLabel": "Пароль",
@@ -3382,7 +3382,7 @@ const dict_ru: TranslationDictionary = {
         "companyNamePlaceholder": "Мой Бренд",
         "whatYouGet1": "Подключение в 1 клик к 18 платформам (Instagram, TikTok, LinkedIn, YouTube, WhatsApp, Shopify и др.).",
         "whatYouGet2": "Планируйте посты и Reels, отвечайте во входящих и настройте автоответы Comment-to-DM.",
-        "whatYouGet3": "Мгновенный API-ключ Techurity (tk_live_...) для интеграции с вашими сервисами.",
+        "whatYouGet3": "Мгновенный API-ключ Asra3 (tk_live_...) для интеграции с вашими сервисами.",
         "exploreApiDocs": "Документация API для разработчиков"
     },
   "showcase": {
@@ -3403,8 +3403,8 @@ const dict_ru: TranslationDictionary = {
 
 const dict_zh: TranslationDictionary = {
   "brand": {
-    "name": "Techurity",
-    "domain": "techurity.si",
+    "name": "Asra3",
+    "domain": "asra3.com",
     "tagline": "集社交媒体、广告营销、全渠道消息、AI语音电话与电商于一体的统一企业级平台与 API"
   },
   "nav": {
@@ -3420,11 +3420,11 @@ const dict_zh: TranslationDictionary = {
     "signOut": "退出"
   },
   "hero": {
-    "badge": "一体化营销与通讯云 + 开发者统一 API · techurity.si",
+    "badge": "一体化营销与通讯云 + 开发者统一 API · asra3.com",
     "titlePart1": "通过",
     "titleHighlight": "一个平台与一个 API 密钥",
     "titlePart2": "触达全球每一个渠道的客户，无需漫长资质审核。",
-    "subtitle": "Techurity (techurity.si) 深度集成 18 个社交与博客渠道、8 大主流广告网络、统一 WhatsApp/Instagram 收件箱、支持 AI 语音助理的全球云电话及电商平台——既可在现代化控制台中即开即用，也可在数分钟内通过 REST API 快速集成。",
+    "subtitle": "Asra3 (asra3.com) 深度集成 18 个社交与博客渠道、8 大主流广告网络、统一 WhatsApp/Instagram 收件箱、支持 AI 语音助理的全球云电话及电商平台——既可在现代化控制台中即开即用，也可在数分钟内通过 REST API 快速集成。",
     "ctaStart": "免费开始使用",
     "ctaWorkspace": "打开控制台",
     "ctaDocs": "查阅 API 文档",
@@ -3436,7 +3436,7 @@ const dict_zh: TranslationDictionary = {
   "subServicesSection": {
     "eyebrow": "全栈产品矩阵",
     "title": "8 款集成化产品 — 既可在控制台操作，亦可经由 API 驱动",
-    "subtitle": "直接在我们直观优雅的工作台中集中管理所有渠道，或以 Techurity 为底层 API 引擎构建专属应用。",
+    "subtitle": "直接在我们直观优雅的工作台中集中管理所有渠道，或以 Asra3 为底层 API 引擎构建专属应用。",
     "openInWorkspace": "在控制台中体验",
     "viewApiDocs": "API 接口参考",
     "services": {
@@ -3523,7 +3523,7 @@ const dict_zh: TranslationDictionary = {
         "tagline": "利用 AI 快速排查各渠道发布故障 + 获取标准化生产 API 密钥",
         "bullets": [
           "随时向 AI 助理提问帖子发布失败原因或一键诊断渠道连接健康状况",
-          "快速签发 Techurity API 生产密钥（tk_live_...），轻松接入您的企业系统",
+          "快速签发 Asra3 API 生产密钥（tk_live_...），轻松接入您的企业系统",
           "配置实时 Webhook 回调监听新消息与发布完成状态通知"
         ]
       }
@@ -3532,7 +3532,7 @@ const dict_zh: TranslationDictionary = {
   "pricingSection": {
     "eyebrow": "透明合理的定价策略",
     "title": "免费开始体验，随业务规模弹性升级",
-    "subtitle": "所有套餐均包含对直观管理面板以及 Techurity REST API 的完整访问权限。",
+    "subtitle": "所有套餐均包含对直观管理面板以及 Asra3 REST API 的完整访问权限。",
     "perMonth": "/ 月",
     "choosePlan": "立即订阅",
     "popularBadge": "最受欢迎",
@@ -3581,20 +3581,20 @@ const dict_zh: TranslationDictionary = {
   },
   "faqSection": {
     "eyebrow": "常见问题解答",
-    "title": "关于 Techurity (techurity.si) 平台您所需了解的一切",
+    "title": "关于 Asra3 (asra3.com) 平台您所需了解的一切",
     "subtitle": "关于如何上手控制台操作以及如何通过 API 深度对接的清晰解答。",
     "items": [
       {
-        "q": "Techurity (techurity.si) 究竟是什么平台，能解决哪些核心需求？",
-        "a": "Techurity (techurity.si) 是一站式全渠道营销、即时通讯与开发者 API 基础设施。它允许您在一个控制台或通过单个 REST API 密钥管理 18 个社交与博客渠道、处理统一的 WhatsApp/Instagram 消息、跨 8 大网络投放管理广告，以及部署带有 AI 语音代理的国际云电话。"
+        "q": "Asra3 (asra3.com) 究竟是什么平台，能解决哪些核心需求？",
+        "a": "Asra3 (asra3.com) 是一站式全渠道营销、即时通讯与开发者 API 基础设施。它允许您在一个控制台或通过单个 REST API 密钥管理 18 个社交与博客渠道、处理统一的 WhatsApp/Instagram 消息、跨 8 大网络投放管理广告，以及部署带有 AI 语音代理的国际云电话。"
       },
       {
-        "q": "完全没有编程经验的用户是否可以使用 Techurity？",
+        "q": "完全没有编程经验的用户是否可以使用 Asra3？",
         "a": "完全可以！我们的 Web 控制台（/dashboard）专为企业运营人员、市场营销团队及内容创作者设计。您可以像使用日常应用一样一键连接账号、排程发帖、回复消息以及发起广告，全程无需编写任何代码。"
       },
       {
-        "q": "我能否将 Techurity 作为第三方服务 API 嵌入到自己的软件系统或 AI 智能体中？",
-        "a": "当然可以。开发者只需签发 API 密钥（tk_live_...），即可调用 https://techurity.si/api/v1 接口，以代码方式全自动为您的用户连接平台账号、排程发布图文内容、读取数据报表并发送 WhatsApp 或短信通知。"
+        "q": "我能否将 Asra3 作为第三方服务 API 嵌入到自己的软件系统或 AI 智能体中？",
+        "a": "当然可以。开发者只需签发 API 密钥（tk_live_...），即可调用 https://asra3.com/api/v1 接口，以代码方式全自动为您的用户连接平台账号、排程发布图文内容、读取数据报表并发送 WhatsApp 或短信通知。"
       },
       {
         "q": "目前平台具体支持哪些社交媒体网络和广告投放渠道？",
@@ -3688,8 +3688,8 @@ const dict_zh: TranslationDictionary = {
     "colMargin": "净收益空间"
   },
   "docs": {
-    "badge": "官方开发者技术参考文档 · techurity.si/docs",
-    "title": "Techurity 开发者 API 技术参考",
+    "badge": "官方开发者技术参考文档 · asra3.com/docs",
+    "title": "Asra3 开发者 API 技术参考",
     "subtitle": "仅需 5 次标准请求即可完成密钥获取、渠道绑定以及首次内容跨平台排程。",
     "baseUrlLabel": "生产 API 根路径 (Base URL)",
     "authTitle": "身份认证与 API 访问密钥",
@@ -3737,7 +3737,7 @@ const dict_zh: TranslationDictionary = {
   "auth": {
         "loginTitle": "登录至您的工作区",
         "loginSubtitle": "输入凭据以访问您的独立客户租户工作区，管理全渠道与云通讯。",
-        "signupTitle": "创建您的 Techurity 账号",
+        "signupTitle": "创建您的 Asra3 账号",
         "signupSubtitle": "连接社交平台、排期发布、管理统一收件箱和广告，或直接获取 API 密钥。",
         "emailLabel": "工作邮箱",
         "passwordLabel": "密码",
@@ -3769,7 +3769,7 @@ const dict_zh: TranslationDictionary = {
         "companyNamePlaceholder": "我的品牌",
         "whatYouGet1": "一键连接 18 个主流平台（Instagram、TikTok、LinkedIn、YouTube、WhatsApp、Shopify 等）。",
         "whatYouGet2": "定时发布图文与短视频、统一收件箱极速回复、评论转私信自动化。",
-        "whatYouGet3": "即刻获取 Techurity API 生产密钥（tk_live_...），轻松接入您的现有系统。",
+        "whatYouGet3": "即刻获取 Asra3 API 生产密钥（tk_live_...），轻松接入您的现有系统。",
         "exploreApiDocs": "浏览面向开发者的 API 文档"
     },
   "showcase": {
@@ -3790,8 +3790,8 @@ const dict_zh: TranslationDictionary = {
 
 const dict_ja: TranslationDictionary = {
   "brand": {
-    "name": "Techurity",
-    "domain": "techurity.si",
+    "name": "Asra3",
+    "domain": "asra3.com",
     "tagline": "SNS運用・広告配信・メッセージ・AI音声クラウド電話・ECを統合する開発者向けAPIプラットフォーム"
   },
   "nav": {
@@ -3807,11 +3807,11 @@ const dict_ja: TranslationDictionary = {
     "signOut": "サインアウト"
   },
   "hero": {
-    "badge": "統合マーケティング＆メッセージングクラウド + 開発者API · techurity.si",
+    "badge": "統合マーケティング＆メッセージングクラウド + 開発者API · asra3.com",
     "titlePart1": "あらゆるチャネルの顧客へ",
     "titleHighlight": "1つのプラットフォームと1つのAPI",
     "titlePart2": "で今すぐリーチ。面倒な審査待ちも不要です。",
-    "subtitle": "Techurity (techurity.si) は18のSNS・ブログ、8つの広告網、WhatsApp/Instagram共通受信箱、AI音声クラウド電話、EC管理を直感的な画面とREST APIで提供します。",
+    "subtitle": "Asra3 (asra3.com) は18のSNS・ブログ、8つの広告網、WhatsApp/Instagram共通受信箱、AI音声クラウド電話、EC管理を直感的な画面とREST APIで提供します。",
     "ctaStart": "無料で始める",
     "ctaWorkspace": "ダッシュボードを開く",
     "ctaDocs": "APIドキュメント",
@@ -3823,7 +3823,7 @@ const dict_ja: TranslationDictionary = {
   "subServicesSection": {
     "eyebrow": "充実のプロダクトスイート",
     "title": "8つの統合プロダクト — 画面操作でもAPI経由でも自在に利用可能",
-    "subtitle": "洗練された管理画面から直接チャネルを操作することも、TechurityをバックエンドAPIとして自社サービスに組み込むことも可能です。",
+    "subtitle": "洗練された管理画面から直接チャネルを操作することも、Asra3をバックエンドAPIとして自社サービスに組み込むことも可能です。",
     "openInWorkspace": "ダッシュボードで体験",
     "viewApiDocs": "APIリファレンス",
     "services": {
@@ -3910,7 +3910,7 @@ const dict_ja: TranslationDictionary = {
         "tagline": "AIによるアカウント障害の即時診断＋自社アプリ連携用の安全なAPIキー",
         "bullets": [
           "投稿の失敗原因やアカウントの接続状態をAIアシスタントがワンクリックで解析",
-          "自社システムへ機能を統合するためのTechurity APIキー（tk_live_...）を発行",
+          "自社システムへ機能を統合するためのAsra3 APIキー（tk_live_...）を発行",
           "メッセージ受信や投稿完了イベントをリアルタイムに受け取るWebhooks設定"
         ]
       }
@@ -3919,7 +3919,7 @@ const dict_ja: TranslationDictionary = {
   "pricingSection": {
     "eyebrow": "明瞭で柔軟な料金プラン",
     "title": "無料でスタートし、ビジネスの成長に合わせて柔軟にスケール",
-    "subtitle": "すべてのプランにWebダッシュボードとTechurity REST APIの完全な利用権が含まれます。",
+    "subtitle": "すべてのプランにWebダッシュボードとAsra3 REST APIの完全な利用権が含まれます。",
     "perMonth": "/ 月",
     "choosePlan": "このプランで始める",
     "popularBadge": "一番人気",
@@ -3968,12 +3968,12 @@ const dict_ja: TranslationDictionary = {
   },
   "faqSection": {
     "eyebrow": "よくある質問",
-    "title": "Techurity (techurity.si) に関するすべての疑問にお答えします",
+    "title": "Asra3 (asra3.com) に関するすべての疑問にお答えします",
     "subtitle": "ダッシュボードの基本的な使い方からAPIの実装方法まで詳しく解説します。",
     "items": [
       {
-        "q": "Techurity (techurity.si) とはどのようなサービスですか？",
-        "a": "Techurity (techurity.si) は、企業のマーケティング、オムニチャネル通信、開発者APIをひとつに統合した包括的クラウドプラットフォームです。18のSNS・ブログの投稿予約、WhatsApp/Instagramの共通受信箱、8大広告プラットフォームの運用、AI音声対話付きクラウド電話をひとつの管理画面またはREST APIキーから操作できます。"
+        "q": "Asra3 (asra3.com) とはどのようなサービスですか？",
+        "a": "Asra3 (asra3.com) は、企業のマーケティング、オムニチャネル通信、開発者APIをひとつに統合した包括的クラウドプラットフォームです。18のSNS・ブログの投稿予約、WhatsApp/Instagramの共通受信箱、8大広告プラットフォームの運用、AI音声対話付きクラウド電話をひとつの管理画面またはREST APIキーから操作できます。"
       },
       {
         "q": "プログラミングや専門知識がなくても利用できますか？",
@@ -3981,7 +3981,7 @@ const dict_ja: TranslationDictionary = {
       },
       {
         "q": "自社のWebサイト、業務アプリ、AIエージェントにAPIとして組み込めますか？",
-        "a": "もちろん可能です。発行したAPIキー（tk_live_...）を用いて https://techurity.si/api/v1 のエンドポイントを呼び出すことで、ユーザーアカウントの認証、投稿の自動スケジュール、統計データの取得、WhatsAppやSMSの自動送信を完全にプログラムから制御できます。"
+        "a": "もちろん可能です。発行したAPIキー（tk_live_...）を用いて https://asra3.com/api/v1 のエンドポイントを呼び出すことで、ユーザーアカウントの認証、投稿の自動スケジュール、統計データの取得、WhatsAppやSMSの自動送信を完全にプログラムから制御できます。"
       },
       {
         "q": "対応しているSNSチャネルと広告ネットワークを教えてください。",
@@ -4075,8 +4075,8 @@ const dict_ja: TranslationDictionary = {
     "colMargin": "純利益"
   },
   "docs": {
-    "badge": "公式開発者ドキュメント · techurity.si/docs",
-    "title": "Techurity API ドキュメント",
+    "badge": "公式開発者ドキュメント · asra3.com/docs",
+    "title": "Asra3 API ドキュメント",
     "subtitle": "わずか5回のリクエストでAPIキーを取得し、アカウントを接続し、最初の予約投稿を完了できます。",
     "baseUrlLabel": "基本エンドポイント (Base URL)",
     "authTitle": "認証方式とAPIキー",
@@ -4124,7 +4124,7 @@ const dict_ja: TranslationDictionary = {
   "auth": {
         "loginTitle": "ワークスペースにサインイン",
         "loginSubtitle": "認証情報を入力して、独立した顧客ワークスペースにアクセスし、チャンネルと電話回線を管理します。",
-        "signupTitle": "Techurity アカウントを作成",
+        "signupTitle": "Asra3 アカウントを作成",
         "signupSubtitle": "SNSアカウントを連携し、投稿を予約し、メッセージと広告を管理し、APIキーを即座に取得できます。",
         "emailLabel": "勤務先メールアドレス",
         "passwordLabel": "パスワード",
@@ -4156,7 +4156,7 @@ const dict_ja: TranslationDictionary = {
         "companyNamePlaceholder": "自社ブランド",
         "whatYouGet1": "18のプラットフォーム（Instagram、TikTok、LinkedIn、YouTube、WhatsApp、Shopifyなど）にワンクリック連携。",
         "whatYouGet2": "投稿やReelsの予約配信、統合受信トレイでの顧客対応、Comment-to-DMの自動化。",
-        "whatYouGet3": "自社アプリに即時連携できるTechurity APIキー（tk_live_...）を発行。",
+        "whatYouGet3": "自社アプリに即時連携できるAsra3 APIキー（tk_live_...）を発行。",
         "exploreApiDocs": "開発者向けAPIドキュメントを見る"
     },
   "showcase": {

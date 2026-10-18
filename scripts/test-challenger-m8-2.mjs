@@ -236,7 +236,7 @@ async function run() {
   // 3.3 Test Rate Limit and Request ID Headers
   const rlLimit = bearerReq.headers.get('x-ratelimit-limit');
   const rlRemaining = bearerReq.headers.get('x-ratelimit-remaining');
-  const reqId = bearerReq.headers.get('x-techurity-request-id');
+  const reqId = bearerReq.headers.get('x-asra3-request-id');
 
   assert(
     'Response contains X-RateLimit-Limit header',
@@ -249,9 +249,9 @@ async function run() {
     `X-RateLimit-Remaining: ${rlRemaining}`
   );
   assert(
-    'Response contains X-Techurity-Request-Id header',
+    'Response contains X-Asra3-Request-Id header',
     Boolean(reqId && reqId.startsWith('req_')),
-    `X-Techurity-Request-Id: ${reqId}`
+    `X-Asra3-Request-Id: ${reqId}`
   );
   assert(
     'Latency measurement is positive and valid',
@@ -273,11 +273,11 @@ async function run() {
     }),
   });
   const setCookie = authLoginRes.headers.get('set-cookie') || '';
-  const cookieMatch = setCookie.match(/techurity_session=([^;]+)/);
+  const cookieMatch = setCookie.match(/asra3_session=([^;]+)/);
   const sessionToken = cookieMatch ? cookieMatch[1] : '';
 
   assert(
-    'Successfully obtained active techurity_session cookie from /api/auth',
+    'Successfully obtained active asra3_session cookie from /api/auth',
     Boolean(sessionToken),
     `Token length: ${sessionToken.length}`
   );
@@ -285,7 +285,7 @@ async function run() {
   if (sessionToken) {
     const checkSessionRes = await fetch(`${BASE_URL}/api/auth?action=session`, {
       headers: {
-        'Cookie': `techurity_session=${sessionToken}`,
+        'Cookie': `asra3_session=${sessionToken}`,
       },
     });
     const checkSessionJson = await checkSessionRes.json().catch(() => ({}));
@@ -299,7 +299,7 @@ async function run() {
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',
-        'Cookie': `techurity_session=${sessionToken}`,
+        'Cookie': `asra3_session=${sessionToken}`,
       },
     });
     const cookieApiData = await cookieApiRes.json().catch(() => ({}));
@@ -310,7 +310,7 @@ async function run() {
     );
 
     const accountsCookieRes = await fetch(`${BASE_URL}/api/v1/accounts`, {
-      headers: { 'Cookie': `techurity_session=${sessionToken}` },
+      headers: { 'Cookie': `asra3_session=${sessionToken}` },
     });
     assert(
       'GET /api/v1/accounts succeeds with session cookie auth',
@@ -350,7 +350,7 @@ async function run() {
     method: 'GET',
     headers: {
       'Content-Type': 'application/json',
-      'Cookie': 'techurity_session=forged_payload.invalid_signature',
+      'Cookie': 'asra3_session=forged_payload.invalid_signature',
     },
   });
   const forgedCookieData = await forgedCookieRes.json().catch(() => ({}));

@@ -37,7 +37,7 @@ function parseCookies(res) {
 }
 
 async function runTests() {
-  console.log('--- Starting Techurity Verification Suite ---');
+  console.log('--- Starting Asra3 Verification Suite ---');
 
   // 1. Verify Unauthenticated Route Protection
   console.log('\n[1] Testing Route Protection on /dashboard & /admin...');
@@ -104,14 +104,14 @@ async function runTests() {
   const signupData = await signupRes.json();
   const setCookie = signupRes.headers.get('set-cookie');
   console.log(`- Created customer tenant: ${signupData.tenant.organizationName} (${signupData.tenant.organizationId})`);
-  if (!setCookie || !setCookie.includes('techurity_session=')) {
-    throw new Error('Expected techurity_session cookie in signup response');
+  if (!setCookie || !setCookie.includes('asra3_session=')) {
+    throw new Error('Expected asra3_session cookie in signup response');
   }
 
   // Extract session cookie value
-  const cookieMatch = setCookie.match(/techurity_session=([^;]+)/);
+  const cookieMatch = setCookie.match(/asra3_session=([^;]+)/);
   const sessionCookieVal = cookieMatch ? cookieMatch[1] : '';
-  const customerCookieHeader = `techurity_session=${sessionCookieVal}`;
+  const customerCookieHeader = `asra3_session=${sessionCookieVal}`;
 
   // Verify session check with cookie
   const sessionCheck = await (await fetch(`${BASE_URL}/api/auth?action=session`, {
@@ -194,7 +194,7 @@ async function runTests() {
       organizationId: tenantOrgId,
       subService: 'publishing',
       action: 'create_post',
-      content: 'Launching our brand on Techurity platform today! 🚀',
+      content: 'Launching our brand on Asra3 platform today! 🚀',
       platforms: [{ platform: 'twitter', accountId: 'acc_tw_01' }],
     }),
   })).json();
@@ -229,7 +229,7 @@ async function runTests() {
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
       action: 'login',
-      email: 'admin@techurity.si',
+      email: 'admin@asra3.com',
       password: 'AnyPasswordForAdmin!',
     }),
   });
@@ -239,8 +239,8 @@ async function runTests() {
     throw new Error('Expected user role to be super_admin');
   }
   const adminSetCookie = adminLoginRes.headers.get('set-cookie');
-  const adminCookieMatch = adminSetCookie.match(/techurity_session=([^;]+)/);
-  const adminCookieHeader = `techurity_session=${adminCookieMatch[1]}`;
+  const adminCookieMatch = adminSetCookie.match(/asra3_session=([^;]+)/);
+  const adminCookieHeader = `asra3_session=${adminCookieMatch[1]}`;
 
   const adminApiOk = await fetch(`${BASE_URL}/api/admin`, {
     headers: { Cookie: adminCookieHeader },

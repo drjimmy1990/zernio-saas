@@ -19,9 +19,9 @@ export interface AuthSession {
   expiresAt: number;
 }
 
-export const SESSION_COOKIE_NAME = 'techurity_session';
+export const SESSION_COOKIE_NAME = 'asra3_session';
 export const SESSION_MAX_AGE = 7 * 24 * 60 * 60; // 7 days in seconds
-export const SESSION_SECRET = process.env.SESSION_SECRET || 'techurity_secure_session_secret_2026';
+export const SESSION_SECRET = process.env.SESSION_SECRET || 'asra3_secure_session_secret_2026';
 
 function rotr(x: number, n: number): number {
   return (x >>> n) | (x << (32 - n));

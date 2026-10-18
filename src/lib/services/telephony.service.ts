@@ -176,7 +176,7 @@ export class TelephonyService {
 
     const isKycReq = countryMeta.needsKyc;
     const kycUrl = isKycReq
-      ? `https://techurity.si/kyc/verify?org=${encodeURIComponent(params.organizationId)}&country=${countryMeta.code}`
+      ? `https://asra3.com/kyc/verify?org=${encodeURIComponent(params.organizationId)}&country=${countryMeta.code}`
       : undefined;
 
     const newNumber: OwnedPhoneNumber = {
@@ -277,7 +277,7 @@ export class TelephonyService {
         name: 'welcome_offer',
         category: 'MARKETING',
         status: 'APPROVED',
-        body: 'Welcome to Techurity! Here is your 20% discount code: {{1}}',
+        body: 'Welcome to Asra3! Here is your 20% discount code: {{1}}',
         language: 'en_US',
       },
     ];
@@ -303,7 +303,7 @@ export class TelephonyService {
         direction: 'inbound',
         fromNumber: '+1 (650) 555-0199', // WhatsApp Auth System
         toNumber: targetNumber.phoneNumber,
-        text: `Your Techurity WhatsApp Business verification code is ${verificationOtp}. Do not share this code with anyone.`,
+        text: `Your Asra3 WhatsApp Business verification code is ${verificationOtp}. Do not share this code with anyone.`,
         status: 'delivered',
         timestamp: new Date().toISOString(),
       };
@@ -329,7 +329,7 @@ export class TelephonyService {
       verificationOtp: params.verificationMethod === 'sms_otp' ? verificationOtp : undefined,
       qrCodeData:
         params.verificationMethod === 'qr_code'
-          ? `https://techurity.si/whatsapp/qr_auth/${wabaId}`
+          ? `https://asra3.com/whatsapp/qr_auth/${wabaId}`
           : undefined,
       templatesSynced: templates.length,
       phoneNumber: targetNumber,
@@ -365,14 +365,14 @@ export class TelephonyService {
     let messageText = params.customMessage || '';
     if (params.templateName) {
       if (params.templateName === 'order_update') {
-        messageText = `Hello ${params.parameters?.[0] || 'Customer'}, your order #${params.parameters?.[1] || '88412'} has been confirmed and is on its way. Track live: https://techurity.si/track/88412`;
+        messageText = `Hello ${params.parameters?.[0] || 'Customer'}, your order #${params.parameters?.[1] || '88412'} has been confirmed and is on its way. Track live: https://asra3.com/track/88412`;
       } else if (params.templateName === 'winter_sale_50') {
         messageText = `Special Offer: Get 50% off all enterprise communication plans with code ${params.parameters?.[0] || 'SAVE50'} today only!`;
       } else {
-        messageText = `Welcome to Techurity! Here is your 20% discount code: ${params.parameters?.[0] || 'WELCOME20'}`;
+        messageText = `Welcome to Asra3! Here is your 20% discount code: ${params.parameters?.[0] || 'WELCOME20'}`;
       }
     } else if (!messageText) {
-      messageText = 'Hello! This is a live test broadcast message from Techurity WhatsApp Business API.';
+      messageText = 'Hello! This is a live test broadcast message from Asra3 WhatsApp Business API.';
     }
 
     // Record into WhatsApp conversation thread
@@ -451,14 +451,14 @@ export class TelephonyService {
 
     const voiceAgentConfig = {
       enabled: true,
-      agentName: params.agentName || 'Techurity AI Voice Agent',
+      agentName: params.agentName || 'Asra3 AI Voice Agent',
       language: params.language || 'ar-SA',
       systemPrompt:
         params.systemPrompt ||
-        'You are the official 24/7 AI Voice Representative for Techurity. Greet callers warmly, answer questions regarding services, and transfer to human agents upon request.',
+        'You are the official 24/7 AI Voice Representative for Asra3. Greet callers warmly, answer questions regarding services, and transfer to human agents upon request.',
       voicePersona: params.voicePersona || 'Sarah (Warm & Empathetic)',
       humanTransferNumber: params.humanTransferNumber || '+1 (800) 555-0199',
-      forwardTo: params.forwardTo || 'wss://voice-agent.techurity.si/media',
+      forwardTo: params.forwardTo || 'wss://voice-agent.asra3.com/media',
       recordingEnabled: params.recordingEnabled ?? true,
       transcriptionEnabled: params.transcriptionEnabled ?? true,
     };
@@ -522,12 +522,12 @@ export class TelephonyService {
         ? [
             {
               role: 'system',
-              text: `تم تفعيل جلسة الذكاء الاصطناعي الصوتي عبر بوابة Techurity الصوتية (الصوت: ${params.voicePersona || 'سارة - احترافي ومرحب'}).`,
+              text: `تم تفعيل جلسة الذكاء الاصطناعي الصوتي عبر بوابة Asra3 الصوتية (الصوت: ${params.voicePersona || 'سارة - احترافي ومرحب'}).`,
               timestamp: '00:01',
             },
             {
               role: 'agent',
-              text: 'أهلاً بك في منصة Techurity الموحدة! كيف يمكنني مساعدتك اليوم في إدارة خدمات الاتصال والرسائل؟',
+              text: 'أهلاً بك في منصة Asra3 الموحدة! كيف يمكنني مساعدتك اليوم في إدارة خدمات الاتصال والرسائل؟',
               timestamp: '00:03',
             },
             {
@@ -559,7 +559,7 @@ export class TelephonyService {
             },
             {
               role: 'agent',
-              text: 'Welcome to Techurity! I am your 24/7 AI Voice Agent. How can I assist you with your communication channels today?',
+              text: 'Welcome to Asra3! I am your 24/7 AI Voice Agent. How can I assist you with your communication channels today?',
               timestamp: '00:03',
             },
             {
@@ -764,9 +764,9 @@ export class TelephonyService {
     if (!textContent) {
       if (params.type === 'otp') {
         const otpCode = Math.floor(100000 + Math.random() * 900000);
-        textContent = `Your Techurity verification OTP code is ${otpCode}. Valid for 10 minutes.`;
+        textContent = `Your Asra3 verification OTP code is ${otpCode}. Valid for 10 minutes.`;
       } else if (params.type === 'urgent_support') {
-        textContent = 'Hello! I need urgent support with my API webhook delivery on Techurity.';
+        textContent = 'Hello! I need urgent support with my API webhook delivery on Asra3.';
       } else {
         textContent = 'Hi there, I saw your WhatsApp broadcast. Can I know more details about the winter promotion?';
       }
@@ -869,7 +869,7 @@ export class TelephonyService {
       logoUrl:
         policy.whiteLabelBranding.logoUrl ||
         process.env.NEXT_PUBLIC_BRAND_LOGO_URL ||
-        'https://techurity.si/logo.png',
+        'https://asra3.com/logo.png',
       brandColor: policy.whiteLabelBranding.primaryColor || '#eb3514',
     };
 
@@ -879,7 +879,7 @@ export class TelephonyService {
         profileId,
         country: params.country,
         branding,
-        url: `https://techurity.si/kyc/share/sim_${params.organizationId}_${params.country.toLowerCase()}`,
+        url: `https://asra3.com/kyc/share/sim_${params.organizationId}_${params.country.toLowerCase()}`,
         expiresAt: new Date(Date.now() + 7 * 86_400_000).toISOString(),
       };
     }
@@ -926,8 +926,8 @@ export class TelephonyService {
         type: params.type,
         url:
           params.type === 'sms_10dlc'
-            ? `https://techurity.si/sms/register/share/sim_${Date.now().toString(36)}`
-            : `https://techurity.si/branded-calling/sim_${Date.now().toString(36)}`,
+            ? `https://asra3.com/sms/register/share/sim_${Date.now().toString(36)}`
+            : `https://asra3.com/branded-calling/sim_${Date.now().toString(36)}`,
         expiresAt: new Date(Date.now() + 7 * 86_400_000).toISOString(),
       };
     }

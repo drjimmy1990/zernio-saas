@@ -284,7 +284,7 @@ export default function SuperAdminControlPlanePage() {
           <div>
             <div className="inline-flex items-center gap-2 rounded-full bg-[var(--accent-soft)] px-3 py-1 text-xs font-bold text-[var(--accent-primary)]">
               <ShieldCheck className="h-3.5 w-3.5" />
-              <span>Techurity Governance Engine</span>
+              <span>Asra3 Governance Engine</span>
             </div>
             <h1 className="mt-3 text-2xl font-extrabold tracking-tight sm:text-3xl">
               {t.admin.title}

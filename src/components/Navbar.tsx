@@ -87,7 +87,7 @@ export function Navbar() {
   return (
     <header className="sticky top-0 z-40 border-b border-[var(--border-subtle)] bg-[var(--bg-header)] backdrop-blur-xl transition-colors">
       <div className="mx-auto flex max-w-7xl flex-wrap items-center justify-between gap-3 px-4 py-3 sm:px-6 lg:px-8">
-        {/* Brand Identity: Techurity (techurity.si) */}
+        {/* Brand Identity: Asra3 (asra3.com) */}
         <Link href="/" className="flex items-center gap-3 cursor-pointer group">
           <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-[var(--brand-coral)] text-white shadow-sm shadow-[var(--brand-coral)]/25 transition-transform group-hover:scale-105">
             <Sparkles className="h-5 w-5" />
@@ -95,13 +95,13 @@ export function Navbar() {
           <div>
             <div className="flex items-center gap-2">
               <span className="text-lg font-extrabold tracking-tight text-[var(--text-primary)]">
-                Techurity
+                Asra3
               </span>
               <span
                 dir="ltr"
                 className="rounded-full border border-[var(--brand-coral)]/30 bg-[var(--brand-coral-soft)] px-2.5 py-0.5 font-mono text-[11px] font-bold text-[var(--brand-coral)]"
               >
-                techurity.si
+                asra3.com
               </span>
             </div>
             <p className="hidden text-[11px] text-[var(--text-secondary)] xl:block max-w-[300px] truncate">

@@ -1,6 +1,6 @@
 # Ubuntu VPS Deployment Guide (Docker + aaPanel Nginx Reverse Proxy & SSL)
 
-This guide covers deploying the **Techurity (Zernio SaaS Platform)** from your Windows machine to your **Ubuntu VPS** running **Docker** and **aaPanel** (Nginx + Let's Encrypt SSL).
+This guide covers deploying the **Asra3 (Zernio SaaS Platform)** from your Windows machine to your **Ubuntu VPS** running **Docker** and **aaPanel** (Nginx + Let's Encrypt SSL).
 
 ---
 
@@ -9,21 +9,21 @@ This guide covers deploying the **Techurity (Zernio SaaS Platform)** from your W
 If using Git, push the repository to your private GitHub/GitLab repository, then SSH into your Ubuntu VPS:
 
 ```bash
-mkdir -p /www/wwwroot/techurity.si
-cd /www/wwwroot/techurity.si
+mkdir -p /www/wwwroot/asra3.com
+cd /www/wwwroot/asra3.com
 git clone https://github.com/drjimmy1990/zernio-saas.git .
 ```
 
-*(Alternatively, you can zip the folder on Windows excluding `node_modules` and `.next`, upload it via **aaPanel → Files** into `/www/wwwroot/techurity.si`, and click **Unzip**).*
+*(Alternatively, you can zip the folder on Windows excluding `node_modules` and `.next`, upload it via **aaPanel → Files** into `/www/wwwroot/asra3.com`, and click **Unzip**).*
 
 ---
 
 ## 2. Create `.env` on the Ubuntu VPS
 
-Inside `/www/wwwroot/techurity.si`, create your `.env` file (or upload your `.env.local` from Windows and rename it to `.env`):
+Inside `/www/wwwroot/asra3.com`, create your `.env` file (or upload your `.env.local` from Windows and rename it to `.env`):
 
 ```bash
-nano /www/wwwroot/techurity.si/.env
+nano /www/wwwroot/asra3.com/.env
 ```
 
 Paste your production environment variables:
@@ -45,13 +45,13 @@ ZERNIO_WEBHOOK_SECRET=whsec_...
 ZERNIO_BASE_URL=https://zernio.com/api/v1
 
 # 4. Public Domain & White-Label Brand Identity
-NEXT_PUBLIC_APP_URL=https://social.ai4eg.com
-NEXT_PUBLIC_BRAND_NAME=Techurity
+NEXT_PUBLIC_APP_URL=https://asra3.com
+NEXT_PUBLIC_BRAND_NAME=Asra3
 NEXT_PUBLIC_BRAND_PRIMARY_COLOR=#4F46E5
-NEXT_PUBLIC_BRAND_LOGO_URL=https://social.ai4eg.com/logo.png
+NEXT_PUBLIC_BRAND_LOGO_URL=https://asra3.com/logo.png
 ```
 
-> **Important:** Because Next.js bakes `NEXT_PUBLIC_*` variables into the client bundle at build time, always make sure `.env` is present in `/www/wwwroot/techurity.si/.env` **before** running `docker compose up -d --build`.
+> **Important:** Because Next.js bakes `NEXT_PUBLIC_*` variables into the client bundle at build time, always make sure `.env` is present in `/www/wwwroot/asra3.com/.env` **before** running `docker compose up -d --build`.
 
 ---
 
@@ -60,7 +60,7 @@ NEXT_PUBLIC_BRAND_LOGO_URL=https://social.ai4eg.com/logo.png
 On your Ubuntu VPS (via SSH or **aaPanel → Terminal**):
 
 ```bash
-cd /www/wwwroot/techurity.si
+cd /www/wwwroot/asra3.com
 docker compose up -d --build
 ```
 
@@ -76,13 +76,13 @@ curl -I http://127.0.0.1:5651/api/v1/openapi.json
 ## 4. Configure aaPanel Website, SSL, and Nginx Reverse Proxy
 
 1. Open **aaPanel** $\rightarrow$ go to **Website** $\rightarrow$ click **Add site**:
-   * **Domain name:** `techurity.si` (and `www.techurity.si`)
+   * **Domain name:** `asra3.com` (and `www.asra3.com`)
    * **PHP Version:** Select **`Pure Static`**
    * Click **Submit**.
-2. Click on `techurity.si` in the Website list $\rightarrow$ go to **SSL**:
+2. Click on `asra3.com` in the Website list $\rightarrow$ go to **SSL**:
    * Select **Let's Encrypt** $\rightarrow$ check your domain(s) $\rightarrow$ click **Apply**.
    * Turn ON **Force HTTPS**.
-3. Still inside the `techurity.si` site settings $\rightarrow$ go to **Reverse proxy** $\rightarrow$ click **Add Reverse Proxy**:
+3. Still inside the `asra3.com` site settings $\rightarrow$ go to **Reverse proxy** $\rightarrow$ click **Add Reverse Proxy**:
    * **Proxy Name:** `nextjs-docker`
    * **Target URL:** `http://127.0.0.1:5651`
    * **Send Domain (`$host`):** `$host`
@@ -106,6 +106,6 @@ curl -I http://127.0.0.1:5651/api/v1/openapi.json
 Whenever you update code and push to Git, run these 2 commands on the Ubuntu VPS:
 
 ```bash
-cd /www/wwwroot/techurity.si
+cd /www/wwwroot/asra3.com
 git pull && docker compose up -d --build
 ```

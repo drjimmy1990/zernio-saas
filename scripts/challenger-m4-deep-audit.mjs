@@ -5,7 +5,7 @@ import crypto from 'crypto';
 
 const PORT = 3008;
 const BASE_URL = `http://localhost:${PORT}`;
-const SECRET = process.env.SESSION_SECRET || 'techurity_secure_session_secret_2026';
+const SECRET = process.env.SESSION_SECRET || 'asra3_secure_session_secret_2026';
 
 let passed = 0;
 let failed = 0;
@@ -73,27 +73,27 @@ async function runAudit() {
   })).toString('base64');
 
   const res1 = await fetch(`${BASE_URL}/admin`, {
-    headers: { Cookie: `techurity_session=${forgedUnsigned}` },
+    headers: { Cookie: `asra3_session=${forgedUnsigned}` },
     redirect: 'manual',
   });
   assert(res1.status === 307 && (res1.headers.get('location') || '').includes('/login'),
     'Unsigned cookie accessing /admin -> rejected with HTTP 307 redirect to /login');
 
   const res1Api = await fetch(`${BASE_URL}/api/admin`, {
-    headers: { Cookie: `techurity_session=${forgedUnsigned}` },
+    headers: { Cookie: `asra3_session=${forgedUnsigned}` },
   });
   assert(res1Api.status === 401, 'Unsigned cookie accessing /api/admin -> HTTP 401 Unauthorized');
 
   // Test 2.2: Forged cookie with fake/arbitrary signature
   const res2 = await fetch(`${BASE_URL}/admin`, {
-    headers: { Cookie: `techurity_session=${forgedUnsigned}.FAKE_ARBITRARY_SIGNATURE_43_CHARACTERS_LONG_XYZ` },
+    headers: { Cookie: `asra3_session=${forgedUnsigned}.FAKE_ARBITRARY_SIGNATURE_43_CHARACTERS_LONG_XYZ` },
     redirect: 'manual',
   });
   assert(res2.status === 307 && (res2.headers.get('location') || '').includes('/login'),
     'Forged cookie with fake signature accessing /admin -> rejected with HTTP 307 redirect');
 
   const res2Api = await fetch(`${BASE_URL}/api/admin`, {
-    headers: { Cookie: `techurity_session=${forgedUnsigned}.FAKE_ARBITRARY_SIGNATURE_43_CHARACTERS_LONG_XYZ` },
+    headers: { Cookie: `asra3_session=${forgedUnsigned}.FAKE_ARBITRARY_SIGNATURE_43_CHARACTERS_LONG_XYZ` },
   });
   assert(res2Api.status === 401, 'Forged cookie with fake signature accessing /api/admin -> HTTP 401');
 
@@ -106,14 +106,14 @@ async function runAudit() {
   }, 'WRONG_UNAUTHORIZED_SECRET_KEY');
 
   const res3 = await fetch(`${BASE_URL}/admin`, {
-    headers: { Cookie: `techurity_session=${tokenWrongSecret}` },
+    headers: { Cookie: `asra3_session=${tokenWrongSecret}` },
     redirect: 'manual',
   });
   assert(res3.status === 307 && (res3.headers.get('location') || '').includes('/login'),
     'Token signed with wrong key accessing /admin -> rejected with HTTP 307 redirect');
 
   const res3Api = await fetch(`${BASE_URL}/api/admin`, {
-    headers: { Cookie: `techurity_session=${tokenWrongSecret}` },
+    headers: { Cookie: `asra3_session=${tokenWrongSecret}` },
   });
   assert(res3Api.status === 401, 'Token signed with wrong key accessing /api/admin -> HTTP 401');
 
@@ -133,7 +133,7 @@ async function runAudit() {
   });
   assert(signupRes.ok, 'Legitimate customer signup succeeds with HTTP 200');
   const setCookie = signupRes.headers.get('set-cookie') || '';
-  const match = setCookie.match(/techurity_session=([^;]+)/);
+  const match = setCookie.match(/asra3_session=([^;]+)/);
   const rawCookie = match ? match[1] : '';
   const realCustomerToken = decodeURIComponent(rawCookie);
   assert(Boolean(realCustomerToken && realCustomerToken.includes('.')), 'Customer received valid signed token');
@@ -148,26 +148,26 @@ async function runAudit() {
   const tamperedToken = `${tamperedB64}.${realSig}`;
 
   const res4 = await fetch(`${BASE_URL}/admin`, {
-    headers: { Cookie: `techurity_session=${tamperedToken}` },
+    headers: { Cookie: `asra3_session=${tamperedToken}` },
     redirect: 'manual',
   });
   assert(res4.status === 307 && (res4.headers.get('location') || '').includes('/login'),
     'Tampered customer token claiming super_admin -> rejected with HTTP 307 redirect');
 
   const res4Api = await fetch(`${BASE_URL}/api/admin`, {
-    headers: { Cookie: `techurity_session=${tamperedToken}` },
+    headers: { Cookie: `asra3_session=${tamperedToken}` },
   });
   assert(res4Api.status === 401, 'Tampered customer token claiming super_admin -> HTTP 401');
 
   // Test 2.5: Legitimate customer token UNTAMPERED access
   const resValidCustDash = await fetch(`${BASE_URL}/dashboard`, {
-    headers: { Cookie: `techurity_session=${realCustomerToken}` },
+    headers: { Cookie: `asra3_session=${realCustomerToken}` },
     redirect: 'manual',
   });
   assert(resValidCustDash.status === 200, 'Legitimate customer token accesses /dashboard -> HTTP 200 OK');
 
   const resValidCustAdmin = await fetch(`${BASE_URL}/admin`, {
-    headers: { Cookie: `techurity_session=${realCustomerToken}` },
+    headers: { Cookie: `asra3_session=${realCustomerToken}` },
     redirect: 'manual',
   });
   assert(resValidCustAdmin.status === 307 && (resValidCustAdmin.headers.get('location') || '').endsWith('/dashboard'),
@@ -179,7 +179,7 @@ async function runAudit() {
   const badAdminLogin = await fetch(`${BASE_URL}/api/auth`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ action: 'login', email: 'admin@techurity.si', password: 'IncorrectAdminPassword!' }),
+    body: JSON.stringify({ action: 'login', email: 'admin@asra3.com', password: 'IncorrectAdminPassword!' }),
   });
   assert(badAdminLogin.status === 401, 'Super Admin with wrong password returns HTTP 401');
 
@@ -187,7 +187,7 @@ async function runAudit() {
   const emptyAdminPass = await fetch(`${BASE_URL}/api/auth`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ action: 'login', email: 'admin@techurity.si', password: '' }),
+    body: JSON.stringify({ action: 'login', email: 'admin@asra3.com', password: '' }),
   });
   assert(emptyAdminPass.status === 400, 'Super Admin with empty password returns HTTP 400');
 
@@ -195,23 +195,23 @@ async function runAudit() {
   const goodAdminLogin = await fetch(`${BASE_URL}/api/auth`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ action: 'login', email: 'admin@techurity.si', password: 'AdminPassword2026!' }),
+    body: JSON.stringify({ action: 'login', email: 'admin@asra3.com', password: 'AdminPassword2026!' }),
   });
   assert(goodAdminLogin.status === 200, 'Super Admin with correct password returns HTTP 200');
   const adminSetCookie = goodAdminLogin.headers.get('set-cookie') || '';
-  const adminTokenMatch = adminSetCookie.match(/techurity_session=([^;]+)/);
+  const adminTokenMatch = adminSetCookie.match(/asra3_session=([^;]+)/);
   const realAdminToken = adminTokenMatch ? decodeURIComponent(adminTokenMatch[1]) : '';
   assert(Boolean(realAdminToken && realAdminToken.includes('.')), 'Super Admin receives cryptographically signed token');
 
   // Verify real admin token accesses /admin and /api/admin
   const adminPageRes = await fetch(`${BASE_URL}/admin`, {
-    headers: { Cookie: `techurity_session=${realAdminToken}` },
+    headers: { Cookie: `asra3_session=${realAdminToken}` },
     redirect: 'manual',
   });
   assert(adminPageRes.status === 200, 'Super Admin accesses /admin -> HTTP 200 OK');
 
   const adminApiRes = await fetch(`${BASE_URL}/api/admin`, {
-    headers: { Cookie: `techurity_session=${realAdminToken}` },
+    headers: { Cookie: `asra3_session=${realAdminToken}` },
   });
   assert(adminApiRes.status === 200, 'Super Admin accesses /api/admin -> HTTP 200 OK');
 

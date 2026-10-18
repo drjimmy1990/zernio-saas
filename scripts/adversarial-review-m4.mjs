@@ -53,7 +53,7 @@ async function runAdversarialAudit() {
   const expiredCookie = Buffer.from(JSON.stringify(expiredSession)).toString('base64');
   const resExpired = await fetch(`${BASE_URL}/dashboard`, {
     redirect: 'manual',
-    headers: { Cookie: `techurity_session=${expiredCookie}` },
+    headers: { Cookie: `asra3_session=${expiredCookie}` },
   });
   if (resExpired.status !== 307) {
     throw new Error(`Probe 2 Failed: Expired session was not redirected, got ${resExpired.status}`);
@@ -64,7 +64,7 @@ async function runAdversarialAudit() {
   console.log('\n[Probe 3] Testing malformed/garbage cookie rejection...');
   const resCorrupt = await fetch(`${BASE_URL}/dashboard`, {
     redirect: 'manual',
-    headers: { Cookie: `techurity_session=NOT_A_VALID_BASE64_OR_JSON!@#$%^&*()` },
+    headers: { Cookie: `asra3_session=NOT_A_VALID_BASE64_OR_JSON!@#$%^&*()` },
   });
   if (resCorrupt.status !== 307) {
     throw new Error(`Probe 3 Failed: Corrupt session was not redirected, got ${resCorrupt.status}`);
@@ -82,7 +82,7 @@ async function runAdversarialAudit() {
   const customerCookie = Buffer.from(JSON.stringify(customerSession)).toString('base64');
   const resCustomerAdmin = await fetch(`${BASE_URL}/admin`, {
     redirect: 'manual',
-    headers: { Cookie: `techurity_session=${customerCookie}` },
+    headers: { Cookie: `asra3_session=${customerCookie}` },
   });
   const locCustomerAdmin = resCustomerAdmin.headers.get('location');
   if (resCustomerAdmin.status !== 307 || !locCustomerAdmin?.includes('/dashboard')) {
@@ -91,7 +91,7 @@ async function runAdversarialAudit() {
   console.log('✓ Probe 4 Passed: Regular customer visiting /admin redirected (307) -> /dashboard');
 
   const resCustomerAdminApi = await fetch(`${BASE_URL}/api/admin`, {
-    headers: { Cookie: `techurity_session=${customerCookie}` },
+    headers: { Cookie: `asra3_session=${customerCookie}` },
   });
   if (resCustomerAdminApi.status !== 401) {
     throw new Error(`Probe 4 Failed: /api/admin did not return 401 to customer. Got ${resCustomerAdminApi.status}`);
@@ -101,7 +101,7 @@ async function runAdversarialAudit() {
   // Test 5: Super Admin Access
   console.log('\n[Probe 5] Testing Super Admin access to /admin and /api/admin...');
   const adminSession = {
-    user: { id: 'usr_super_admin', fullName: 'Admin', email: 'admin@techurity.si', role: 'super_admin' },
+    user: { id: 'usr_super_admin', fullName: 'Admin', email: 'admin@asra3.com', role: 'super_admin' },
     tenant: { organizationId: 'org_admin_platform', organizationName: 'Admin Org', slug: 'admin', planKey: 'enterprise' },
     createdAt: Date.now(),
     expiresAt: Date.now() + 3600000,
@@ -109,7 +109,7 @@ async function runAdversarialAudit() {
   const adminCookie = Buffer.from(JSON.stringify(adminSession)).toString('base64');
   const resAdminPage = await fetch(`${BASE_URL}/admin`, {
     redirect: 'manual',
-    headers: { Cookie: `techurity_session=${adminCookie}` },
+    headers: { Cookie: `asra3_session=${adminCookie}` },
   });
   if (resAdminPage.status !== 200) {
     throw new Error(`Probe 5 Failed: Super Admin received status ${resAdminPage.status} on /admin`);
@@ -117,7 +117,7 @@ async function runAdversarialAudit() {
   console.log('✓ Probe 5 Passed: Super Admin permitted to access /admin (HTTP 200)');
 
   const resAdminApi = await fetch(`${BASE_URL}/api/admin`, {
-    headers: { Cookie: `techurity_session=${adminCookie}` },
+    headers: { Cookie: `asra3_session=${adminCookie}` },
   });
   if (resAdminApi.status !== 200) {
     throw new Error(`Probe 5 Failed: /api/admin did not return 200 to Super Admin. Got ${resAdminApi.status}`);
@@ -141,7 +141,7 @@ async function runAdversarialAudit() {
 
   // Fetch clean state for Tenant A
   const resA1 = await (await fetch(`${BASE_URL}/api/services?organizationId=${tenantA}`, {
-    headers: { Cookie: `techurity_session=${customerCookie}` },
+    headers: { Cookie: `asra3_session=${customerCookie}` },
   })).json();
 
   if (resA1.subServicesData.core_connect.accounts.length !== 0 ||
@@ -153,7 +153,7 @@ async function runAdversarialAudit() {
   // Mutate Tenant A by provisioning a number
   await fetch(`${BASE_URL}/api/services`, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json', Cookie: `techurity_session=${customerCookie}` },
+    headers: { 'Content-Type': 'application/json', Cookie: `asra3_session=${customerCookie}` },
     body: JSON.stringify({
       organizationId: tenantA,
       subService: 'telephony',
@@ -165,7 +165,7 @@ async function runAdversarialAudit() {
 
   // Verify Tenant A now has 1 number
   const resA2 = await (await fetch(`${BASE_URL}/api/services?organizationId=${tenantA}`, {
-    headers: { Cookie: `techurity_session=${customerCookie}` },
+    headers: { Cookie: `asra3_session=${customerCookie}` },
   })).json();
   if (resA2.subServicesData.telephony.numbers.length !== 1) {
     throw new Error('Probe 7 Failed: Tenant A number mutation was not persisted');
@@ -173,7 +173,7 @@ async function runAdversarialAudit() {
 
   // Now inspect Tenant B: MUST still have 0 numbers!
   const resB = await (await fetch(`${BASE_URL}/api/services?organizationId=${tenantB}`, {
-    headers: { Cookie: `techurity_session=${customerCookie}` },
+    headers: { Cookie: `asra3_session=${customerCookie}` },
   })).json();
   if ((resB.subServicesData.telephony.numbers || []).length !== 0) {
     throw new Error('Probe 7 Failed: Cross-tenant data leak! Tenant B inherited numbers from Tenant A');

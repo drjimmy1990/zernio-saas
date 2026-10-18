@@ -413,7 +413,7 @@ export function ConnectionWizardModal({
   // Step 4 Connected Account & Test Post State
   const [connectedAccount, setConnectedAccount] = useState<ConnectedAccountData | null>(initialAccount || null);
   const [testPayloadText, setTestPayloadText] = useState(
-    loc('تم التحقق من ربط القناة بنجاح عبر منصة تكيوريتي. جاهز للنشر الموحد! 🚀', 'Connection Verified: Techurity omnichannel broadcast pipeline operational. 🚀')
+    loc('تم التحقق من ربط القناة بنجاح عبر منصة تكيوريتي. جاهز للنشر الموحد! 🚀', 'Connection Verified: Asra3 omnichannel broadcast pipeline operational. 🚀')
   );
   const [testPostLoading, setTestPostLoading] = useState(false);
   const [deliveryReceipt, setDeliveryReceipt] = useState<{
@@ -479,14 +479,14 @@ export function ConnectionWizardModal({
     setHandshakeStage('idle');
     // Pre-fill realistic sample credentials
     if (platform === 'shopify') {
-      setCredIdentifier('techurity-flagship.myshopify.com');
+      setCredIdentifier('asra3-flagship.myshopify.com');
       setCredSecret('shpat_live_89a2b1c4d7e9f3a');
     } else if (platform === 'wordpress') {
-      setCredIdentifier('https://techurity.si/blog');
+      setCredIdentifier('https://asra3.com/blog');
       setCredUsername('editor_admin');
       setCredSecret('z8k2 9fa1 bc44 e772');
     } else if (platform === 'bluesky') {
-      setCredIdentifier('techurity.bsky.social');
+      setCredIdentifier('asra3.bsky.social');
       setCredSecret('bsky-app-pass-9912');
     } else if (platform === 'telegram') {
       setCredSecret('719283741:AAH8f_9aBcDeFgHiJkLmNoPqRsTuVwXyZ12');
@@ -540,8 +540,8 @@ export function ConnectionWizardModal({
             id: `acc_${selectedPlatform}_${Date.now().toString(36)}`,
             accountId: `acc_${selectedPlatform}_${Date.now().toString(36)}`,
             platform: selectedPlatform,
-            username: `@techurity_${selectedPlatform}`,
-            displayName: `Techurity ${platformMeta.name}`,
+            username: `@asra3_${selectedPlatform}`,
+            displayName: `Asra3 ${platformMeta.name}`,
             status: 'healthy',
             tokenHealth: {
               status: 'healthy',
@@ -608,8 +608,8 @@ export function ConnectionWizardModal({
             id: data.account?.accountId || `acc_${selectedPlatform}_${Date.now().toString(36)}`,
             accountId: data.account?.accountId || `acc_${selectedPlatform}_${Date.now().toString(36)}`,
             platform: selectedPlatform,
-            username: data.account?.username || credIdentifier || `@techurity_${selectedPlatform}`,
-            displayName: data.account?.displayName || `Techurity ${platformMeta.name}`,
+            username: data.account?.username || credIdentifier || `@asra3_${selectedPlatform}`,
+            displayName: data.account?.displayName || `Asra3 ${platformMeta.name}`,
             status: 'healthy',
             tokenHealth: {
               status: 'healthy',
@@ -697,8 +697,8 @@ export function ConnectionWizardModal({
         id: data.account?.accountId || `acc_${selectedPlatform}_${Date.now().toString(36)}`,
         accountId: data.account?.accountId || `acc_${selectedPlatform}_${Date.now().toString(36)}`,
         platform: selectedPlatform,
-        username: chosen?.username || `@techurity_${selectedPlatform}`,
-        displayName: chosen?.name || `Techurity ${platformMeta.name}`,
+        username: chosen?.username || `@asra3_${selectedPlatform}`,
+        displayName: chosen?.name || `Asra3 ${platformMeta.name}`,
         status: 'healthy',
         tokenHealth: {
           status: 'healthy',
@@ -1075,10 +1075,10 @@ export function ConnectionWizardModal({
                       {platformMeta.name.substring(0, 2).toUpperCase()}
                     </div>
                     <h3 className="mt-3 text-base font-extrabold text-[var(--text-primary)]">
-                      {loc(`طلب منح الإذن لتطبيق Techurity للوصول إلى ${platformMeta.name}`, `Authorize Techurity Platform to access ${platformMeta.name}`)}
+                      {loc(`طلب منح الإذن لتطبيق Asra3 للوصول إلى ${platformMeta.name}`, `Authorize Asra3 Platform to access ${platformMeta.name}`)}
                     </h3>
                     <p className="mt-1 text-xs text-[var(--text-secondary)]">
-                      {loc('سيتم الربط المباشر مع حسابك الإداري دون الحاجة لمشاركة كلمات المرور الخاصة بك.', 'Secure token exchange. Techurity never sees or stores your personal account password.')}
+                      {loc('سيتم الربط المباشر مع حسابك الإداري دون الحاجة لمشاركة كلمات المرور الخاصة بك.', 'Secure token exchange. Asra3 never sees or stores your personal account password.')}
                     </p>
                   </div>
 

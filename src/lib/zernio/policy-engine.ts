@@ -80,8 +80,8 @@ const fallbackStore: {
   tenants: Record<string, TenantOverrideState>;
 } = {
   globalConfig: {
-    brandName: process.env.NEXT_PUBLIC_BRAND_NAME || 'OmniPulse Cloud',
-    brandLogoUrl: process.env.NEXT_PUBLIC_BRAND_LOGO_URL || 'https://omnipulse.example.com/logo.png',
+    brandName: process.env.NEXT_PUBLIC_BRAND_NAME || 'Asra3',
+    brandLogoUrl: process.env.NEXT_PUBLIC_BRAND_LOGO_URL || 'https://asra3.com/logo.png',
     brandPrimaryColor: process.env.NEXT_PUBLIC_BRAND_PRIMARY_COLOR || '#4F46E5',
     enforceHeadlessOAuth: true,
     enabledPlatforms: [...ALL_SOCIAL_PLATFORMS],

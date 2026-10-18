@@ -191,7 +191,7 @@ async function runTestSuite() {
   let createdContactId = null;
   const testContactPayload = {
     name: 'Empirical Challenger Contact',
-    email: 'challenger.empirical@techurity.si',
+    email: 'challenger.empirical@asra3.com',
     phone: '+971500000001',
     tags: ['adversarial-test', 'vip'],
     channels: ['whatsapp', 'sms'],

@@ -103,7 +103,7 @@ async function runAdversarialSuite() {
   // 2.1 Garbage text cookie
   try {
     const res = await fetch(`${BASE_URL}/dashboard`, {
-      headers: { Cookie: 'techurity_session=TOTAL_GARBAGE_NOT_BASE64!@#$%' },
+      headers: { Cookie: 'asra3_session=TOTAL_GARBAGE_NOT_BASE64!@#$%' },
       redirect: 'manual',
     });
     const loc = res.headers.get('location') || '';
@@ -117,7 +117,7 @@ async function runAdversarialSuite() {
   try {
     const invalidJsonBase64 = Buffer.from('this is definitely not json', 'utf-8').toString('base64');
     const res = await fetch(`${BASE_URL}/dashboard`, {
-      headers: { Cookie: `techurity_session=${invalidJsonBase64}` },
+      headers: { Cookie: `asra3_session=${invalidJsonBase64}` },
       redirect: 'manual',
     });
     const loc = res.headers.get('location') || '';
@@ -131,7 +131,7 @@ async function runAdversarialSuite() {
   try {
     const missingFieldsBase64 = Buffer.from(JSON.stringify({ someKey: 'no_user_here' }), 'utf-8').toString('base64');
     const res = await fetch(`${BASE_URL}/dashboard`, {
-      headers: { Cookie: `techurity_session=${missingFieldsBase64}` },
+      headers: { Cookie: `asra3_session=${missingFieldsBase64}` },
       redirect: 'manual',
     });
     const loc = res.headers.get('location') || '';
@@ -151,7 +151,7 @@ async function runAdversarialSuite() {
     };
     const expiredBase64 = Buffer.from(JSON.stringify(expiredPayload), 'utf-8').toString('base64');
     const res = await fetch(`${BASE_URL}/dashboard`, {
-      headers: { Cookie: `techurity_session=${expiredBase64}` },
+      headers: { Cookie: `asra3_session=${expiredBase64}` },
       redirect: 'manual',
     });
     const loc = res.headers.get('location') || '';
@@ -164,7 +164,7 @@ async function runAdversarialSuite() {
   // 2.5 API route resilience against garbage cookie
   try {
     const res = await fetch(`${BASE_URL}/api/admin`, {
-      headers: { Cookie: 'techurity_session=invalid-json-base64-test' },
+      headers: { Cookie: 'asra3_session=invalid-json-base64-test' },
     });
     const pass = res.status === 401;
     recordTest('Cookie Tampering', 'Garbage cookie on /api/admin -> 401 without server crash', pass, `status=${res.status}`);
@@ -187,7 +187,7 @@ async function runAdversarialSuite() {
       },
       tenant: {
         organizationId: 'org_admin_platform',
-        organizationName: 'Techurity Super Admin Control Plane',
+        organizationName: 'Asra3 Super Admin Control Plane',
         slug: 'admin',
         planKey: 'enterprise',
       },
@@ -198,13 +198,13 @@ async function runAdversarialSuite() {
     
     // Attempt 1: Forged cookie to access /admin
     const adminPageRes = await fetch(`${BASE_URL}/admin`, {
-      headers: { Cookie: `techurity_session=${forgedCookieBase64}` },
+      headers: { Cookie: `asra3_session=${forgedCookieBase64}` },
       redirect: 'manual',
     });
 
     // Attempt 2: Forged cookie to access /api/admin
     const adminApiRes = await fetch(`${BASE_URL}/api/admin`, {
-      headers: { Cookie: `techurity_session=${forgedCookieBase64}` },
+      headers: { Cookie: `asra3_session=${forgedCookieBase64}` },
     });
     const adminApiJson = await adminApiRes.json().catch(() => ({}));
 
@@ -248,12 +248,12 @@ async function runAdversarialSuite() {
       }),
     });
     const setCookie = signupRes.headers.get('set-cookie') || '';
-    const match = setCookie.match(/techurity_session=([^;]+)/);
+    const match = setCookie.match(/asra3_session=([^;]+)/);
     customerCookie = match ? match[1] : '';
     const signupData = await signupRes.json();
     customerOrgId = signupData.tenant?.organizationId;
 
-    recordTest('RBAC', 'Customer Signup sets valid techurity_session cookie', Boolean(customerCookie), `cookieLen=${customerCookie.length}`);
+    recordTest('RBAC', 'Customer Signup sets valid asra3_session cookie', Boolean(customerCookie), `cookieLen=${customerCookie.length}`);
   } catch (err) {
     recordTest('RBAC', 'Customer Signup', false, err.message);
   }
@@ -261,7 +261,7 @@ async function runAdversarialSuite() {
   // 4.1 Customer can access /dashboard
   try {
     const res = await fetch(`${BASE_URL}/dashboard`, {
-      headers: { Cookie: `techurity_session=${customerCookie}` },
+      headers: { Cookie: `asra3_session=${customerCookie}` },
       redirect: 'manual',
     });
     const pass = res.status === 200;
@@ -273,7 +273,7 @@ async function runAdversarialSuite() {
   // 4.2 Customer CANNOT access /admin (middleware redirect to /dashboard)
   try {
     const res = await fetch(`${BASE_URL}/admin`, {
-      headers: { Cookie: `techurity_session=${customerCookie}` },
+      headers: { Cookie: `asra3_session=${customerCookie}` },
       redirect: 'manual',
     });
     const loc = res.headers.get('location') || '';
@@ -286,7 +286,7 @@ async function runAdversarialSuite() {
   // 4.3 Customer CANNOT access /api/admin (API 401 Unauthorized)
   try {
     const res = await fetch(`${BASE_URL}/api/admin`, {
-      headers: { Cookie: `techurity_session=${customerCookie}` },
+      headers: { Cookie: `asra3_session=${customerCookie}` },
     });
     const data = await res.json().catch(() => ({}));
     const pass = res.status === 401;
@@ -321,7 +321,7 @@ async function runAdversarialSuite() {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         action: 'login',
-        email: 'admin@techurity.si',
+        email: 'admin@asra3.com',
         password: 'THIS_IS_A_WRONG_PASSWORD_123',
       }),
     });
@@ -330,11 +330,11 @@ async function runAdversarialSuite() {
     // The dispatch requirement states:
     // "Invalid login credentials. Verify HTTP 401 and clean error message."
     if (res.status === 401) {
-      recordTest('Login Validation', 'Invalid password for admin@techurity.si -> HTTP 401 Unauthorized', true, `status=401, error=${data.error}`);
+      recordTest('Login Validation', 'Invalid password for admin@asra3.com -> HTTP 401 Unauthorized', true, `status=401, error=${data.error}`);
     } else {
       recordTest(
         'Login Validation',
-        'Invalid password for admin@techurity.si -> HTTP 401 Unauthorized',
+        'Invalid password for admin@asra3.com -> HTTP 401 Unauthorized',
         false,
         `VULNERABILITY / SPEC VIOLATION: Expected 401 for wrong password, but got HTTP ${res.status}! User was logged in as ${data.user?.role}!`
       );
@@ -381,12 +381,12 @@ async function runAdversarialSuite() {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        Cookie: `techurity_session=${customerCookie}`,
+        Cookie: `asra3_session=${customerCookie}`,
       },
       body: JSON.stringify({ action: 'logout' }),
     });
     const setCookie = res.headers.get('set-cookie') || '';
-    const pass = res.status === 200 && setCookie.includes('Max-Age=0') && setCookie.includes('techurity_session=');
+    const pass = res.status === 200 && setCookie.includes('Max-Age=0') && setCookie.includes('asra3_session=');
     recordTest('Logout', 'POST /api/auth { action: "logout" } sets Max-Age=0', pass, `status=${res.status}, setCookie=${setCookie}`);
   } catch (err) {
     recordTest('Logout', 'POST /api/auth logout', false, err.message);
@@ -396,7 +396,7 @@ async function runAdversarialSuite() {
   try {
     const res = await fetch(`${BASE_URL}/api/auth?action=logout`);
     const setCookie = res.headers.get('set-cookie') || '';
-    const pass = res.status === 200 && setCookie.includes('Max-Age=0') && setCookie.includes('techurity_session=');
+    const pass = res.status === 200 && setCookie.includes('Max-Age=0') && setCookie.includes('asra3_session=');
     recordTest('Logout', 'GET /api/auth?action=logout sets Max-Age=0', pass, `status=${res.status}, setCookie=${setCookie}`);
   } catch (err) {
     recordTest('Logout', 'GET /api/auth?action=logout', false, err.message);

@@ -76,7 +76,7 @@ function LoginFormContent() {
         <div className="luxury-card p-6 sm:p-10 lg:col-span-7">
           <div className="inline-flex items-center gap-2 rounded-full bg-[var(--brand-coral-soft)] px-3 py-1 text-xs font-bold text-[var(--brand-coral)]">
             <Sparkles className="h-3.5 w-3.5" />
-            <span>Techurity Secure Access · techurity.si</span>
+            <span>Asra3 Secure Access · asra3.com</span>
           </div>
 
           <h1 className="mt-4 text-2xl font-extrabold text-[var(--text-primary)] sm:text-3xl">
@@ -246,8 +246,8 @@ function LoginFormContent() {
           </div>
 
           <div className="pt-6 border-t border-[var(--border-subtle)] text-[11px] text-[var(--text-muted)] flex items-center justify-between">
-            <span>Techurity Platform SLA 99.99%</span>
-            <span className="font-mono text-[var(--brand-coral)]">techurity.si</span>
+            <span>Asra3 Platform SLA 99.99%</span>
+            <span className="font-mono text-[var(--brand-coral)]">asra3.com</span>
           </div>
         </div>
       </div>

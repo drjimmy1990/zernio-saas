@@ -238,8 +238,8 @@ export async function POST(request: Request) {
       // 1. Super Admin Authentication
       if (
         persona === 'super_admin' ||
-        email === 'admin@omnipulse.cloud' ||
-        email === 'admin@techurity.si' ||
+        email === 'admin@asra3.com' ||
+        email === 'admin@asra3.com' ||
         email.startsWith('admin@')
       ) {
         const validAdminPasswords = [
@@ -258,12 +258,12 @@ export async function POST(request: Request) {
           user: {
             id: 'usr_super_admin',
             fullName: 'Platform Super Admin',
-            email: email || 'admin@techurity.si',
+            email: email || 'admin@asra3.com',
             role: 'super_admin',
           },
           tenant: {
             organizationId: 'org_admin_platform',
-            organizationName: 'Techurity Super Admin Control Plane',
+            organizationName: 'Asra3 Super Admin Control Plane',
             slug: 'admin',
             planKey: 'enterprise',
           },

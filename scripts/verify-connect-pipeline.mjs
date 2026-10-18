@@ -95,14 +95,14 @@ async function runTests() {
   // ---------------------------------------------------------------------------
   console.log('\n--- Suite 2: list_entities ---');
   const entityPlatforms = [
-    { platform: 'facebook', minItems: 2, expectedName: 'Techurity Official Brand' },
-    { platform: 'instagram', minItems: 2, expectedName: 'Techurity Global' },
-    { platform: 'linkedin', minItems: 2, expectedName: 'Techurity International Corp' },
+    { platform: 'facebook', minItems: 2, expectedName: 'Asra3 Official Brand' },
+    { platform: 'instagram', minItems: 2, expectedName: 'Asra3 Global' },
+    { platform: 'linkedin', minItems: 2, expectedName: 'Asra3 International Corp' },
     { platform: 'discord', minItems: 2, expectedName: '#announcements' },
-    { platform: 'googlebusiness', minItems: 2, expectedName: 'Techurity Headquarters — Ljubljana' },
+    { platform: 'googlebusiness', minItems: 2, expectedName: 'Asra3 Headquarters — Ljubljana' },
     { platform: 'pinterest', minItems: 2, expectedName: 'Brand Identity & Visual Campaigns' },
-    { platform: 'snapchat', minItems: 1, expectedName: 'Techurity Official Public Profile' },
-    { platform: 'whatsapp', minItems: 2, expectedName: 'Techurity VIP Customer Support' },
+    { platform: 'snapchat', minItems: 1, expectedName: 'Asra3 Official Public Profile' },
+    { platform: 'whatsapp', minItems: 2, expectedName: 'Asra3 VIP Customer Support' },
   ];
   for (const testCase of entityPlatforms) {
     const res = await invokeApi({
@@ -131,8 +131,8 @@ async function runTests() {
       platform: plat,
       organizationId: 'org_demo_acme',
       entityId: `ent_${plat}_01`,
-      entityName: `Techurity ${plat} Primary`,
-      entityUsername: `@techurity_${plat}_official`,
+      entityName: `Asra3 ${plat} Primary`,
+      entityUsername: `@asra3_${plat}_official`,
     });
     assert(selectRes.status === 200, `select_entity HTTP 200 [${plat}]`, `Got ${selectRes.status}`);
     assert(selectRes.contentType.includes('application/json'), `select_entity returns JSON [${plat}]`);
@@ -140,7 +140,7 @@ async function runTests() {
     assert(Boolean(selectRes.data.account), `select_entity returns account object [${plat}]`);
     const acc = selectRes.data.account || {};
     assert(acc.platform === plat, `select_entity account platform is ${plat}`);
-    assert(acc.displayName === `Techurity ${plat} Primary`, `select_entity displayName matches [${plat}]`);
+    assert(acc.displayName === `Asra3 ${plat} Primary`, `select_entity displayName matches [${plat}]`);
     assert(acc.status === 'healthy', `select_entity account status healthy [${plat}]`);
     assert(acc.tokenHealth?.status === 'healthy', `select_entity tokenHealth status healthy [${plat}]`);
     assert(acc.selectedEntity?.id === `ent_${plat}_01`, `select_entity selectedEntity ID matches [${plat}]`);
@@ -156,29 +156,29 @@ async function runTests() {
     platform: 'telegram',
     credentials: {
       botToken: '123456789:ABC_defGhIJKLMNOPrstuvwxyz_987654',
-      displayName: 'Techurity Main Alerts Bot',
-      username: '@TechurityAlertsBot',
+      displayName: 'Asra3 Main Alerts Bot',
+      username: '@Asra3AlertsBot',
     },
   });
   assert(tgRes.status === 200, 'connect_credentials Telegram HTTP 200', `Got ${tgRes.status}`);
   assert(tgRes.data.success === true, 'connect_credentials Telegram success');
   assert(tgRes.data.account.platform === 'telegram', 'Telegram account platform is telegram');
   assert(tgRes.data.account.tokenHealth.expiresInDays === 365, 'Telegram tokenHealth is 365 days');
-  assert(tgRes.data.account.displayName === 'Techurity Main Alerts Bot', 'Telegram custom displayName applied');
+  assert(tgRes.data.account.displayName === 'Asra3 Main Alerts Bot', 'Telegram custom displayName applied');
 
   // Shopify
   const shopifyRes = await invokeApi({
     action: 'connect_credentials',
     platform: 'shopify',
     credentials: {
-      shopDomain: 'techurity-store.myshopify.com',
+      shopDomain: 'asra3-store.myshopify.com',
       token: 'shpat_test_placeholder_token',
     },
   });
   assert(shopifyRes.status === 200, 'connect_credentials Shopify HTTP 200', `Got ${shopifyRes.status}`);
   assert(shopifyRes.data.success === true, 'connect_credentials Shopify success');
   assert(shopifyRes.data.account.platform === 'shopify', 'Shopify account platform is shopify');
-  assert(shopifyRes.data.account.username === 'techurity-store.myshopify.com', 'Shopify account username is shopDomain');
+  assert(shopifyRes.data.account.username === 'asra3-store.myshopify.com', 'Shopify account username is shopDomain');
   assert(shopifyRes.data.account.displayName === 'Shopify Storefront', 'Shopify displayName is Shopify Storefront');
 
   // WordPress
@@ -186,15 +186,15 @@ async function runTests() {
     action: 'connect_credentials',
     platform: 'wordpress',
     credentials: {
-      siteUrl: 'https://techurity.si/security-blog',
-      username: 'techurity_admin',
+      siteUrl: 'https://asra3.com/security-blog',
+      username: 'asra3_admin',
       appPassword: 'xxxx xxxx xxxx xxxx',
     },
   });
   assert(wpRes.status === 200, 'connect_credentials WordPress HTTP 200', `Got ${wpRes.status}`);
   assert(wpRes.data.success === true, 'connect_credentials WordPress success');
   assert(wpRes.data.account.platform === 'wordpress', 'WordPress account platform is wordpress');
-  assert(wpRes.data.account.username === 'https://techurity.si/security-blog', 'WordPress username is siteUrl');
+  assert(wpRes.data.account.username === 'https://asra3.com/security-blog', 'WordPress username is siteUrl');
   assert(wpRes.data.account.displayName === 'WordPress Blog Hub', 'WordPress displayName is WordPress Blog Hub');
 
   // Bluesky
@@ -202,14 +202,14 @@ async function runTests() {
     action: 'connect_credentials',
     platform: 'bluesky',
     credentials: {
-      handle: 'techurity.bsky.social',
+      handle: 'asra3.bsky.social',
       password: 'app-password-xyz',
     },
   });
   assert(bskyRes.status === 200, 'connect_credentials Bluesky HTTP 200', `Got ${bskyRes.status}`);
   assert(bskyRes.data.success === true, 'connect_credentials Bluesky success');
   assert(bskyRes.data.account.platform === 'bluesky', 'Bluesky account platform is bluesky');
-  assert(bskyRes.data.account.username === 'techurity.bsky.social', 'Bluesky username is handle');
+  assert(bskyRes.data.account.username === 'asra3.bsky.social', 'Bluesky username is handle');
   assert(bskyRes.data.account.displayName === 'Bluesky Official', 'Bluesky displayName is Bluesky Official');
 
   // WhatsApp via Credentials
@@ -235,7 +235,7 @@ async function runTests() {
     const postRes = await invokeApi({
       action: 'test_post',
       platform: plat,
-      handle: `techurity_${plat}`,
+      handle: `asra3_${plat}`,
       content: `Automated broadcast verification on ${plat}`,
     });
     assert(postRes.status === 200, `test_post HTTP 200 [${plat}]`, `Got ${postRes.status}`);

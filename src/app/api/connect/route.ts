@@ -39,24 +39,24 @@ const SIMULATED_ENTITIES_BY_PLATFORM: Record<
   facebook: [
     {
       id: 'fb_page_01',
-      name: 'Techurity Official Brand',
-      username: '@techurity_official',
+      name: 'Asra3 Official Brand',
+      username: '@asra3_official',
       category: 'Enterprise Software & Security',
       followers: '142,500 Followers',
       details: 'Verified Page · Admin Access',
     },
     {
       id: 'fb_page_02',
-      name: 'Techurity MENA Community',
-      username: '@techurity_mena',
+      name: 'Asra3 MENA Community',
+      username: '@asra3_mena',
       category: 'Software & Technology',
       followers: '48,200 Followers',
       details: 'Regional Branch · Admin Access',
     },
     {
       id: 'fb_page_03',
-      name: 'Techurity Developers Hub',
-      username: '@techurity_devs',
+      name: 'Asra3 Developers Hub',
+      username: '@asra3_devs',
       category: 'Developer Community',
       followers: '29,400 Followers',
       details: 'Community Page · Editor Access',
@@ -65,16 +65,16 @@ const SIMULATED_ENTITIES_BY_PLATFORM: Record<
   instagram: [
     {
       id: 'ig_acc_01',
-      name: 'Techurity Global (@techurity.official)',
-      username: '@techurity.official',
+      name: 'Asra3 Global (@asra3.official)',
+      username: '@asra3.official',
       category: 'Technology & Cloud Platform',
       followers: '215,000 Followers',
       details: 'Business Account · Linked to Facebook Page',
     },
     {
       id: 'ig_acc_02',
-      name: 'Techurity Engineering Lab (@techurity.lab)',
-      username: '@techurity.lab',
+      name: 'Asra3 Engineering Lab (@asra3.lab)',
+      username: '@asra3.lab',
       category: 'Creator / Engineering',
       followers: '68,300 Followers',
       details: 'Professional Creator Account',
@@ -83,16 +83,16 @@ const SIMULATED_ENTITIES_BY_PLATFORM: Record<
   linkedin: [
     {
       id: 'li_org_01',
-      name: 'Techurity International Corp',
-      username: 'techurity-corp',
+      name: 'Asra3 International Corp',
+      username: 'asra3-corp',
       category: 'Information Technology & Services',
       followers: '85,000 Followers',
       details: '1,200+ Employees · Super Admin Role',
     },
     {
       id: 'li_org_02',
-      name: 'Techurity EMEA Hub',
-      username: 'techurity-emea',
+      name: 'Asra3 EMEA Hub',
+      username: 'asra3-emea',
       category: 'Software Development',
       followers: '22,400 Followers',
       details: '350 Employees · Content Admin Role',
@@ -102,7 +102,7 @@ const SIMULATED_ENTITIES_BY_PLATFORM: Record<
     {
       id: 'pin_brd_01',
       name: 'Brand Identity & Visual Campaigns',
-      username: 'techurity/branding',
+      username: 'asra3/branding',
       category: 'Design & Visual Architecture',
       followers: '18,500 Followers',
       details: 'Public Board · 54 Pins',
@@ -110,7 +110,7 @@ const SIMULATED_ENTITIES_BY_PLATFORM: Record<
     {
       id: 'pin_brd_02',
       name: 'UI/UX Prototypes & Product Drops',
-      username: 'techurity/product-drops',
+      username: 'asra3/product-drops',
       category: 'Product Design',
       followers: '12,200 Followers',
       details: 'Public Board · 86 Pins',
@@ -119,7 +119,7 @@ const SIMULATED_ENTITIES_BY_PLATFORM: Record<
   googlebusiness: [
     {
       id: 'gmb_loc_01',
-      name: 'Techurity Headquarters — Ljubljana',
+      name: 'Asra3 Headquarters — Ljubljana',
       username: 'loc_ljubljana_hq',
       category: 'Corporate Headquarters',
       followers: '4.9 ★ (420 Reviews)',
@@ -127,7 +127,7 @@ const SIMULATED_ENTITIES_BY_PLATFORM: Record<
     },
     {
       id: 'gmb_loc_02',
-      name: 'Techurity Middle East Hub — Dubai',
+      name: 'Asra3 Middle East Hub — Dubai',
       username: 'loc_dubai_hub',
       category: 'Regional Office',
       followers: '4.8 ★ (185 Reviews)',
@@ -138,25 +138,25 @@ const SIMULATED_ENTITIES_BY_PLATFORM: Record<
     {
       id: 'disc_chn_01',
       name: '#announcements',
-      username: 'techurity-hq/announcements',
+      username: 'asra3-hq/announcements',
       category: 'Announcement Channel',
       followers: '12,400 Members',
-      details: 'Techurity Developer Hub Guild · Webhook Active',
+      details: 'Asra3 Developer Hub Guild · Webhook Active',
     },
     {
       id: 'disc_chn_02',
       name: '#product-updates',
-      username: 'techurity-hq/product-updates',
+      username: 'asra3-hq/product-updates',
       category: 'Public Feed Channel',
       followers: '12,400 Members',
-      details: 'Techurity Developer Hub Guild · Webhook Active',
+      details: 'Asra3 Developer Hub Guild · Webhook Active',
     },
   ],
   snapchat: [
     {
       id: 'snap_prof_01',
-      name: 'Techurity Official Public Profile',
-      username: '@techurity_snaps',
+      name: 'Asra3 Official Public Profile',
+      username: '@asra3_snaps',
       category: 'Verified Public Profile',
       followers: '52,000 Subscribers',
       details: 'Public Profile · Spotlights & Stories Enabled',
@@ -165,7 +165,7 @@ const SIMULATED_ENTITIES_BY_PLATFORM: Record<
   whatsapp: [
     {
       id: 'wa_num_01',
-      name: 'Techurity VIP Customer Support',
+      name: 'Asra3 VIP Customer Support',
       username: '+1 (415) 890-2341',
       category: 'WhatsApp Business Account',
       followers: 'High Tier · Verified Green Badge',
@@ -173,7 +173,7 @@ const SIMULATED_ENTITIES_BY_PLATFORM: Record<
     },
     {
       id: 'wa_num_02',
-      name: 'Techurity MENA Operations',
+      name: 'Asra3 MENA Operations',
       username: '+971 4 812 9900',
       category: 'WhatsApp Business Account',
       followers: 'High Tier · Verified Green Badge',
@@ -252,16 +252,16 @@ export async function POST(request: Request) {
           SIMULATED_ENTITIES_BY_PLATFORM[step] || [
             {
               id: `entity_${platform}_01`,
-              name: `Techurity ${platform.toUpperCase()} Official`,
-              username: `@techurity_${platform}`,
+              name: `Asra3 ${platform.toUpperCase()} Official`,
+              username: `@asra3_${platform}`,
               category: 'Official Brand Channel',
               followers: '50,000+ Followers',
               details: 'Admin verified · Full publishing privileges',
             },
             {
               id: `entity_${platform}_02`,
-              name: `Techurity EMEA Regional`,
-              username: `@techurity_${platform}_emea`,
+              name: `Asra3 EMEA Regional`,
+              username: `@asra3_${platform}_emea`,
               category: 'Regional Branch',
               followers: '15,000+ Followers',
               details: 'Regional profile · Content creator access',
@@ -294,8 +294,8 @@ export async function POST(request: Request) {
         'select_page';
 
       const entityId = (body.entityId as string) || 'entity_primary_01';
-      const entityName = (body.entityName as string) || 'Techurity Brand Official';
-      const entityUsername = (body.entityUsername as string) || `@techurity_${platform || 'official'}`;
+      const entityName = (body.entityName as string) || 'Asra3 Brand Official';
+      const entityUsername = (body.entityUsername as string) || `@asra3_${platform || 'official'}`;
       const accountId = `acc_${platform || 'entity'}_${Date.now().toString(36)}`;
 
       const newAccount = {
@@ -365,8 +365,8 @@ export async function POST(request: Request) {
           id: accountId,
           accountId,
           platform: 'telegram',
-          username: creds.username || '@TechurityBroadcastBot',
-          displayName: creds.displayName || 'Techurity Telegram Bot',
+          username: creds.username || '@Asra3BroadcastBot',
+          displayName: creds.displayName || 'Asra3 Telegram Bot',
           status: 'healthy',
           tokenHealth: {
             status: 'healthy',
@@ -393,17 +393,17 @@ export async function POST(request: Request) {
       if (['bluesky', 'wordpress', 'shopify', 'whatsapp'].includes(platform)) {
         if (!zernioClient.isConfigured()) {
           const accountId = `acc_${platform}_${Date.now().toString(36)}`;
-          let username = `@techurity_${platform}`;
-          let displayName = `Techurity ${platform.toUpperCase()}`;
+          let username = `@asra3_${platform}`;
+          let displayName = `Asra3 ${platform.toUpperCase()}`;
 
           if (platform === 'shopify') {
             username = creds.shopDomain || creds.identifier || 'store.myshopify.com';
             displayName = 'Shopify Storefront';
           } else if (platform === 'wordpress') {
-            username = creds.siteUrl || creds.identifier || 'https://techurity.si/blog';
+            username = creds.siteUrl || creds.identifier || 'https://asra3.com/blog';
             displayName = 'WordPress Blog Hub';
           } else if (platform === 'bluesky') {
-            username = creds.handle || creds.identifier || 'techurity.bsky.social';
+            username = creds.handle || creds.identifier || 'asra3.bsky.social';
             displayName = 'Bluesky Official';
           } else if (platform === 'whatsapp') {
             const phoneId = creds.phoneNumberId || creds.identifier;
@@ -457,8 +457,8 @@ export async function POST(request: Request) {
         id: accountId,
         accountId,
         platform,
-        username: creds.identifier || `@techurity_${platform}`,
-        displayName: `Techurity ${platform.toUpperCase()}`,
+        username: creds.identifier || `@asra3_${platform}`,
+        displayName: `Asra3 ${platform.toUpperCase()}`,
         status: 'healthy',
         tokenHealth: {
           status: 'healthy',
@@ -488,7 +488,7 @@ export async function POST(request: Request) {
       const handle = (body.handle as string) || 'brand_official';
       const content =
         (body.content as string) ||
-        'Techurity Omnichannel Connection Verified: Broadcast pipeline operational. 🚀';
+        'Asra3 Omnichannel Connection Verified: Broadcast pipeline operational. 🚀';
       const accountId = (body.accountId as string) || `acc_${platform}_live`;
       const isMessaging = ['telegram', 'whatsapp', 'discord', 'slack'].includes(platform);
 

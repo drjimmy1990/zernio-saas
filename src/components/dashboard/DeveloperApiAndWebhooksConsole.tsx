@@ -105,7 +105,7 @@ export default function DeveloperApiAndWebhooksConsole({
   const [creatingKey, setCreatingKey] = useState(false);
 
   // Create Webhook form state
-  const [webhookUrl, setWebhookUrl] = useState('https://api.yourcompany.com/webhooks/techurity');
+  const [webhookUrl, setWebhookUrl] = useState('https://api.yourcompany.com/webhooks/asra3');
   const [selectedEvents, setSelectedEvents] = useState<string[]>([
     '*',
     'post.published',
@@ -679,7 +679,7 @@ export default function DeveloperApiAndWebhooksConsole({
                   <p className="text-xs text-slate-400">
                     {isRTL
                       ? 'استقبل إشعارات لحظية في سيرفرك عند وصول رسالة أو شراء رقم أو نشر بوست'
-                      : 'Receive real-time HTTPS POST payloads signed with X-Techurity-Signature'}
+                      : 'Receive real-time HTTPS POST payloads signed with X-Asra3-Signature'}
                   </p>
                 </div>
               </div>
@@ -708,7 +708,7 @@ export default function DeveloperApiAndWebhooksConsole({
                     type="url"
                     value={webhookUrl}
                     onChange={(e) => setWebhookUrl(e.target.value)}
-                    placeholder="https://api.yourcompany.com/webhooks/techurity"
+                    placeholder="https://api.yourcompany.com/webhooks/asra3"
                     className="flex-1 px-3 py-2 rounded-xl bg-slate-900 border border-white/10 text-xs text-white font-mono focus:outline-none focus:border-purple-500"
                   />
                   <button
@@ -837,7 +837,7 @@ export default function DeveloperApiAndWebhooksConsole({
                   method: 'POST' as const,
                   path: '/api/v1/posts',
                   body: {
-                    content: 'Automated post published directly via Techurity REST API v1! 🚀',
+                    content: 'Automated post published directly via Asra3 REST API v1! 🚀',
                     platforms: ['instagram', 'linkedin', 'x'],
                     publishNow: true,
                   },

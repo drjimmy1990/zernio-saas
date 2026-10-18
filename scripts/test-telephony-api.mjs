@@ -64,7 +64,7 @@ async function runTests() {
       action: 'link_whatsapp',
       organizationId: orgId,
       phoneNumberId: provisionedNumber.id,
-      displayName: 'Techurity Enterprise Solutions',
+      displayName: 'Asra3 Enterprise Solutions',
       category: 'CUSTOMER_SERVICE',
       verificationMethod: 'sms_otp',
     }),
@@ -170,7 +170,7 @@ async function runTests() {
       organizationId: orgId,
       fromNumber: provisionedNumber.phoneNumber,
       toNumber: '+1 (415) 890-9900',
-      text: 'Order dispatched via Techurity Logistics. Tracking: https://techurity.si/t/88',
+      text: 'Order dispatched via Asra3 Logistics. Tracking: https://asra3.com/t/88',
     }),
   });
   if (!smsRes.ok) throw new Error(`send_sms failed: ${smsRes.status}`);

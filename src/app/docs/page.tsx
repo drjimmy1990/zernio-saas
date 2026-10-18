@@ -598,11 +598,11 @@ export const ENDPOINT_SPECS: Record<string, EndpointSpec> = {
       { name: 'mode', type: '"oauth_url" | "direct"', required: false, in: 'body', descEn: 'Pass "oauth_url" to get an authorization redirect URL', descAr: 'اختر oauth_url للحصول على رابط تفويض' },
       { name: 'redirectUri', type: 'string', required: false, in: 'body', descEn: 'Callback URL after authorization', descAr: 'رابط العودة بعد إتمام المصادقة' },
     ],
-    samplePayload: { mode: 'direct', accountName: 'Techurity Official', platformAccountId: 'act_100234' },
+    samplePayload: { mode: 'direct', accountName: 'Asra3 Official', platformAccountId: 'act_100234' },
     response: {
       success: true,
       message: 'Account connected successfully.',
-      data: { id: 'acc_facebook_mve4p9p9', platform: 'facebook', name: 'Techurity Official', status: 'connected' },
+      data: { id: 'acc_facebook_mve4p9p9', platform: 'facebook', name: 'Asra3 Official', status: 'connected' },
     },
   },
   ep_connect_select: {
@@ -690,7 +690,7 @@ export const ENDPOINT_SPECS: Record<string, EndpointSpec> = {
     ],
     samplePayload: {
       menuItems: [
-        { type: 'web_url', title: 'Visit Website', url: 'https://techurity.si' },
+        { type: 'web_url', title: 'Visit Website', url: 'https://asra3.com' },
         { type: 'postback', title: 'Contact Support', payload: 'MENU_SUPPORT' },
       ],
     },
@@ -839,8 +839,8 @@ export const ENDPOINT_SPECS: Record<string, EndpointSpec> = {
     response: {
       success: true,
       data: {
-        uploadUrl: 'https://s3.eu-central-1.amazonaws.com/techurity-media-vault/presigned_xyz',
-        publicUrl: 'https://cdn.techurity.si/media/2026/product_launch.png',
+        uploadUrl: 'https://s3.eu-central-1.amazonaws.com/asra3-media-vault/presigned_xyz',
+        publicUrl: 'https://cdn.asra3.com/media/2026/product_launch.png',
         expiresIn: 3600,
       },
     },
@@ -893,7 +893,7 @@ export const ENDPOINT_SPECS: Record<string, EndpointSpec> = {
       { name: 'mediaUrl', type: 'string', required: true, in: 'body', descEn: 'Public URL of media file', descAr: 'رابط ملف الوسائط' },
       { name: 'targetPlatform', type: 'string', required: true, in: 'body', descEn: 'Target network (tiktok, reels, etc.)', descAr: 'المنصة المستهدفة' },
     ],
-    samplePayload: { mediaUrl: 'https://cdn.techurity.si/media/demo_reel.mp4', targetPlatform: 'tiktok' },
+    samplePayload: { mediaUrl: 'https://cdn.asra3.com/media/demo_reel.mp4', targetPlatform: 'tiktok' },
     response: {
       success: true,
       data: { valid: true, dimensions: { width: 1080, height: 1920 }, aspectRatio: '9:16', durationSec: 15 },
@@ -946,7 +946,7 @@ export const ENDPOINT_SPECS: Record<string, EndpointSpec> = {
       { name: 'recipientId', type: 'string', required: true, in: 'body', descEn: 'Customer phone or handle', descAr: 'رقم هاتف أو معرف العميل' },
       { name: 'initialMessage', type: 'string', required: true, in: 'body', descEn: 'Message text or template ID', descAr: 'الرسالة الافتتاحية' },
     ],
-    samplePayload: { platform: 'whatsapp', recipientId: '+966501234567', initialMessage: 'Welcome to Techurity VIP!' },
+    samplePayload: { platform: 'whatsapp', recipientId: '+966501234567', initialMessage: 'Welcome to Asra3 VIP!' },
     response: {
       success: true,
       data: { conversationId: 'conv_new_881', status: 'initiated', timestamp: '2026-10-18T18:00:00Z' },
@@ -1079,7 +1079,7 @@ export const ENDPOINT_SPECS: Record<string, EndpointSpec> = {
     response: {
       success: true,
       data: [
-        { platform: 'x', author: '@tech_reviewer', text: 'Loving the new @techurity platform features!' },
+        { platform: 'x', author: '@tech_reviewer', text: 'Loving the new @asra3 platform features!' },
       ],
     },
   },
@@ -1226,7 +1226,7 @@ export const ENDPOINT_SPECS: Record<string, EndpointSpec> = {
       { name: 'keywords', type: 'string[]', required: true, in: 'body', descEn: 'Trigger words (e.g. price, link)', descAr: 'الكلمات المفتاحية' },
       { name: 'dmText', type: 'string', required: true, in: 'body', descEn: 'Direct message to send', descAr: 'نص الرسالة الخاصة' },
     ],
-    samplePayload: { keywords: ['link', 'price'], dmText: 'Check out the official pricing here: https://techurity.si/pricing' },
+    samplePayload: { keywords: ['link', 'price'], dmText: 'Check out the official pricing here: https://asra3.com/pricing' },
     response: {
       success: true,
       data: { ruleId: 'rule_dm_01', status: 'active' },
@@ -1311,7 +1311,7 @@ export const ENDPOINT_SPECS: Record<string, EndpointSpec> = {
     requiredScope: 'telephony:write',
     titleEn: 'Number Porting LOA Request Submission',
     titleAr: 'طلب نقل الأرقام الحالية (Number Porting LOA)',
-    descEn: 'Submits a Letter of Authorization (LOA) to port existing business phone numbers into Techurity.',
+    descEn: 'Submits a Letter of Authorization (LOA) to port existing business phone numbers into Asra3.',
     descAr: 'تقديم طلب نقل أرقامك التجارية الحالية من أي مزود خارجي إلى المنصة.',
     subService: 'telephony',
     action: 'submit_porting',
@@ -1382,7 +1382,7 @@ export const ENDPOINT_SPECS: Record<string, EndpointSpec> = {
       { name: 'brandName', type: 'string', required: true, in: 'body', descEn: 'Official legal business name', descAr: 'اسم الشركة الرسمي' },
       { name: 'ein', type: 'string', required: true, in: 'body', descEn: 'Tax ID or EIN', descAr: 'الرقم الضريبي' },
     ],
-    samplePayload: { brandName: 'Techurity Global Inc.', ein: '12-3456789' },
+    samplePayload: { brandName: 'Asra3 Global Inc.', ein: '12-3456789' },
     response: {
       success: true,
       data: { brandId: 'brand_10dlc_991', status: 'verified' },
@@ -1510,7 +1510,7 @@ export const ENDPOINT_SPECS: Record<string, EndpointSpec> = {
       { name: 'brandName', type: 'string', required: true, in: 'body', descEn: 'Display brand name', descAr: 'الاسم المعروض' },
       { name: 'logoUrl', type: 'string', required: false, in: 'body', descEn: 'Square logo image URL', descAr: 'رابط الشعار' },
     ],
-    samplePayload: { brandName: 'Techurity Concierge', logoUrl: 'https://techurity.si/logo.png', callReason: 'VIP Reservation' },
+    samplePayload: { brandName: 'Asra3 Concierge', logoUrl: 'https://asra3.com/logo.png', callReason: 'VIP Reservation' },
     response: {
       success: true,
       data: { identityId: 'dir_99182', status: 'active' },
@@ -1555,7 +1555,7 @@ export const ENDPOINT_SPECS: Record<string, EndpointSpec> = {
     ],
     samplePayload: {
       to: '+12025550192',
-      card: { title: 'Order Confirmed', text: 'Track delivery live in our app.', mediaUrl: 'https://techurity.si/banner.png' },
+      card: { title: 'Order Confirmed', text: 'Track delivery live in our app.', mediaUrl: 'https://asra3.com/banner.png' },
     },
     response: {
       success: true,
@@ -1621,7 +1621,7 @@ export const ENDPOINT_SPECS: Record<string, EndpointSpec> = {
       { name: 'to', type: 'string', required: true, in: 'body', descEn: 'Recipient phone number', descAr: 'رقم المستلم' },
       { name: 'type', type: 'string', required: true, in: 'body', descEn: 'text | template', descAr: 'نوع الرسالة' },
     ],
-    samplePayload: { to: '+966501234567', type: 'text', text: 'Hello from Techurity API v1!' },
+    samplePayload: { to: '+966501234567', type: 'text', text: 'Hello from Asra3 API v1!' },
     response: {
       success: true,
       data: { messageId: 'wamid.HBgL...', status: 'sent' },
@@ -1682,7 +1682,7 @@ export const ENDPOINT_SPECS: Record<string, EndpointSpec> = {
     subService: 'telephony',
     action: 'setup_business_agent',
     params: [],
-    samplePayload: { enabled: true, persona: 'Techurity Concierge' },
+    samplePayload: { enabled: true, persona: 'Asra3 Concierge' },
     response: {
       success: true,
       data: { agentStatus: 'active' },
@@ -1888,7 +1888,7 @@ export const ENDPOINT_SPECS: Record<string, EndpointSpec> = {
     samplePayload: { title: '10 Ways to Scale SaaS Marketing in 2026', platform: 'wordpress', content: '<p>Comprehensive guide...</p>' },
     response: {
       success: true,
-      data: { articleId: 'art_99182', url: 'https://blog.techurity.si/10-ways-to-scale-saas', status: 'published' },
+      data: { articleId: 'art_99182', url: 'https://blog.asra3.com/10-ways-to-scale-saas', status: 'published' },
     },
   },
   ep_google_services: {
@@ -2109,7 +2109,7 @@ export const ENDPOINT_SPECS: Record<string, EndpointSpec> = {
     titleEn: 'Register Outbound Webhook with HMAC-SHA256 Signature',
     titleAr: 'تسجيل رابط Webhook بتوقيع أمني HMAC-SHA256',
     descEn:
-      'Subscribes your HTTPS server to real-time events. Every outbound webhook POST includes an X-Techurity-Signature header computed using your secret.',
+      'Subscribes your HTTPS server to real-time events. Every outbound webhook POST includes an X-Asra3-Signature header computed using your secret.',
     descAr:
       'تسجيل رابط في سيرفرك لاستقبال إشعارات المنصة اللحظية مع توقيع رقمي HMAC-SHA256 للتحقق من أمان الرسالة.',
     subService: 'core_connect',
@@ -2119,7 +2119,7 @@ export const ENDPOINT_SPECS: Record<string, EndpointSpec> = {
       { name: 'events', type: 'string[]', required: true, in: 'body', descEn: 'Array of event subscriptions', descAr: 'الأحداث المطلوبة' },
     ],
     samplePayload: {
-      url: 'https://api.yourcompany.com/webhooks/techurity',
+      url: 'https://api.yourcompany.com/webhooks/asra3',
       events: ['post.published', 'number.purchased', 'whatsapp.linked', 'message.sent'],
     },
     response: {
@@ -2127,7 +2127,7 @@ export const ENDPOINT_SPECS: Record<string, EndpointSpec> = {
       message: 'Webhook endpoint registered with HMAC-SHA256 signing secret.',
       data: {
         id: 'wh_m2k9x99',
-        url: 'https://api.yourcompany.com/webhooks/techurity',
+        url: 'https://api.yourcompany.com/webhooks/asra3',
         secret: 'whsec_8f9e7d6c5b4a3f2e1d0c9b8a7f6e5d4c',
         events: ['post.published', 'number.purchased', 'whatsapp.linked', 'message.sent'],
         status: 'active',
@@ -2150,7 +2150,7 @@ export const ENDPOINT_SPECS: Record<string, EndpointSpec> = {
     samplePayload: {},
     response: {
       openapi: '3.1.0',
-      info: { title: 'Techurity & Zernio Unified Social, Telephony, Ads & Commerce REST API', version: '1.5.0' },
+      info: { title: 'Asra3 & Zernio Unified Social, Telephony, Ads & Commerce REST API', version: '1.5.0' },
       pathsCount: 110,
     },
   },
@@ -2169,7 +2169,7 @@ export const ENDPOINT_SPECS: Record<string, EndpointSpec> = {
     params: [],
     samplePayload: {},
     response: {
-      info: { name: 'Techurity & Zernio REST API v1 — Official Postman Collection', schema: 'https://schema.getpostman.com/json/collection/v2.1.0/collection.json' },
+      info: { name: 'Asra3 & Zernio REST API v1 — Official Postman Collection', schema: 'https://schema.getpostman.com/json/collection/v2.1.0/collection.json' },
       itemCount: 8,
     },
   },
@@ -2476,8 +2476,8 @@ export default function ApiDocumentationPage() {
 
               <p className="text-sm text-[var(--text-secondary)] leading-relaxed">
                 {isAr
-                  ? 'تم تصميم Techurity (المبني على محرك Zernio) لتمكينك من دمج 26 منصة نشر وتواصل، وأرقام هواتف افتراضية في 55+ دولة، ورسائل واتساب الرسمية، وإعلانات CAPI، والمتاجر في طلب برمجي واحد.'
-                  : 'Techurity unified API v1 gives your application instant programmatic access to 26 social networks, virtual numbers in 55+ countries, official WhatsApp Cloud API, AI voice receptionist, and omnichannel CRM.'}
+                  ? 'تم تصميم Asra3 (المبني على محرك Zernio) لتمكينك من دمج 26 منصة نشر وتواصل، وأرقام هواتف افتراضية في 55+ دولة، ورسائل واتساب الرسمية، وإعلانات CAPI، والمتاجر في طلب برمجي واحد.'
+                  : 'Asra3 unified API v1 gives your application instant programmatic access to 26 social networks, virtual numbers in 55+ countries, official WhatsApp Cloud API, AI voice receptionist, and omnichannel CRM.'}
               </p>
 
               <div className="space-y-3">
@@ -2488,7 +2488,7 @@ export default function ApiDocumentationPage() {
                   dir="ltr"
                   className="overflow-x-auto rounded-2xl bg-slate-950 p-4 font-mono text-xs leading-relaxed text-slate-100"
                 >
-{`curl -X GET "https://techurity.si/api/v1/me" \\
+{`curl -X GET "https://asra3.com/api/v1/me" \\
   -H "Authorization: Bearer tk_live_org_workspace_9f8e7d6c5b4a3"`}
                 </pre>
               </div>
@@ -2501,11 +2501,11 @@ export default function ApiDocumentationPage() {
                   dir="ltr"
                   className="overflow-x-auto rounded-2xl bg-slate-950 p-4 font-mono text-xs leading-relaxed text-slate-100"
                 >
-{`curl -X POST "https://techurity.si/api/v1/posts" \\
+{`curl -X POST "https://asra3.com/api/v1/posts" \\
   -H "Authorization: Bearer tk_live_org_workspace_9f8e7d6c5b4a3" \\
   -H "Content-Type: application/json" \\
   -d '{
-    "content": "Hello World from Techurity Unified API v1! 🚀",
+    "content": "Hello World from Asra3 Unified API v1! 🚀",
     "platforms": ["facebook", "instagram", "linkedin"],
     "publishNow": true
   }'`}
@@ -2642,7 +2642,7 @@ export default function ApiDocumentationPage() {
                     </div>
                     <p className="text-[var(--text-secondary)] leading-relaxed">
                       {isAr
-                        ? 'تُرسل الطلبات بدون ترويسة Authorization مع تفعيل credentials: "include"، ليتعرف الـ API على جلسة techurity_session تلقائياً.'
+                        ? 'تُرسل الطلبات بدون ترويسة Authorization مع تفعيل credentials: "include"، ليتعرف الـ API على جلسة asra3_session تلقائياً.'
                         : 'Dispatch requests with credentials: "include" without Authorization header to authenticate via browser session cookie.'}
                     </p>
                   </div>
@@ -2659,7 +2659,7 @@ export default function ApiDocumentationPage() {
                 >
 {`import crypto from 'crypto';
 
-export function verifyTechurityWebhook(rawBody: string, signatureHeader: string, secret: string) {
+export function verifyAsra3Webhook(rawBody: string, signatureHeader: string, secret: string) {
   const expected = 'sha256=' + crypto
     .createHmac('sha256', secret)
     .update(rawBody)

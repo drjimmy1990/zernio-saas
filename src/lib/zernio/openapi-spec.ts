@@ -39,18 +39,18 @@ export function getOpenApiV1Spec(baseUrl: string): OpenApiV1Document {
   return {
     openapi: '3.1.0',
     info: {
-      title: 'Techurity & Zernio Unified Social, Telephony, Ads & Commerce REST API',
+      title: 'Asra3 & Zernio Unified Social, Telephony, Ads & Commerce REST API',
       version: '1.5.0',
       description:
-        'Official OpenAPI 3.1.0 specification for Techurity (powered by Zernio). Complete parity across all 8 Zernio resource families: Core, Publishing & Queue, Unified Inbox & CRM, Analytics, Advertising (8 Networks), Platform APIs (Blogs & Commerce), Cloud Telephony (Virtual Numbers, WhatsApp, Voice AI, SMS, RCS, Verify), and Settings & Administration.',
+        'Official OpenAPI 3.1.0 specification for Asra3 (powered by Zernio). Complete parity across all 8 Zernio resource families: Core, Publishing & Queue, Unified Inbox & CRM, Analytics, Advertising (8 Networks), Platform APIs (Blogs & Commerce), Cloud Telephony (Virtual Numbers, WhatsApp, Voice AI, SMS, RCS, Verify), and Settings & Administration.',
       contact: {
-        name: 'Techurity API Engineering',
+        name: 'Asra3 API Engineering',
         url: `${baseUrl}/docs`,
       },
     },
     servers: [
       { url: `${baseUrl}/api/v1`, description: 'Current Environment Gateway' },
-      { url: 'https://techurity.si/api/v1', description: 'Production Global Edge' },
+      { url: 'https://asra3.com/api/v1', description: 'Production Global Edge' },
     ],
     tags: [
       {
@@ -732,7 +732,7 @@ export function getOpenApiV1Spec(baseUrl: string): OpenApiV1Document {
 export function getPostmanV1Collection(baseUrl: string, sampleKey: string) {
   return {
     info: {
-      name: 'Techurity & Zernio REST API v1 — Official Postman Collection',
+      name: 'Asra3 & Zernio REST API v1 — Official Postman Collection',
       description:
         'Complete Postman Collection v2.1.0 covering all 8 Zernio resource families: Core, Publishing & Queue, Unified Inbox & CRM, Analytics, Advertising, Platform APIs, Cloud Telephony & Voice, and Settings & Administration.',
       schema: 'https://schema.getpostman.com/json/collection/v2.1.0/collection.json',
@@ -1023,7 +1023,7 @@ export function getPostmanV1Collection(baseUrl: string, sampleKey: string) {
                   {
                     to: '+14155552671',
                     channel: 'sms',
-                    brandName: 'Techurity',
+                    brandName: 'Asra3',
                   },
                   null,
                   2

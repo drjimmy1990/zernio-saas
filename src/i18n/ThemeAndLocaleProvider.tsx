@@ -38,13 +38,13 @@ export function ThemeAndLocaleProvider({
 
   useEffect(() => {
     const savedLoc = window.localStorage.getItem(
-      'techurity_locale'
+      'asra3_locale'
     ) as SupportedLocale | null;
     if (savedLoc && DICTIONARIES[savedLoc]) {
       setLocaleState(savedLoc);
     }
     const savedTheme = window.localStorage.getItem(
-      'techurity_theme'
+      'asra3_theme'
     ) as ThemeMode | null;
     if (savedTheme === 'light' || savedTheme === 'dark') {
       setThemeState(savedTheme);
@@ -63,13 +63,13 @@ export function ThemeAndLocaleProvider({
 
   const setLocale = (loc: SupportedLocale) => {
     setLocaleState(loc);
-    window.localStorage.setItem('techurity_locale', loc);
+    window.localStorage.setItem('asra3_locale', loc);
   };
 
   const toggleTheme = () => {
     const next: ThemeMode = theme === 'light' ? 'dark' : 'light';
     setThemeState(next);
-    window.localStorage.setItem('techurity_theme', next);
+    window.localStorage.setItem('asra3_theme', next);
   };
 
   const t = DICTIONARIES[locale] || DICTIONARIES.ar;

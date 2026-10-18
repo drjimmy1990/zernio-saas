@@ -1,6 +1,6 @@
 // scripts/e2e-full-platform-journey.mjs
 // ==============================================================================
-// TECHURITY (ZERNIO SAAS PLATFORM) — END-TO-END 14-STEP PLATFORM JOURNEY
+// ASRA3 (ZERNIO SAAS PLATFORM) — END-TO-END 14-STEP PLATFORM JOURNEY
 // Production Hardening & Verification Suite
 // ==============================================================================
 
@@ -12,7 +12,7 @@ import ts from 'typescript';
 
 const PORT = process.env.PORT || 3010;
 const BASE_URL = `http://localhost:${PORT}`;
-const SESSION_SECRET = process.env.SESSION_SECRET || 'techurity_secure_session_secret_2026';
+const SESSION_SECRET = process.env.SESSION_SECRET || 'asra3_secure_session_secret_2026';
 
 let passedAssertions = 0;
 let failedAssertions = 0;
@@ -47,7 +47,7 @@ async function waitForServer(url, timeoutMs = 25000) {
   throw new Error(`Next.js production server at ${url} did not become ready within ${timeoutMs}ms`);
 }
 
-function extractCookie(res, cookieName = 'techurity_session') {
+function extractCookie(res, cookieName = 'asra3_session') {
   const raw = res.headers.get('set-cookie');
   if (!raw) return null;
   const match = raw.match(new RegExp(`${cookieName}=([^;]+)`));
@@ -80,7 +80,7 @@ function loadTsModule(filePath) {
 
 async function runJourney() {
   console.log('\n==============================================================================');
-  console.log('🚀 TECHURITY PLATFORM JOURNEY — 14-STEP END-TO-END VERIFICATION SUITE');
+  console.log('🚀 ASRA3 PLATFORM JOURNEY — 14-STEP END-TO-END VERIFICATION SUITE');
   console.log('==============================================================================\n');
 
   // Shared journey state across steps
@@ -154,9 +154,9 @@ async function runJourney() {
     tenantOrgId = signupData.tenant.organizationId;
     assert(typeof tenantOrgId === 'string' && tenantOrgId.startsWith('org_'), 'Tenant organizationId is properly assigned', tenantOrgId);
 
-    customerSessionCookie = extractCookie(signupRes, 'techurity_session');
-    assert(Boolean(customerSessionCookie), 'HTTP-only techurity_session cookie issued');
-    customerCookieHeader = `techurity_session=${customerSessionCookie}`;
+    customerSessionCookie = extractCookie(signupRes, 'asra3_session');
+    assert(Boolean(customerSessionCookie), 'HTTP-only asra3_session cookie issued');
+    customerCookieHeader = `asra3_session=${customerSessionCookie}`;
 
     // Cryptographic validation of the cookie
     const parts = customerSessionCookie.split('.');
@@ -224,7 +224,7 @@ async function runJourney() {
       }),
     });
     assert(goodLoginRes.status === 200, 'Valid credentials return HTTP 200 OK', `Status: ${goodLoginRes.status}`);
-    const newCookie = extractCookie(goodLoginRes, 'techurity_session');
+    const newCookie = extractCookie(goodLoginRes, 'asra3_session');
     assert(Boolean(newCookie), 'Valid login issues new signed session cookie');
 
     stepScorecard.push({ step: 3, name: 'Password Validation', passed: true });
@@ -606,7 +606,7 @@ async function runJourney() {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         action: 'login',
-        email: 'admin@techurity.si',
+        email: 'admin@asra3.com',
         password: process.env.ADMIN_PASSWORD || 'AdminPassword2026!',
       }),
     });
@@ -615,9 +615,9 @@ async function runJourney() {
     const adminLoginData = await adminLoginRes.json();
     assert(adminLoginData.user.role === 'super_admin', 'Super admin assigned role is super_admin');
 
-    const adminCookie = extractCookie(adminLoginRes, 'techurity_session');
+    const adminCookie = extractCookie(adminLoginRes, 'asra3_session');
     assert(Boolean(adminCookie), 'Super admin issued signed session cookie');
-    const adminCookieHeader = `techurity_session=${adminCookie}`;
+    const adminCookieHeader = `asra3_session=${adminCookie}`;
 
     // Super Admin accesses /admin page -> HTTP 200 (not redirected)
     const adminPageRes = await fetch(`${BASE_URL}/admin`, {

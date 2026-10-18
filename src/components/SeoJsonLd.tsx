@@ -5,8 +5,8 @@ import { useThemeAndLocale } from '@/i18n/ThemeAndLocaleProvider';
 
 /**
  * AEO (Answer Engine Optimization) & GEO (Generative Engine Optimization)
- * Injects a complete Schema.org `@graph` JSON-LD for `https://techurity.si`:
- * - Organization (`Techurity`)
+ * Injects a complete Schema.org `@graph` JSON-LD for `https://asra3.com`:
+ * - Organization (`Asra3`)
  * - WebSite + SearchAction
  * - SoftwareApplication (with AggregateOffer $29-$499 and all 8 sub-services)
  * - FAQPage (localized in the active language for Google AI Overviews, Perplexity & ChatGPT)
@@ -19,16 +19,16 @@ export function SeoJsonLd() {
     '@graph': [
       {
         '@type': 'Organization',
-        '@id': 'https://techurity.si/#organization',
-        name: 'Techurity',
-        url: 'https://techurity.si',
-        logo: 'https://techurity.si/logo.png',
+        '@id': 'https://asra3.com/#organization',
+        name: 'Asra3',
+        url: 'https://asra3.com',
+        logo: 'https://asra3.com/logo.png',
         description: t.hero.subtitle,
-        sameAs: ['https://techurity.si/docs'],
+        sameAs: ['https://asra3.com/docs'],
         contactPoint: {
           '@type': 'ContactPoint',
           contactType: 'customer support',
-          url: 'https://techurity.si/docs',
+          url: 'https://asra3.com/docs',
           availableLanguage: [
             'ar',
             'en',
@@ -45,19 +45,19 @@ export function SeoJsonLd() {
       },
       {
         '@type': 'WebSite',
-        '@id': 'https://techurity.si/#website',
-        url: 'https://techurity.si',
-        name: 'Techurity — White-Label Multi-Service Cloud OS',
+        '@id': 'https://asra3.com/#website',
+        url: 'https://asra3.com',
+        name: 'Asra3 — White-Label Multi-Service Cloud OS',
         inLanguage: locale,
         publisher: {
-          '@id': 'https://techurity.si/#organization',
+          '@id': 'https://asra3.com/#organization',
         },
       },
       {
         '@type': 'SoftwareApplication',
-        '@id': 'https://techurity.si/#software',
-        name: 'Techurity Cloud OS',
-        url: 'https://techurity.si',
+        '@id': 'https://asra3.com/#software',
+        name: 'Asra3 Cloud OS',
+        url: 'https://asra3.com',
         applicationCategory: 'BusinessApplication',
         operatingSystem: 'Web, Cloud, iOS, Android',
         description: t.hero.subtitle,
@@ -81,7 +81,7 @@ export function SeoJsonLd() {
       },
       {
         '@type': 'FAQPage',
-        '@id': 'https://techurity.si/#faq',
+        '@id': 'https://asra3.com/#faq',
         inLanguage: locale,
         mainEntity: t.faqSection.items.map((item) => ({
           '@type': 'Question',

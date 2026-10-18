@@ -12,7 +12,7 @@ import crypto from 'crypto';
 
 const PORT = process.env.PORT || 3015;
 const BASE_URL = `http://localhost:${PORT}`;
-const REAL_SECRET = process.env.SESSION_SECRET || 'techurity_secure_session_secret_2026';
+const REAL_SECRET = process.env.SESSION_SECRET || 'asra3_secure_session_secret_2026';
 
 let passedChecks = 0;
 let failedChecks = 0;
@@ -49,7 +49,7 @@ async function waitForServer(url, timeoutMs = 25000) {
   throw new Error(`Server at ${url} failed to become responsive within ${timeoutMs}ms`);
 }
 
-function extractCookie(res, cookieName = 'techurity_session') {
+function extractCookie(res, cookieName = 'asra3_session') {
   const raw = res.headers.get('set-cookie');
   if (!raw) return null;
   const match = raw.match(new RegExp(`${cookieName}=([^;]+)`));
@@ -94,7 +94,7 @@ async function runAdversarialSuite() {
     {
       const fakeCookie = `${Buffer.from(JSON.stringify(validSessionTemplate)).toString('base64')}.AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA`;
       const res = await fetch(`${BASE_URL}/dashboard`, {
-        headers: { Cookie: `techurity_session=${fakeCookie}` },
+        headers: { Cookie: `asra3_session=${fakeCookie}` },
         redirect: 'manual',
       });
       assert(res.status === 307 || res.status === 308, 'Attack 1: Forged random signature rejected on /dashboard', `Status: ${res.status}`);
@@ -102,7 +102,7 @@ async function runAdversarialSuite() {
       assert(loc.includes('/login'), 'Attack 1: Redirected to /login');
 
       const adminApiRes = await fetch(`${BASE_URL}/api/admin`, {
-        headers: { Cookie: `techurity_session=${fakeCookie}` },
+        headers: { Cookie: `asra3_session=${fakeCookie}` },
       });
       assert(adminApiRes.status === 401, 'Attack 1: Forged random signature rejected on /api/admin with 401', `Status: ${adminApiRes.status}`);
     }
@@ -111,13 +111,13 @@ async function runAdversarialSuite() {
     {
       const forgedWithWrongSecret = craftCookie(validSessionTemplate, 'wrong_attacker_secret_key_123');
       const res = await fetch(`${BASE_URL}/admin`, {
-        headers: { Cookie: `techurity_session=${forgedWithWrongSecret}` },
+        headers: { Cookie: `asra3_session=${forgedWithWrongSecret}` },
         redirect: 'manual',
       });
       assert(res.status === 307 || res.status === 308, 'Attack 2: Wrong secret signed cookie rejected on /admin', `Status: ${res.status}`);
 
       const adminApiRes = await fetch(`${BASE_URL}/api/admin`, {
-        headers: { Cookie: `techurity_session=${forgedWithWrongSecret}` },
+        headers: { Cookie: `asra3_session=${forgedWithWrongSecret}` },
       });
       assert(adminApiRes.status === 401, 'Attack 2: Wrong secret rejected on /api/admin with 401', `Status: ${adminApiRes.status}`);
     }
@@ -149,7 +149,7 @@ async function runAdversarialSuite() {
       const splicedCookie = `${tamperedPayloadB64}.${legitimateSig}`;
 
       const res = await fetch(`${BASE_URL}/admin`, {
-        headers: { Cookie: `techurity_session=${splicedCookie}` },
+        headers: { Cookie: `asra3_session=${splicedCookie}` },
         redirect: 'manual',
       });
       assert(res.status === 307 || res.status === 308, 'Attack 3: Payload tampering with signature reuse rejected on /admin', `Status: ${res.status}`);
@@ -162,7 +162,7 @@ async function runAdversarialSuite() {
       const truncatedCookie = `${payload}.${sig.slice(0, 20)}`;
 
       const res = await fetch(`${BASE_URL}/dashboard`, {
-        headers: { Cookie: `techurity_session=${truncatedCookie}` },
+        headers: { Cookie: `asra3_session=${truncatedCookie}` },
         redirect: 'manual',
       });
       assert(res.status === 307 || res.status === 308, 'Attack 4: Truncated signature rejected', `Status: ${res.status}`);
@@ -177,7 +177,7 @@ async function runAdversarialSuite() {
       };
       const expiredCookie = craftCookie(expiredSession, REAL_SECRET);
       const res = await fetch(`${BASE_URL}/dashboard`, {
-        headers: { Cookie: `techurity_session=${expiredCookie}` },
+        headers: { Cookie: `asra3_session=${expiredCookie}` },
         redirect: 'manual',
       });
       assert(res.status === 307 || res.status === 308, 'Attack 5: Expired cookie strictly rejected', `Status: ${res.status}`);
@@ -196,7 +196,7 @@ async function runAdversarialSuite() {
     for (let i = 0; i < malformedVariants.length; i++) {
       const variant = malformedVariants[i];
       const res = await fetch(`${BASE_URL}/dashboard`, {
-        headers: { Cookie: `techurity_session=${encodeURIComponent(variant)}` },
+        headers: { Cookie: `asra3_session=${encodeURIComponent(variant)}` },
         redirect: 'manual',
       });
       assert(res.status === 307 || res.status === 308, `Attack 6.${i + 1}: Malformed cookie format "${variant.slice(0, 15)}" rejected safely without 500 crash`, `Status: ${res.status}`);
@@ -231,7 +231,7 @@ async function runAdversarialSuite() {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         action: 'login',
-        email: 'admin@techurity.si',
+        email: 'admin@asra3.com',
         password: 'wrong_password_123',
       }),
     });
@@ -243,7 +243,7 @@ async function runAdversarialSuite() {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         action: 'login',
-        email: 'admin@techurity.si',
+        email: 'admin@asra3.com',
         password: process.env.ADMIN_PASSWORD || 'AdminPassword2026!',
       }),
     });
@@ -260,14 +260,14 @@ async function runAdversarialSuite() {
 
       // 2. Customer request to /dashboard
       const custDashRes = await fetch(`${BASE_URL}/dashboard`, {
-        headers: { Cookie: `techurity_session=${customerCookie}` },
+        headers: { Cookie: `asra3_session=${customerCookie}` },
         redirect: 'manual',
       });
       assert(custDashRes.status === 200, `Cycle ${i + 1}: Customer /dashboard -> 200 OK`);
 
       // 3. Customer privilege escalation attempt to /admin
       const custAdminRes = await fetch(`${BASE_URL}/admin`, {
-        headers: { Cookie: `techurity_session=${customerCookie}` },
+        headers: { Cookie: `asra3_session=${customerCookie}` },
         redirect: 'manual',
       });
       assert(custAdminRes.status === 307 || custAdminRes.status === 308, `Cycle ${i + 1}: Customer /admin -> 307 redirect (privilege blocked)`);
@@ -276,20 +276,20 @@ async function runAdversarialSuite() {
 
       // 4. Customer attempt on /api/admin
       const custApiAdminRes = await fetch(`${BASE_URL}/api/admin`, {
-        headers: { Cookie: `techurity_session=${customerCookie}` },
+        headers: { Cookie: `asra3_session=${customerCookie}` },
       });
       assert(custApiAdminRes.status === 401, `Cycle ${i + 1}: Customer /api/admin -> 401 Unauthorized`);
 
       // 5. Super admin request to /admin
       const adminRes = await fetch(`${BASE_URL}/admin`, {
-        headers: { Cookie: `techurity_session=${adminCookie}` },
+        headers: { Cookie: `asra3_session=${adminCookie}` },
         redirect: 'manual',
       });
       assert(adminRes.status === 200, `Cycle ${i + 1}: Admin /admin -> 200 OK`);
 
       // 6. Super admin request to /api/admin
       const adminApiRes = await fetch(`${BASE_URL}/api/admin`, {
-        headers: { Cookie: `techurity_session=${adminCookie}` },
+        headers: { Cookie: `asra3_session=${adminCookie}` },
       });
       assert(adminApiRes.status === 200, `Cycle ${i + 1}: Admin /api/admin -> 200 OK`);
     }
@@ -299,7 +299,7 @@ async function runAdversarialSuite() {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        Cookie: `techurity_session=${customerCookie}`,
+        Cookie: `asra3_session=${customerCookie}`,
       },
       body: JSON.stringify({ action: 'logout' }),
     });
@@ -347,7 +347,7 @@ async function runAdversarialSuite() {
     const concCookie = extractCookie(concLoginRes);
     const concHeaders = {
       'Content-Type': 'application/json',
-      Cookie: `techurity_session=${concCookie}`,
+      Cookie: `asra3_session=${concCookie}`,
     };
 
     // Sub-test A: 15 concurrent number searches across different country codes
@@ -493,7 +493,7 @@ async function runAdversarialSuite() {
     const edgeCookie = extractCookie(edgeLoginRes);
     const edgeHeaders = {
       'Content-Type': 'application/json',
-      Cookie: `techurity_session=${edgeCookie}`,
+      Cookie: `asra3_session=${edgeCookie}`,
     };
 
     // Edge 1: buy_number with invalid/malicious country code
@@ -558,7 +558,7 @@ async function runAdversarialSuite() {
 
     // Edge 4: send_sms with huge payload (10,000 characters)
     {
-      const hugeText = 'Techurity '.repeat(1000);
+      const hugeText = 'Asra3 '.repeat(1000);
       const res = await fetch(`${BASE_URL}/api/services`, {
         method: 'POST',
         headers: edgeHeaders,

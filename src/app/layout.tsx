@@ -5,17 +5,17 @@ import { Navbar } from '@/components/Navbar';
 import { SeoJsonLd } from '@/components/SeoJsonLd';
 
 export const metadata: Metadata = {
-  metadataBase: new URL('https://social.ai4eg.com'),
+  metadataBase: new URL('https://asra3.com'),
   title: {
     default:
-      'Techurity (techurity.si) — منصة التسويق والاتصالات السحابية الموحدة، الأرقام الافتراضية، واتساب للأعمال والذكاء الصوتي',
-    template: '%s | Techurity (techurity.si)',
+      'Asra3 (asra3.com) — منصة التسويق والاتصالات السحابية الموحدة، الأرقام الافتراضية، واتساب للأعمال والذكاء الصوتي',
+    template: '%s | Asra3 (asra3.com)',
   },
   description:
-    'Techurity (techurity.si) unifies 18 social & messaging channels, virtual phone numbers in 55+ countries, WhatsApp Business Cloud API, AI Voice Agents, 2-way SMS, and 8 paid ad networks in one platform and developer API.',
+    'Asra3 (asra3.com) unifies 18 social & messaging channels, virtual phone numbers in 55+ countries, WhatsApp Business Cloud API, AI Voice Agents, 2-way SMS, and 8 paid ad networks in one platform and developer API.',
   keywords: [
-    'Techurity',
-    'techurity.si',
+    'Asra3',
+    'asra3.com',
     'Omnichannel Social Media API',
     'Virtual Phone Numbers WhatsApp Business',
     'AI Voice Agents Telephony',
@@ -26,27 +26,27 @@ export const metadata: Metadata = {
     'إدارة حسابات التواصل والإعلانات',
   ],
   alternates: {
-    canonical: 'https://social.ai4eg.com',
+    canonical: 'https://asra3.com',
     languages: {
-      ar: 'https://social.ai4eg.com?lang=ar',
-      en: 'https://social.ai4eg.com?lang=en',
-      es: 'https://social.ai4eg.com?lang=es',
-      fr: 'https://social.ai4eg.com?lang=fr',
-      de: 'https://social.ai4eg.com?lang=de',
-      'pt-BR': 'https://social.ai4eg.com?lang=pt-BR',
-      tr: 'https://social.ai4eg.com?lang=tr',
-      ru: 'https://social.ai4eg.com?lang=ru',
-      zh: 'https://social.ai4eg.com?lang=zh',
-      ja: 'https://social.ai4eg.com?lang=ja',
-      'x-default': 'https://social.ai4eg.com',
+      ar: 'https://asra3.com?lang=ar',
+      en: 'https://asra3.com?lang=en',
+      es: 'https://asra3.com?lang=es',
+      fr: 'https://asra3.com?lang=fr',
+      de: 'https://asra3.com?lang=de',
+      'pt-BR': 'https://asra3.com?lang=pt-BR',
+      tr: 'https://asra3.com?lang=tr',
+      ru: 'https://asra3.com?lang=ru',
+      zh: 'https://asra3.com?lang=zh',
+      ja: 'https://asra3.com?lang=ja',
+      'x-default': 'https://asra3.com',
     },
   },
   openGraph: {
     type: 'website',
-    url: 'https://social.ai4eg.com',
-    siteName: 'Techurity',
+    url: 'https://asra3.com',
+    siteName: 'Asra3',
     title:
-      'Techurity (techurity.si) — Unified Social, Virtual Numbers, WhatsApp Business, AI Voice & Ads Platform',
+      'Asra3 (asra3.com) — Unified Social, Virtual Numbers, WhatsApp Business, AI Voice & Ads Platform',
     description:
       'Connect 18 social channels, buy virtual numbers in 55+ countries, link WhatsApp Business & AI Voice Agents, and run 8-network ads from one dashboard or REST API.',
     locale: 'ar_SA',
@@ -64,7 +64,7 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'Techurity (techurity.si) — Unified Omnichannel & Cloud Telephony Platform',
+    title: 'Asra3 (asra3.com) — Unified Omnichannel & Cloud Telephony Platform',
     description:
       '18 social/messaging channels, virtual phone numbers in 55+ countries, WhatsApp Business linking, AI voice agents, and 8 paid ad networks.',
   },

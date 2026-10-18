@@ -45,7 +45,7 @@ async function waitForServer(url, timeoutMs = 25000) {
 function extractSessionCookie(res) {
   const setCookie = res.headers.get('set-cookie');
   if (!setCookie) return null;
-  const match = setCookie.match(/techurity_session=([^;]+)/);
+  const match = setCookie.match(/asra3_session=([^;]+)/);
   return match ? match[1] : null;
 }
 
@@ -77,7 +77,7 @@ async function runTestSuite() {
   assert(alphaSignupRes.ok, 'Tenant Alpha signup HTTP status 200/201 OK');
   const alphaData = await alphaSignupRes.json();
   const alphaCookie = extractSessionCookie(alphaSignupRes);
-  assert(Boolean(alphaCookie), 'Tenant Alpha received techurity_session cookie');
+  assert(Boolean(alphaCookie), 'Tenant Alpha received asra3_session cookie');
   const alphaOrgId = alphaData.tenant?.organizationId;
   assert(Boolean(alphaOrgId && alphaOrgId.startsWith('org_')), `Tenant Alpha received valid org ID: ${alphaOrgId}`);
 
@@ -96,7 +96,7 @@ async function runTestSuite() {
   assert(betaSignupRes.ok, 'Tenant Beta signup HTTP status 200/201 OK');
   const betaData = await betaSignupRes.json();
   const betaCookie = extractSessionCookie(betaSignupRes);
-  assert(Boolean(betaCookie), 'Tenant Beta received techurity_session cookie');
+  assert(Boolean(betaCookie), 'Tenant Beta received asra3_session cookie');
   const betaOrgId = betaData.tenant?.organizationId;
   assert(Boolean(betaOrgId && betaOrgId.startsWith('org_')), `Tenant Beta received valid org ID: ${betaOrgId}`);
 
@@ -104,13 +104,13 @@ async function runTestSuite() {
 
   // Verify Sessions for both tenants
   const alphaSession = await (await fetch(`${BASE_URL}/api/auth?action=session`, {
-    headers: { Cookie: `techurity_session=${alphaCookie}` },
+    headers: { Cookie: `asra3_session=${alphaCookie}` },
   })).json();
   assert(alphaSession.authenticated === true, 'Tenant Alpha session is authenticated');
   assert(alphaSession.session.user.email === alphaEmail, `Tenant Alpha session user email matches: ${alphaEmail}`);
 
   const betaSession = await (await fetch(`${BASE_URL}/api/auth?action=session`, {
-    headers: { Cookie: `techurity_session=${betaCookie}` },
+    headers: { Cookie: `asra3_session=${betaCookie}` },
   })).json();
   assert(betaSession.authenticated === true, 'Tenant Beta session is authenticated');
   assert(betaSession.session.user.email === betaEmail, `Tenant Beta session user email matches: ${betaEmail}`);
@@ -121,7 +121,7 @@ async function runTestSuite() {
   console.log('\n--- 2. VERIFYING TENANT ALPHA CLEAN ZERO-STATE INITIALIZATION ---');
   const alphaServicesRes = await fetch(
     `${BASE_URL}/api/services?organizationId=${encodeURIComponent(alphaOrgId)}`,
-    { headers: { Cookie: `techurity_session=${alphaCookie}` } }
+    { headers: { Cookie: `asra3_session=${alphaCookie}` } }
   );
   assert(alphaServicesRes.ok, 'Tenant Alpha query GET /api/services succeeded');
   const alphaServices = await alphaServicesRes.json();
@@ -157,7 +157,7 @@ async function runTestSuite() {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
-      Cookie: `techurity_session=${alphaCookie}`,
+      Cookie: `asra3_session=${alphaCookie}`,
     },
     body: JSON.stringify({
       organizationId: alphaOrgId,
@@ -180,7 +180,7 @@ async function runTestSuite() {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
-      Cookie: `techurity_session=${alphaCookie}`,
+      Cookie: `asra3_session=${alphaCookie}`,
     },
     body: JSON.stringify({
       organizationId: alphaOrgId,
@@ -227,7 +227,7 @@ async function runTestSuite() {
   // Query Tenant Beta workspace via API
   const betaServicesRes = await fetch(
     `${BASE_URL}/api/services?organizationId=${encodeURIComponent(betaOrgId)}`,
-    { headers: { Cookie: `techurity_session=${betaCookie}` } }
+    { headers: { Cookie: `asra3_session=${betaCookie}` } }
   );
   assert(betaServicesRes.ok, 'Tenant Beta query GET /api/services succeeded');
   const betaServices = await betaServicesRes.json();
@@ -347,7 +347,7 @@ async function runTestSuite() {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
-      Cookie: `techurity_session=${alphaCookie}`,
+      Cookie: `asra3_session=${alphaCookie}`,
     },
     body: JSON.stringify({
       organizationId: alphaOrgId,
@@ -371,7 +371,7 @@ async function runTestSuite() {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
-      Cookie: `techurity_session=${alphaCookie}`,
+      Cookie: `asra3_session=${alphaCookie}`,
     },
     body: JSON.stringify({ action: 'logout' }),
   });
@@ -381,7 +381,7 @@ async function runTestSuite() {
 
   // Verify Alpha session is now terminated
   const postLogoutSession = await (await fetch(`${BASE_URL}/api/auth?action=session`, {
-    headers: { Cookie: 'techurity_session=' },
+    headers: { Cookie: 'asra3_session=' },
   })).json();
   assert(postLogoutSession.authenticated === false, 'Session status is authenticated: false post-logout');
 

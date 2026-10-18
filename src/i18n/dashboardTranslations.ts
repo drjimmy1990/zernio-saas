@@ -1,17 +1,17 @@
 import type { SupportedLocale } from './dictionaries';
 
 export const DASHBOARD_TRANSLATIONS: Record<string, Record<SupportedLocale, string>> = {
-  "Connection Verified: Techurity omnichannel broadcast pipeline operational. \ud83d\ude80": {
-    "ar": "Connection Verified: Techurity omnichannel broadcast pipeline operational. \ud83d\ude80",
-    "en": "Connection Verified: Techurity omnichannel broadcast pipeline operational. \ud83d\ude80",
-    "es": "Conexi\u00f3n verificada: Canal de difusi\u00f3n omnicanal de Techurity operativo. \ud83d\ude80",
-    "fr": "Connexion v\u00e9rifi\u00e9e : Canal de diffusion omnicanale Techurity op\u00e9rationnel. \ud83d\ude80",
-    "de": "Verbindung verifiziert: Techurity Omnichannel-Broadcast-Pipeline betriebsbereit. \ud83d\ude80",
-    "pt-BR": "Conex\u00e3o verificada: Canal de transmiss\u00e3o multicanal Techurity operacional. \ud83d\ude80",
-    "tr": "Ba\u011flant\u0131 do\u011fruland\u0131: Techurity \u00e7ok kanall\u0131 yay\u0131n hatt\u0131 \u00e7al\u0131\u015f\u0131yor. \ud83d\ude80",
-    "ru": "\u041f\u043e\u0434\u043a\u043b\u044e\u0447\u0435\u043d\u0438\u0435 \u043f\u0440\u043e\u0432\u0435\u0440\u0435\u043d\u043e: \u041e\u043c\u043d\u0438\u043a\u0430\u043d\u0430\u043b\u044c\u043d\u044b\u0439 \u043a\u043e\u043d\u0432\u0435\u0439\u0435\u0440 Techurity \u0440\u0430\u0431\u043e\u0442\u0430\u0435\u0442. \ud83d\ude80",
-    "zh": "\u8fde\u63a5\u5df2\u9a8c\u8bc1\uff1aTechurity \u5168\u6e20\u9053\u5e7f\u64ad\u53d1\u5e03\u6d41\u6c34\u7ebf\u5df2\u5c31\u7eea\u3002\ud83d\ude80",
-    "ja": "\u63a5\u7d9a\u691c\u8a3c\u5b8c\u4e86\uff1aTechurity \u30aa\u30e0\u30cb\u30c1\u30e3\u30cd\u30eb\u914d\u4fe1\u30d1\u30a4\u30d7\u30e9\u30a4\u30f3\u304c\u7a3c\u50cd\u4e2d\u3067\u3059\u3002\ud83d\ude80"
+  "Connection Verified: Asra3 omnichannel broadcast pipeline operational. \ud83d\ude80": {
+    "ar": "Connection Verified: Asra3 omnichannel broadcast pipeline operational. \ud83d\ude80",
+    "en": "Connection Verified: Asra3 omnichannel broadcast pipeline operational. \ud83d\ude80",
+    "es": "Conexi\u00f3n verificada: Canal de difusi\u00f3n omnicanal de Asra3 operativo. \ud83d\ude80",
+    "fr": "Connexion v\u00e9rifi\u00e9e : Canal de diffusion omnicanale Asra3 op\u00e9rationnel. \ud83d\ude80",
+    "de": "Verbindung verifiziert: Asra3 Omnichannel-Broadcast-Pipeline betriebsbereit. \ud83d\ude80",
+    "pt-BR": "Conex\u00e3o verificada: Canal de transmiss\u00e3o multicanal Asra3 operacional. \ud83d\ude80",
+    "tr": "Ba\u011flant\u0131 do\u011fruland\u0131: Asra3 \u00e7ok kanall\u0131 yay\u0131n hatt\u0131 \u00e7al\u0131\u015f\u0131yor. \ud83d\ude80",
+    "ru": "\u041f\u043e\u0434\u043a\u043b\u044e\u0447\u0435\u043d\u0438\u0435 \u043f\u0440\u043e\u0432\u0435\u0440\u0435\u043d\u043e: \u041e\u043c\u043d\u0438\u043a\u0430\u043d\u0430\u043b\u044c\u043d\u044b\u0439 \u043a\u043e\u043d\u0432\u0435\u0439\u0435\u0440 Asra3 \u0440\u0430\u0431\u043e\u0442\u0430\u0435\u0442. \ud83d\ude80",
+    "zh": "\u8fde\u63a5\u5df2\u9a8c\u8bc1\uff1aAsra3 \u5168\u6e20\u9053\u5e7f\u64ad\u53d1\u5e03\u6d41\u6c34\u7ebf\u5df2\u5c31\u7eea\u3002\ud83d\ude80",
+    "ja": "\u63a5\u7d9a\u691c\u8a3c\u5b8c\u4e86\uff1aAsra3 \u30aa\u30e0\u30cb\u30c1\u30e3\u30cd\u30eb\u914d\u4fe1\u30d1\u30a4\u30d7\u30e9\u30a4\u30f3\u304c\u7a3c\u50cd\u4e2d\u3067\u3059\u3002\ud83d\ude80"
   },
   "Just now": {
     "ar": "Just now",
@@ -265,29 +265,29 @@ export const DASHBOARD_TRANSLATIONS: Record<string, Record<SupportedLocale, stri
     "zh": "\u5b98\u65b9\u52a0\u5bc6 OAuth 2.0 \u63e1\u624b",
     "ja": "\u516c\u5f0f\u6697\u53f7\u5316OAuth 2.0\u30cf\u30f3\u30c9\u30b7\u30a7\u30a4\u30af"
   },
-  "Authorize Techurity Platform to access ${platformMeta.name}": {
-    "ar": "\u0637\u0644\u0628 \u0645\u0646\u062d \u0627\u0644\u0625\u0630\u0646 \u0644\u062a\u0637\u0628\u064a\u0642 Techurity \u0644\u0644\u0648\u0635\u0648\u0644 \u0625\u0644\u0649 ${platformMeta.name}",
-    "en": "Authorize Techurity Platform to access ${platformMeta.name}",
-    "es": "Autorizar a la plataforma Techurity para acceder a ${platformMeta.name}",
-    "fr": "Autoriser la plateforme Techurity \u00e0 acc\u00e9der \u00e0 ${platformMeta.name}",
-    "de": "Techurity-Plattform autorisieren, auf ${platformMeta.name} zuzugreifen",
-    "pt-BR": "Autorizar a plataforma Techurity a acessar ${platformMeta.name}",
-    "tr": "Techurity Platformunun ${platformMeta.name} eri\u015fimine izin ver",
-    "ru": "\u0410\u0432\u0442\u043e\u0440\u0438\u0437\u043e\u0432\u0430\u0442\u044c \u043f\u043b\u0430\u0442\u0444\u043e\u0440\u043c\u0443 Techurity \u0434\u043b\u044f \u0434\u043e\u0441\u0442\u0443\u043f\u0430 \u043a ${platformMeta.name}",
-    "zh": "\u6388\u6743 Techurity \u5e73\u53f0\u8bbf\u95ee ${platformMeta.name}",
-    "ja": "${platformMeta.name} \u3078\u306e Techurity \u30d7\u30e9\u30c3\u30c8\u30d5\u30a9\u30fc\u30e0\u306e\u30a2\u30af\u30bb\u30b9\u3092\u627f\u8a8d"
+  "Authorize Asra3 Platform to access ${platformMeta.name}": {
+    "ar": "\u0637\u0644\u0628 \u0645\u0646\u062d \u0627\u0644\u0625\u0630\u0646 \u0644\u062a\u0637\u0628\u064a\u0642 Asra3 \u0644\u0644\u0648\u0635\u0648\u0644 \u0625\u0644\u0649 ${platformMeta.name}",
+    "en": "Authorize Asra3 Platform to access ${platformMeta.name}",
+    "es": "Autorizar a la plataforma Asra3 para acceder a ${platformMeta.name}",
+    "fr": "Autoriser la plateforme Asra3 \u00e0 acc\u00e9der \u00e0 ${platformMeta.name}",
+    "de": "Asra3-Plattform autorisieren, auf ${platformMeta.name} zuzugreifen",
+    "pt-BR": "Autorizar a plataforma Asra3 a acessar ${platformMeta.name}",
+    "tr": "Asra3 Platformunun ${platformMeta.name} eri\u015fimine izin ver",
+    "ru": "\u0410\u0432\u0442\u043e\u0440\u0438\u0437\u043e\u0432\u0430\u0442\u044c \u043f\u043b\u0430\u0442\u0444\u043e\u0440\u043c\u0443 Asra3 \u0434\u043b\u044f \u0434\u043e\u0441\u0442\u0443\u043f\u0430 \u043a ${platformMeta.name}",
+    "zh": "\u6388\u6743 Asra3 \u5e73\u53f0\u8bbf\u95ee ${platformMeta.name}",
+    "ja": "${platformMeta.name} \u3078\u306e Asra3 \u30d7\u30e9\u30c3\u30c8\u30d5\u30a9\u30fc\u30e0\u306e\u30a2\u30af\u30bb\u30b9\u3092\u627f\u8a8d"
   },
-  "Secure token exchange. Techurity never sees or stores your personal account password.": {
+  "Secure token exchange. Asra3 never sees or stores your personal account password.": {
     "ar": "\u0633\u064a\u062a\u0645 \u0627\u0644\u0631\u0628\u0637 \u0627\u0644\u0645\u0628\u0627\u0634\u0631 \u0645\u0639 \u062d\u0633\u0627\u0628\u0643 \u0627\u0644\u0625\u062f\u0627\u0631\u064a \u062f\u0648\u0646 \u0627\u0644\u062d\u0627\u062c\u0629 \u0644\u0645\u0634\u0627\u0631\u0643\u0629 \u0643\u0644\u0645\u0627\u062a \u0627\u0644\u0645\u0631\u0648\u0631 \u0627\u0644\u062e\u0627\u0635\u0629 \u0628\u0643.",
-    "en": "Secure token exchange. Techurity never sees or stores your personal account password.",
-    "es": "Intercambio de tokens seguro. Techurity nunca ve ni almacena su contrase\u00f1a personal.",
-    "fr": "\u00c9change de jetons s\u00e9curis\u00e9. Techurity ne voit ni ne stocke jamais votre mot de passe.",
-    "de": "Sicherer Token-Austausch. Techurity sieht oder speichert niemals Ihr Passwort.",
-    "pt-BR": "Troca de tokens segura. A Techurity nunca v\u00ea ou armazena sua senha pessoal.",
-    "tr": "G\u00fcvenli belirte\u00e7 de\u011fi\u015fimi. Techurity ki\u015fisel \u015fifrenizi asla g\u00f6rmez veya saklamaz.",
-    "ru": "\u0411\u0435\u0437\u043e\u043f\u0430\u0441\u043d\u044b\u0439 \u043e\u0431\u043c\u0435\u043d \u0442\u043e\u043a\u0435\u043d\u0430\u043c\u0438. Techurity \u043d\u0438\u043a\u043e\u0433\u0434\u0430 \u043d\u0435 \u0432\u0438\u0434\u0438\u0442 \u0438 \u043d\u0435 \u0445\u0440\u0430\u043d\u0438\u0442 \u0432\u0430\u0448\u0438 \u043f\u0430\u0440\u043e\u043b\u0438.",
-    "zh": "\u5b89\u5168\u4ee4\u724c\u4ea4\u6362\u3002Techurity \u7edd\u4e0d\u4f1a\u67e5\u770b\u6216\u5b58\u50a8\u60a8\u7684\u4e2a\u4eba\u8d26\u6237\u5bc6\u7801\u3002",
-    "ja": "\u5b89\u5168\u306a\u30c8\u30fc\u30af\u30f3\u4ea4\u63db\u3002Techurity \u304c\u500b\u4eba\u306e\u30d1\u30b9\u30ef\u30fc\u30c9\u3092\u95b2\u89a7\u307e\u305f\u306f\u4fdd\u5b58\u3059\u308b\u3053\u3068\u306f\u3042\u308a\u307e\u305b\u3093\u3002"
+    "en": "Secure token exchange. Asra3 never sees or stores your personal account password.",
+    "es": "Intercambio de tokens seguro. Asra3 nunca ve ni almacena su contrase\u00f1a personal.",
+    "fr": "\u00c9change de jetons s\u00e9curis\u00e9. Asra3 ne voit ni ne stocke jamais votre mot de passe.",
+    "de": "Sicherer Token-Austausch. Asra3 sieht oder speichert niemals Ihr Passwort.",
+    "pt-BR": "Troca de tokens segura. A Asra3 nunca v\u00ea ou armazena sua senha pessoal.",
+    "tr": "G\u00fcvenli belirte\u00e7 de\u011fi\u015fimi. Asra3 ki\u015fisel \u015fifrenizi asla g\u00f6rmez veya saklamaz.",
+    "ru": "\u0411\u0435\u0437\u043e\u043f\u0430\u0441\u043d\u044b\u0439 \u043e\u0431\u043c\u0435\u043d \u0442\u043e\u043a\u0435\u043d\u0430\u043c\u0438. Asra3 \u043d\u0438\u043a\u043e\u0433\u0434\u0430 \u043d\u0435 \u0432\u0438\u0434\u0438\u0442 \u0438 \u043d\u0435 \u0445\u0440\u0430\u043d\u0438\u0442 \u0432\u0430\u0448\u0438 \u043f\u0430\u0440\u043e\u043b\u0438.",
+    "zh": "\u5b89\u5168\u4ee4\u724c\u4ea4\u6362\u3002Asra3 \u7edd\u4e0d\u4f1a\u67e5\u770b\u6216\u5b58\u50a8\u60a8\u7684\u4e2a\u4eba\u8d26\u6237\u5bc6\u7801\u3002",
+    "ja": "\u5b89\u5168\u306a\u30c8\u30fc\u30af\u30f3\u4ea4\u63db\u3002Asra3 \u304c\u500b\u4eba\u306e\u30d1\u30b9\u30ef\u30fc\u30c9\u3092\u95b2\u89a7\u307e\u305f\u306f\u4fdd\u5b58\u3059\u308b\u3053\u3068\u306f\u3042\u308a\u307e\u305b\u3093\u3002"
   },
   "Requested Scopes & Permissions:": {
     "ar": "Requested Scopes & Permissions:",
@@ -1069,17 +1069,17 @@ export const DASHBOARD_TRANSLATIONS: Record<string, Record<SupportedLocale, stri
     "zh": "\u5b8c\u6210\u5e76\u8fd4\u56de\u63a7\u5236\u53f0\u67e5\u770b",
     "ja": "\u5b8c\u4e86\u3057\u3066\u30c0\u30c3\u30b7\u30e5\u30dc\u30fc\u30c9\u3067\u78ba\u8a8d"
   },
-  "You are Sarah, official AI advisor for Techurity. Greet clients warmly, assist with phone provisioning, WhatsApp templates, order tracking, and transfer to human agents upon request.": {
+  "You are Sarah, official AI advisor for Asra3. Greet clients warmly, assist with phone provisioning, WhatsApp templates, order tracking, and transfer to human agents upon request.": {
     "ar": "\u0623\u0646\u062a \u0633\u0627\u0631\u0629\u060c \u0627\u0644\u0645\u0633\u062a\u0634\u0627\u0631\u0629 \u0627\u0644\u0630\u0643\u064a\u0629 \u0627\u0644\u0631\u0633\u0645\u064a\u0629 \u0644\u0645\u0646\u0635\u0629 \u062a\u0643\u064a\u0648\u0631\u064a\u062a\u064a. \u0631\u062d\u0628\u064a \u0628\u0627\u0644\u0639\u0645\u0644\u0627\u0621 \u0628\u0644\u0628\u0627\u0642\u0629\u060c \u0648\u0633\u0627\u0639\u062f\u064a\u0647\u0645 \u0641\u064a \u0627\u0633\u062a\u0635\u062f\u0627\u0631 \u0627\u0644\u0623\u0631\u0642\u0627\u0645\u060c \u062a\u0641\u0639\u064a\u0644 \u0642\u0648\u0627\u0644\u0628 \u0648\u0627\u062a\u0633\u0627\u0628\u060c \u0645\u062a\u0627\u0628\u0639\u0629 \u0627\u0644\u0634\u062d\u0646\u0627\u062a \u0648\u0627\u0644\u0637\u0644\u0628\u0627\u062a\u060c \u0648\u0627\u0644\u062a\u062d\u0648\u064a\u0644 \u0625\u0644\u0649 \u0645\u0648\u0638\u0641 \u0628\u0634\u0631\u064a \u0639\u0646\u062f \u0627\u0644\u0637\u0644\u0628.",
-    "en": "You are Sarah, official AI advisor for Techurity. Greet clients warmly, assist with phone provisioning, WhatsApp templates, order tracking, and transfer to human agents upon request.",
-    "es": "Eres Sarah, asesora oficial de IA para Techurity. Saluda c\u00e1lidamente a los clientes, asiste en la provisi\u00f3n de tel\u00e9fonos, plantillas de WhatsApp, seguimiento de pedidos y transfiere a agentes humanos cuando se solicite.",
-    "fr": "Vous \u00eates Sarah, conseill\u00e8re IA officielle de Techurity. Accueillez chaleureusement les clients, aidez \u00e0 l'attribution de num\u00e9ros, aux mod\u00e8les WhatsApp, au suivi de commande et transf\u00e9rez aux agents humains sur demande.",
-    "de": "Sie sind Sarah, offizielle KI-Beraterin f\u00fcr Techurity. Begr\u00fc\u00dfen Sie Kunden herzlich, unterst\u00fctzen Sie bei der Rufnummernbereitstellung, WhatsApp-Vorlagen, Bestellverfolgung und leiten Sie auf Wunsch an menschliche Mitarbeiter weiter.",
-    "pt-BR": "Voc\u00ea \u00e9 Sarah, consultora oficial de IA da Techurity. Cumprimente os clientes cordialmente, ajude no provisionamento de n\u00fameros, modelos do WhatsApp, rastreamento de pedidos e transfira para atendentes humanos quando solicitado.",
-    "tr": "Techurity'nin resmi Yapay Zeka Dan\u0131\u015fman\u0131 Sarah's\u0131n\u0131z. M\u00fc\u015fterileri s\u0131cak bir \u015fekilde kar\u015f\u0131lay\u0131n, telefon tahsisi, WhatsApp \u015fablonlar\u0131, sipari\u015f takibi konular\u0131nda yard\u0131mc\u0131 olun ve istendi\u011finde canl\u0131 temsilcilere aktar\u0131n.",
-    "ru": "\u0412\u044b \u2014 \u0421\u0430\u0440\u0430, \u043e\u0444\u0438\u0446\u0438\u0430\u043b\u044c\u043d\u044b\u0439 \u0418\u0418-\u043a\u043e\u043d\u0441\u0443\u043b\u044c\u0442\u0430\u043d\u0442 Techurity. \u0422\u0435\u043f\u043b\u043e \u043f\u0440\u0438\u0432\u0435\u0442\u0441\u0442\u0432\u0443\u0439\u0442\u0435 \u043a\u043b\u0438\u0435\u043d\u0442\u043e\u0432, \u043f\u043e\u043c\u043e\u0433\u0430\u0439\u0442\u0435 \u0441 \u043f\u043e\u0434\u043a\u043b\u044e\u0447\u0435\u043d\u0438\u0435\u043c \u043d\u043e\u043c\u0435\u0440\u043e\u0432, \u0448\u0430\u0431\u043b\u043e\u043d\u0430\u043c\u0438 WhatsApp, \u043e\u0442\u0441\u043b\u0435\u0436\u0438\u0432\u0430\u043d\u0438\u0435\u043c \u0437\u0430\u043a\u0430\u0437\u043e\u0432 \u0438 \u043f\u0435\u0440\u0435\u043a\u043b\u044e\u0447\u0430\u0439\u0442\u0435 \u043d\u0430 \u043e\u043f\u0435\u0440\u0430\u0442\u043e\u0440\u043e\u0432 \u043f\u043e \u0437\u0430\u043f\u0440\u043e\u0441\u0443.",
-    "zh": "\u60a8\u662f Sarah\uff0cTechurity \u7684\u5b98\u65b9 AI \u987e\u95ee\u3002\u70ed\u60c5\u95ee\u5019\u5ba2\u6237\uff0c\u534f\u52a9\u7535\u8bdd\u53f7\u7801\u914d\u7f6e\u3001WhatsApp \u6a21\u677f\u3001\u8ba2\u5355\u8ddf\u8e2a\uff0c\u5e76\u5728\u5ba2\u6237\u8981\u6c42\u65f6\u8f6c\u63a5\u4eba\u5de5\u5ba2\u670d\u3002",
-    "ja": "\u3042\u306a\u305f\u306f Techurity \u306e\u516c\u5f0f AI \u30a2\u30c9\u30d0\u30a4\u30b6\u30fc Sarah \u3067\u3059\u3002\u304a\u5ba2\u69d8\u3092\u6e29\u304b\u304f\u8fce\u3048\u3001\u96fb\u8a71\u756a\u53f7\u306e\u767a\u884c\u3001WhatsApp \u30c6\u30f3\u30d7\u30ec\u30fc\u30c8\u3001\u6ce8\u6587\u8ffd\u8de1\u3092\u30b5\u30dd\u30fc\u30c8\u3057\u3001\u8981\u671b\u306b\u5fdc\u3058\u3066\u6709\u4eba\u30aa\u30da\u30ec\u30fc\u30bf\u30fc\u306b\u8ee2\u9001\u3057\u307e\u3059\u3002"
+    "en": "You are Sarah, official AI advisor for Asra3. Greet clients warmly, assist with phone provisioning, WhatsApp templates, order tracking, and transfer to human agents upon request.",
+    "es": "Eres Sarah, asesora oficial de IA para Asra3. Saluda c\u00e1lidamente a los clientes, asiste en la provisi\u00f3n de tel\u00e9fonos, plantillas de WhatsApp, seguimiento de pedidos y transfiere a agentes humanos cuando se solicite.",
+    "fr": "Vous \u00eates Sarah, conseill\u00e8re IA officielle de Asra3. Accueillez chaleureusement les clients, aidez \u00e0 l'attribution de num\u00e9ros, aux mod\u00e8les WhatsApp, au suivi de commande et transf\u00e9rez aux agents humains sur demande.",
+    "de": "Sie sind Sarah, offizielle KI-Beraterin f\u00fcr Asra3. Begr\u00fc\u00dfen Sie Kunden herzlich, unterst\u00fctzen Sie bei der Rufnummernbereitstellung, WhatsApp-Vorlagen, Bestellverfolgung und leiten Sie auf Wunsch an menschliche Mitarbeiter weiter.",
+    "pt-BR": "Voc\u00ea \u00e9 Sarah, consultora oficial de IA da Asra3. Cumprimente os clientes cordialmente, ajude no provisionamento de n\u00fameros, modelos do WhatsApp, rastreamento de pedidos e transfira para atendentes humanos quando solicitado.",
+    "tr": "Asra3'nin resmi Yapay Zeka Dan\u0131\u015fman\u0131 Sarah's\u0131n\u0131z. M\u00fc\u015fterileri s\u0131cak bir \u015fekilde kar\u015f\u0131lay\u0131n, telefon tahsisi, WhatsApp \u015fablonlar\u0131, sipari\u015f takibi konular\u0131nda yard\u0131mc\u0131 olun ve istendi\u011finde canl\u0131 temsilcilere aktar\u0131n.",
+    "ru": "\u0412\u044b \u2014 \u0421\u0430\u0440\u0430, \u043e\u0444\u0438\u0446\u0438\u0430\u043b\u044c\u043d\u044b\u0439 \u0418\u0418-\u043a\u043e\u043d\u0441\u0443\u043b\u044c\u0442\u0430\u043d\u0442 Asra3. \u0422\u0435\u043f\u043b\u043e \u043f\u0440\u0438\u0432\u0435\u0442\u0441\u0442\u0432\u0443\u0439\u0442\u0435 \u043a\u043b\u0438\u0435\u043d\u0442\u043e\u0432, \u043f\u043e\u043c\u043e\u0433\u0430\u0439\u0442\u0435 \u0441 \u043f\u043e\u0434\u043a\u043b\u044e\u0447\u0435\u043d\u0438\u0435\u043c \u043d\u043e\u043c\u0435\u0440\u043e\u0432, \u0448\u0430\u0431\u043b\u043e\u043d\u0430\u043c\u0438 WhatsApp, \u043e\u0442\u0441\u043b\u0435\u0436\u0438\u0432\u0430\u043d\u0438\u0435\u043c \u0437\u0430\u043a\u0430\u0437\u043e\u0432 \u0438 \u043f\u0435\u0440\u0435\u043a\u043b\u044e\u0447\u0430\u0439\u0442\u0435 \u043d\u0430 \u043e\u043f\u0435\u0440\u0430\u0442\u043e\u0440\u043e\u0432 \u043f\u043e \u0437\u0430\u043f\u0440\u043e\u0441\u0443.",
+    "zh": "\u60a8\u662f Sarah\uff0cAsra3 \u7684\u5b98\u65b9 AI \u987e\u95ee\u3002\u70ed\u60c5\u95ee\u5019\u5ba2\u6237\uff0c\u534f\u52a9\u7535\u8bdd\u53f7\u7801\u914d\u7f6e\u3001WhatsApp \u6a21\u677f\u3001\u8ba2\u5355\u8ddf\u8e2a\uff0c\u5e76\u5728\u5ba2\u6237\u8981\u6c42\u65f6\u8f6c\u63a5\u4eba\u5de5\u5ba2\u670d\u3002",
+    "ja": "\u3042\u306a\u305f\u306f Asra3 \u306e\u516c\u5f0f AI \u30a2\u30c9\u30d0\u30a4\u30b6\u30fc Sarah \u3067\u3059\u3002\u304a\u5ba2\u69d8\u3092\u6e29\u304b\u304f\u8fce\u3048\u3001\u96fb\u8a71\u756a\u53f7\u306e\u767a\u884c\u3001WhatsApp \u30c6\u30f3\u30d7\u30ec\u30fc\u30c8\u3001\u6ce8\u6587\u8ffd\u8de1\u3092\u30b5\u30dd\u30fc\u30c8\u3057\u3001\u8981\u671b\u306b\u5fdc\u3058\u3066\u6709\u4eba\u30aa\u30da\u30ec\u30fc\u30bf\u30fc\u306b\u8ee2\u9001\u3057\u307e\u3059\u3002"
   },
   "Success! Purchased ${item.phoneNumber} successfully and provisioned to your lines.": {
     "ar": "\u062a\u0645 \u0628\u0646\u062c\u0627\u062d! \u062a\u0645 \u0634\u0631\u0627\u0621 \u0627\u0644\u0631\u0642\u0645 ${item.phoneNumber} \u0648\u062a\u0647\u064a\u0626\u062a\u0647 \u0636\u0645\u0646 \u062e\u0637\u0648\u0637\u0643 \u0627\u0644\u0641\u0639\u0627\u0644\u0629.",
@@ -2821,17 +2821,17 @@ export const DASHBOARD_TRANSLATIONS: Record<string, Record<SupportedLocale, stri
     "zh": "\u5df2\u6210\u529f\u8fde\u63a5 ${credPlatform.toUpperCase()}\uff01",
     "ja": "${credPlatform.toUpperCase()} \u306e\u9023\u643a\u306b\u6210\u529f\u3057\u307e\u3057\u305f\uff01"
   },
-  "My Techurity Workspace": {
-    "ar": "My Techurity Workspace",
-    "en": "My Techurity Workspace",
-    "es": "Mi espacio Techurity",
-    "fr": "Mon espace Techurity",
-    "de": "Mein Techurity-Arbeitsbereich",
-    "pt-BR": "Meu espa\u00e7o Techurity",
-    "tr": "Techurity \u00c7al\u0131\u015fma Alan\u0131m",
-    "ru": "\u041c\u043e\u0451 \u043f\u0440\u043e\u0441\u0442\u0440\u0430\u043d\u0441\u0442\u0432\u043e Techurity",
-    "zh": "\u6211\u7684 Techurity \u5de5\u4f5c\u533a",
-    "ja": "\u30de\u30a4 Techurity \u30ef\u30fc\u30af\u30b9\u30da\u30fc\u30b9"
+  "My Asra3 Workspace": {
+    "ar": "My Asra3 Workspace",
+    "en": "My Asra3 Workspace",
+    "es": "Mi espacio Asra3",
+    "fr": "Mon espace Asra3",
+    "de": "Mein Asra3-Arbeitsbereich",
+    "pt-BR": "Meu espa\u00e7o Asra3",
+    "tr": "Asra3 \u00c7al\u0131\u015fma Alan\u0131m",
+    "ru": "\u041c\u043e\u0451 \u043f\u0440\u043e\u0441\u0442\u0440\u0430\u043d\u0441\u0442\u0432\u043e Asra3",
+    "zh": "\u6211\u7684 Asra3 \u5de5\u4f5c\u533a",
+    "ja": "\u30de\u30a4 Asra3 \u30ef\u30fc\u30af\u30b9\u30da\u30fc\u30b9"
   },
   "Active": {
     "ar": "Active",
@@ -3229,17 +3229,17 @@ export const DASHBOARD_TRANSLATIONS: Record<string, Record<SupportedLocale, stri
     "zh": "10DLC \u5408\u89c4\u94fe\u63a5\u5df2\u521b\u5efa\uff01",
     "ja": "10DLC \u30b3\u30f3\u30d7\u30e9\u30a4\u30a2\u30f3\u30b9\u30ea\u30f3\u30af\u3092\u4f5c\u6210\u3057\u307e\u3057\u305f\uff01"
   },
-  "Your Techurity Developer API Key": {
-    "ar": "\u0645\u0641\u062a\u0627\u062d API \u0627\u0644\u062e\u0627\u0635 \u0628\u0643 \u0643\u0645\u0637\u0648\u0631 \u0641\u064a Techurity",
-    "en": "Your Techurity Developer API Key",
-    "es": "Su clave de API de desarrollador de Techurity",
-    "fr": "Votre cl\u00e9 API d\u00e9veloppeur Techurity",
-    "de": "Ihr Techurity-Entwickler-API-Schl\u00fcssel",
-    "pt-BR": "Sua chave de API de desenvolvedor Techurity",
-    "tr": "Techurity Geli\u015ftirici API Anahtar\u0131n\u0131z",
-    "ru": "\u0412\u0430\u0448 API-\u043a\u043b\u044e\u0447 \u0440\u0430\u0437\u0440\u0430\u0431\u043e\u0442\u0447\u0438\u043a\u0430 Techurity",
-    "zh": "\u60a8\u7684 Techurity \u5f00\u53d1\u8005 API \u5bc6\u94a5",
-    "ja": "Techurity \u958b\u767a\u8005\u5411\u3051 API \u30ad\u30fc"
+  "Your Asra3 Developer API Key": {
+    "ar": "\u0645\u0641\u062a\u0627\u062d API \u0627\u0644\u062e\u0627\u0635 \u0628\u0643 \u0643\u0645\u0637\u0648\u0631 \u0641\u064a Asra3",
+    "en": "Your Asra3 Developer API Key",
+    "es": "Su clave de API de desarrollador de Asra3",
+    "fr": "Votre cl\u00e9 API d\u00e9veloppeur Asra3",
+    "de": "Ihr Asra3-Entwickler-API-Schl\u00fcssel",
+    "pt-BR": "Sua chave de API de desenvolvedor Asra3",
+    "tr": "Asra3 Geli\u015ftirici API Anahtar\u0131n\u0131z",
+    "ru": "\u0412\u0430\u0448 API-\u043a\u043b\u044e\u0447 \u0440\u0430\u0437\u0440\u0430\u0431\u043e\u0442\u0447\u0438\u043a\u0430 Asra3",
+    "zh": "\u60a8\u7684 Asra3 \u5f00\u53d1\u8005 API \u5bc6\u94a5",
+    "ja": "Asra3 \u958b\u767a\u8005\u5411\u3051 API \u30ad\u30fc"
   },
   "Read Quickstart Docs \u2192": {
     "ar": "\u0642\u0631\u0627\u0621\u0629 \u062f\u0644\u064a\u0644 \u0627\u0644\u0628\u062f\u0621 \u0627\u0644\u0633\u0631\u064a\u0639 \u2190",
@@ -3253,17 +3253,17 @@ export const DASHBOARD_TRANSLATIONS: Record<string, Record<SupportedLocale, stri
     "zh": "\u9605\u8bfb\u5feb\u901f\u5165\u95e8\u6587\u6863 \u2192",
     "ja": "\u30af\u30a4\u30c3\u30af\u30b9\u30bf\u30fc\u30c8 \u30c9\u30ad\u30e5\u30e1\u30f3\u30c8\u3092\u898b\u308b \u2192"
   },
-  "Use this key to integrate Techurity into your own website, app, or AI agent via https://techurity.si/api/v1:": {
-    "ar": "\u0627\u0633\u062a\u062e\u062f\u0645 \u0647\u0630\u0627 \u0627\u0644\u0645\u0641\u062a\u0627\u062d \u0644\u0631\u0628\u0637 \u062e\u062f\u0645\u0627\u062a \u062a\u0643\u064a\u0648\u0631\u064a\u062a\u064a \u0628\u0645\u0648\u0642\u0639\u0643\u060c \u062a\u0637\u0628\u064a\u0642\u0643\u060c \u0623\u0648 \u0648\u0643\u064a\u0644 \u0627\u0644\u0630\u0643\u0627\u0621 \u0627\u0644\u0627\u0635\u0637\u0646\u0627\u0639\u064a \u0627\u0644\u062e\u0627\u0635 \u0628\u0643 \u0639\u0628\u0631 https://techurity.si/api/v1:",
-    "en": "Use this key to integrate Techurity into your own website, app, or AI agent via https://techurity.si/api/v1:",
-    "es": "Utilice esta clave para integrar Techurity en su propio sitio web, aplicaci\u00f3n o agente de IA a trav\u00e9s de https://techurity.si/api/v1:",
-    "fr": "Utilisez cette cl\u00e9 pour int\u00e9grer Techurity \u00e0 votre propre site web, application ou agent IA via https://techurity.si/api/v1 :",
-    "de": "Verwenden Sie diesen Schl\u00fcssel, um Techurity \u00fcber https://techurity.si/api/v1 in Ihre Website, App oder Ihren KI-Agenten zu integrieren:",
-    "pt-BR": "Use esta chave para integrar a Techurity ao seu pr\u00f3prio site, aplicativo ou agente de IA via https://techurity.si/api/v1:",
-    "tr": "Techurity'yi https://techurity.si/api/v1 \u00fczerinden kendi web sitenize, uygulaman\u0131za veya yapay zeka temsilcinize entegre etmek i\u00e7in bu anahtar\u0131 kullan\u0131n:",
-    "ru": "\u0418\u0441\u043f\u043e\u043b\u044c\u0437\u0443\u0439\u0442\u0435 \u044d\u0442\u043e\u0442 \u043a\u043b\u044e\u0447 \u0434\u043b\u044f \u0438\u043d\u0442\u0435\u0433\u0440\u0430\u0446\u0438\u0438 Techurity \u0432 \u0432\u0430\u0448 \u0441\u0430\u0439\u0442, \u043f\u0440\u0438\u043b\u043e\u0436\u0435\u043d\u0438\u0435 \u0438\u043b\u0438 \u0418\u0418-\u0430\u0433\u0435\u043d\u0442 \u0447\u0435\u0440\u0435\u0437 https://techurity.si/api/v1:",
-    "zh": "\u4f7f\u7528\u6b64\u5bc6\u94a5\u901a\u8fc7 https://techurity.si/api/v1 \u5c06 Techurity \u96c6\u6210\u5230\u60a8\u81ea\u5df1\u7684\u7f51\u7ad9\u3001\u5e94\u7528\u6216 AI \u4ee3\u7406\u4e2d\uff1a",
-    "ja": "https://techurity.si/api/v1 \u7d4c\u7531\u3067\u81ea\u793e\u30b5\u30a4\u30c8\u3001\u30a2\u30d7\u30ea\u3001AI\u30a8\u30fc\u30b8\u30a7\u30f3\u30c8\u306b Techurity \u3092\u7d71\u5408\u3059\u308b\u306b\u306f\u3053\u306e\u30ad\u30fc\u3092\u4f7f\u7528\u3057\u307e\u3059:"
+  "Use this key to integrate Asra3 into your own website, app, or AI agent via https://asra3.com/api/v1:": {
+    "ar": "\u0627\u0633\u062a\u062e\u062f\u0645 \u0647\u0630\u0627 \u0627\u0644\u0645\u0641\u062a\u0627\u062d \u0644\u0631\u0628\u0637 \u062e\u062f\u0645\u0627\u062a \u062a\u0643\u064a\u0648\u0631\u064a\u062a\u064a \u0628\u0645\u0648\u0642\u0639\u0643\u060c \u062a\u0637\u0628\u064a\u0642\u0643\u060c \u0623\u0648 \u0648\u0643\u064a\u0644 \u0627\u0644\u0630\u0643\u0627\u0621 \u0627\u0644\u0627\u0635\u0637\u0646\u0627\u0639\u064a \u0627\u0644\u062e\u0627\u0635 \u0628\u0643 \u0639\u0628\u0631 https://asra3.com/api/v1:",
+    "en": "Use this key to integrate Asra3 into your own website, app, or AI agent via https://asra3.com/api/v1:",
+    "es": "Utilice esta clave para integrar Asra3 en su propio sitio web, aplicaci\u00f3n o agente de IA a trav\u00e9s de https://asra3.com/api/v1:",
+    "fr": "Utilisez cette cl\u00e9 pour int\u00e9grer Asra3 \u00e0 votre propre site web, application ou agent IA via https://asra3.com/api/v1 :",
+    "de": "Verwenden Sie diesen Schl\u00fcssel, um Asra3 \u00fcber https://asra3.com/api/v1 in Ihre Website, App oder Ihren KI-Agenten zu integrieren:",
+    "pt-BR": "Use esta chave para integrar a Asra3 ao seu pr\u00f3prio site, aplicativo ou agente de IA via https://asra3.com/api/v1:",
+    "tr": "Asra3'yi https://asra3.com/api/v1 \u00fczerinden kendi web sitenize, uygulaman\u0131za veya yapay zeka temsilcinize entegre etmek i\u00e7in bu anahtar\u0131 kullan\u0131n:",
+    "ru": "\u0418\u0441\u043f\u043e\u043b\u044c\u0437\u0443\u0439\u0442\u0435 \u044d\u0442\u043e\u0442 \u043a\u043b\u044e\u0447 \u0434\u043b\u044f \u0438\u043d\u0442\u0435\u0433\u0440\u0430\u0446\u0438\u0438 Asra3 \u0432 \u0432\u0430\u0448 \u0441\u0430\u0439\u0442, \u043f\u0440\u0438\u043b\u043e\u0436\u0435\u043d\u0438\u0435 \u0438\u043b\u0438 \u0418\u0418-\u0430\u0433\u0435\u043d\u0442 \u0447\u0435\u0440\u0435\u0437 https://asra3.com/api/v1:",
+    "zh": "\u4f7f\u7528\u6b64\u5bc6\u94a5\u901a\u8fc7 https://asra3.com/api/v1 \u5c06 Asra3 \u96c6\u6210\u5230\u60a8\u81ea\u5df1\u7684\u7f51\u7ad9\u3001\u5e94\u7528\u6216 AI \u4ee3\u7406\u4e2d\uff1a",
+    "ja": "https://asra3.com/api/v1 \u7d4c\u7531\u3067\u81ea\u793e\u30b5\u30a4\u30c8\u3001\u30a2\u30d7\u30ea\u3001AI\u30a8\u30fc\u30b8\u30a7\u30f3\u30c8\u306b Asra3 \u3092\u7d71\u5408\u3059\u308b\u306b\u306f\u3053\u306e\u30ad\u30fc\u3092\u4f7f\u7528\u3057\u307e\u3059:"
   },
   "Copied": {
     "ar": "Copied",

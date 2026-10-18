@@ -32,7 +32,7 @@ $$;
 -- Global switches controlled by Super Admin across the entire SaaS
 create table if not exists public.platform_global_config (
   id int primary key default 1 check (id = 1),
-  brand_name text not null default 'OmniPulse Cloud',
+  brand_name text not null default 'Asra3',
   brand_logo_url text,
   brand_primary_color text not null default '#4F46E5',
   enforce_headless_oauth boolean not null default true,
