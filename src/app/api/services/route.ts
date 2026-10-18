@@ -51,39 +51,108 @@ export async function GET(request: Request) {
       })
     );
 
+    const ws = WorkspaceStore.getWorkspace(organizationId);
+
     const [accountsHealth, conversations, analytics, ads, telephony, commerce, posts] =
       await Promise.all([
         policy.enabledSubServices.includes('core_connect')
-          ? CoreConnectService.listTenantAccountsWithHealth(organizationId)
+          ? CoreConnectService.listTenantAccountsWithHealth(organizationId).catch(() => ({
+              simulated: true,
+              profileId: policy.zernioProfileId,
+              quota: {
+                used: (ws.connectedAccounts || []).length,
+                max: policy.quotas.maxConnectedAccounts,
+              },
+              summary: {
+                total: (ws.connectedAccounts || []).length,
+                healthy: (ws.connectedAccounts || []).filter((a) => a.status === 'healthy').length,
+                warning: 0,
+                error: 0,
+                needsReconnect: 0,
+              },
+              accounts: ws.connectedAccounts || [],
+            }))
           : null,
         policy.enabledSubServices.includes('inbox_crm')
-          ? InboxCrmService.listConversations({ organizationId })
+          ? InboxCrmService.listConversations({ organizationId }).catch(() => ({
+              simulated: true,
+              data: ws.inboxConversations || [],
+              pagination: { hasMore: false, nextCursor: null },
+              meta: { accountsQueried: 0, accountsFailed: 0, failedAccounts: [] },
+            }))
           : null,
         policy.enabledSubServices.includes('analytics')
           ? AnalyticsService.getCustomerDashboard({
               organizationId,
               fromDate: '2026-10-01',
               toDate: '2026-10-17',
-            })
+            }).catch(() => ({
+              source: 'clean-tenant',
+              profileId: policy.zernioProfileId,
+              dateRange: { fromDate: '2026-10-01', toDate: '2026-10-17' },
+              totals: {
+                impressions: 0,
+                reach: 0,
+                likes: 0,
+                comments: 0,
+                shares: 0,
+                saves: 0,
+                clicks: 0,
+                views: 0,
+                engagementRate: 0,
+              },
+              previousTotals: {
+                impressions: 0,
+                reach: 0,
+                likes: 0,
+                comments: 0,
+                shares: 0,
+                saves: 0,
+                clicks: 0,
+                views: 0,
+                engagementRate: 0,
+              },
+              followers: { current: 0, gained: 0, byAccount: [] },
+              daily: [],
+              topPosts: [],
+              dataAsOf: new Date().toISOString(),
+            }))
           : null,
         policy.enabledSubServices.includes('ads')
-          ? AdsService.listCampaigns(organizationId)
+          ? AdsService.listCampaigns(organizationId).catch(() => ({
+              simulated: true,
+              profileId: policy.zernioProfileId,
+              quota: {
+                activeAdsManaged: (ws.campaigns || []).length,
+                maxManagedAds: policy.quotas.maxManagedAds,
+              },
+              campaigns: ws.campaigns || [],
+            }))
           : null,
         policy.enabledSubServices.includes('telephony')
-          ? TelephonyService.listNumbersAndCapabilities(organizationId)
+          ? TelephonyService.listNumbersAndCapabilities(organizationId).catch(() => ({
+              simulated: true,
+              ownedNumbers: ws.ownedNumbers || [],
+              callHistory: ws.callHistory || [],
+              threads: ws.threads || [],
+            }))
           : null,
         policy.enabledSubServices.includes('commerce_local')
           ? CommerceLocalService.getCommerceStoreOverview({
               organizationId,
               accountId: 'acc_shopify_01',
-            })
+            }).catch(() => ({
+              simulated: false,
+              store: null,
+              featuredProducts: [],
+              blogs: [],
+              googleBusinessLocations: [],
+            }))
           : null,
         policy.enabledSubServices.includes('publishing')
-          ? PublishingService.listPosts(organizationId)
+          ? PublishingService.listPosts(organizationId).catch(() => ws.posts || [])
           : [],
       ]);
-
-    const ws = WorkspaceStore.getWorkspace(organizationId);
 
     return NextResponse.json({
       policy,

@@ -77,9 +77,26 @@ export function ConnectAndAccountsHub({
     setLoadingHealth(true);
     try {
       const res = await fetch('/api/v1/accounts/health');
-      const data = await res.json();
-      if (data.success && data.data) {
-        setHealthData(data.data);
+      const data = await res.json().catch(() => ({}));
+      if (data.success && (data.summary || data.accounts || data.data)) {
+        const rawAccounts = Array.isArray(data.accounts)
+          ? data.accounts
+          : Array.isArray(data.data?.accounts)
+          ? data.data.accounts
+          : Array.isArray(data.data)
+          ? data.data
+          : [];
+        const rawSummary = data.summary || data.data?.summary || {
+          total: rawAccounts.length,
+          healthy: rawAccounts.filter((a: any) => a.status === 'healthy').length,
+          warning: rawAccounts.filter((a: any) => a.status === 'warning').length,
+          error: rawAccounts.filter((a: any) => a.status === 'error' || a.needsReconnect).length,
+          needsReconnect: rawAccounts.filter((a: any) => a.needsReconnect).length,
+        };
+        setHealthData({
+          summary: rawSummary,
+          accounts: rawAccounts,
+        });
       } else {
         const rawAccounts = workspace?.subServicesData?.core_connect?.accounts || [];
         setHealthData({
@@ -94,7 +111,17 @@ export function ConnectAndAccountsHub({
         });
       }
     } catch {
-      // Fallback to workspace data
+      const rawAccounts = workspace?.subServicesData?.core_connect?.accounts || [];
+      setHealthData({
+        summary: {
+          total: rawAccounts.length,
+          healthy: rawAccounts.filter((a: any) => a.status === 'healthy').length,
+          warning: 0,
+          error: 0,
+          needsReconnect: rawAccounts.filter((a: any) => a.needsReconnect).length,
+        },
+        accounts: rawAccounts,
+      });
     } finally {
       setLoadingHealth(false);
     }
@@ -239,7 +266,7 @@ export function ConnectAndAccountsHub({
               {loc('مركز الحسابات والربط المتقدم', 'Connect & Accounts Advanced Hub')}
             </h2>
             <span className="rounded-full bg-emerald-500/10 px-2.5 py-0.5 text-xs font-bold text-emerald-600">
-              {healthData?.summary.total || 0} {loc('قناة نشطة', 'Active Channels')}
+              {healthData?.summary?.total || 0} {loc('قناة نشطة', 'Active Channels')}
             </span>
           </div>
           <p className="text-xs text-[var(--text-secondary)]">
@@ -298,7 +325,7 @@ export function ConnectAndAccountsHub({
                 {loc('إجمالي القنوات المربوطة', 'Total Connected')}
               </span>
               <span className="font-mono text-xl font-black text-[var(--text-primary)]">
-                {healthData?.summary.total ?? 0}
+                {healthData?.summary?.total ?? 0}
               </span>
             </div>
 
@@ -307,7 +334,7 @@ export function ConnectAndAccountsHub({
                 {loc('حسابات سليمة وتعمل', 'Healthy & Active')}
               </span>
               <span className="font-mono text-xl font-black text-emerald-600">
-                {healthData?.summary.healthy ?? 0}
+                {healthData?.summary?.healthy ?? 0}
               </span>
             </div>
 
@@ -316,7 +343,7 @@ export function ConnectAndAccountsHub({
                 {loc('تنبيهات وتجديد قادم', 'Warnings')}
               </span>
               <span className="font-mono text-xl font-black text-amber-600">
-                {healthData?.summary.warning ?? 0}
+                {healthData?.summary?.warning ?? 0}
               </span>
             </div>
 
@@ -325,7 +352,7 @@ export function ConnectAndAccountsHub({
                 {loc('تتطلب إعادة الربط', 'Needs Reconnect')}
               </span>
               <span className="font-mono text-xl font-black text-rose-600">
-                {healthData?.summary.needsReconnect ?? 0}
+                {healthData?.summary?.needsReconnect ?? 0}
               </span>
             </div>
           </div>

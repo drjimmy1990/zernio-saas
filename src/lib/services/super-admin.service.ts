@@ -71,6 +71,15 @@ export class SuperAdminService {
 
       if (orgRows && orgRows.length > 0) {
         for (const o of orgRows) {
+          if (
+            o.id === 'org_demo_acme' ||
+            o.id === 'org_demo_nova' ||
+            o.slug === 'acme-digital' ||
+            o.slug === 'nova-retail'
+          ) {
+            delete store.tenants[o.id];
+            continue;
+          }
           const ov = Array.isArray(o.org_feature_overrides)
             ? o.org_feature_overrides[0]
             : o.org_feature_overrides;

@@ -62,11 +62,18 @@ export class ZernioClient {
   }
 
   public isConfigured(): boolean {
-    return Boolean(
-      this.masterApiKey &&
-        this.masterApiKey.startsWith('sk_') &&
-        !this.masterApiKey.startsWith('sk_000000')
-    );
+    const key = this.masterApiKey.trim().toLowerCase();
+    if (!key || !key.startsWith('sk_')) return false;
+    if (
+      key.startsWith('sk_000000') ||
+      key.includes('replace') ||
+      key.includes('your_') ||
+      key.includes('example') ||
+      key.includes('placeholder')
+    ) {
+      return false;
+    }
+    return true;
   }
 
   public async request<T = Record<string, unknown>>(

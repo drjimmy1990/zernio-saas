@@ -28,17 +28,17 @@ export class CommerceLocalService {
       (a) => a.platform === 'shopify' || a.platform === 'wordpress'
     );
 
-    if (!zernioClient.isConfigured()) {
-      if (!storeAccount) {
-        return {
-          simulated: false,
-          store: null,
-          featuredProducts: [],
-          blogs: [],
-          googleBusinessLocations: [],
-        };
-      }
+    if (!storeAccount) {
+      return {
+        simulated: false,
+        store: null,
+        featuredProducts: [],
+        blogs: [],
+        googleBusinessLocations: [],
+      };
+    }
 
+    if (!zernioClient.isConfigured()) {
       return {
         simulated: true,
         store: {
@@ -64,23 +64,44 @@ export class CommerceLocalService {
       };
     }
 
-    const [{ data: storeData }, { data: productsData }] = await Promise.all([
-      zernioClient.request({
-        method: 'GET',
-        path: '/commerce/store',
-        query: { accountId: params.accountId },
-      }),
-      zernioClient.request({
-        method: 'GET',
-        path: '/commerce/products',
-        query: { accountId: params.accountId, limit: 10 },
-      }),
-    ]);
+    try {
+      const [{ data: storeData }, { data: productsData }] = await Promise.all([
+        zernioClient.request({
+          method: 'GET',
+          path: '/commerce/store',
+          query: { accountId: storeAccount.accountId || params.accountId },
+        }),
+        zernioClient.request({
+          method: 'GET',
+          path: '/commerce/products',
+          query: { accountId: storeAccount.accountId || params.accountId, limit: 10 },
+        }),
+      ]);
 
-    return {
-      simulated: false,
-      ...storeData,
-      ...productsData,
-    };
+      return {
+        simulated: false,
+        ...storeData,
+        ...productsData,
+      };
+    } catch {
+      return {
+        simulated: true,
+        store: {
+          accountId: storeAccount.accountId,
+          platform: storeAccount.platform,
+          name: storeAccount.displayName || 'Connected Store',
+          domain: `${storeAccount.username || 'store'}.myshopify.com`,
+          url: `https://${storeAccount.username || 'store'}.myshopify.com`,
+          currency: 'USD',
+          country: 'US',
+          capabilities: ['products.read', 'products.create'],
+          missingCapabilities: [],
+          grantPermissionsUrl: null,
+        },
+        featuredProducts: [],
+        blogs: [],
+        googleBusinessLocations: [],
+      };
+    }
   }
 }
