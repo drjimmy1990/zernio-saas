@@ -40,6 +40,8 @@ Set actual public Supabase URL/anonymous key, `NEXT_PUBLIC_APP_URL=https://asra3
 
 Set server-only Supabase service key, Zernio key/base URL, actual webhook signing secret, exact administrator email/password, private `SESSION_SECRET` and distinct `WEBHOOK_DRAIN_SECRET`32+characters shared by application/worker. Generate signing/bearer secrets with `openssl rand -hex 32` and save privately; never reuse sample passwords. Customer passwords/recovery use Supabase Auth; configure Site URL, redirect allowlist, confirmation and SMTP for `https://asra3.com`.
 
+To configure the administrator login and session secret, run `python3 scripts/configure-admin.py` directly in the server terminal. Enter your administrator email and a unique password of at least16characters, then repeat the password; typing is hidden. The helper writes only `ADMIN_EMAIL`, `ADMIN_PASSWORD` and a generated `SESSION_SECRET` to `.env`, removes overrides for those names from `.env.local`, and preserves provider/worker settings. It does not print secrets. Rerunning replaces these credentials and invalidates existing browser sessions. Apply saved values with `docker compose --env-file .env up -d --force-recreate asra3-saas asra3-webhook-worker`; an image rebuild is unnecessary for these server-only values.
+
 The default host port is3008; container port stays3008. A changed `PORT` must match Nginx and health commands. Protect `.env` mode600. Runner UID1000 (`node`) needs ownership of the persistent mount:
 
 ```bash
