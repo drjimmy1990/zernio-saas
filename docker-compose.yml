@@ -30,6 +30,9 @@ services:
   asra3-webhook-worker:
     image: asra3-zernio-saas:local
     command: ["node", "scripts/webhook-worker.mjs"]
+    # The worker has no HTTP server; the image's probe belongs to the app only.
+    healthcheck:
+      disable: true
     depends_on:
       asra3-saas:
         condition: service_healthy
