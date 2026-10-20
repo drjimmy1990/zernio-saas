@@ -1,3 +1,5 @@
+import { strictTenantPolicy } from '@/lib/saas/policy';
+import { TenantAccessError } from '@/lib/auth/tenant-access';
 import fs from 'fs';
 import path from 'path';
 import { createSupabaseAdminClient } from '@/lib/supabase/admin';
@@ -273,146 +275,7 @@ function intersect<T>(a: readonly T[], b: readonly T[]): T[] {
 export async function resolveEffectiveTenantPolicy(
   organizationId: string
 ): Promise<EffectiveTenantPolicy> {
-  const store = getFallbackStore();
-  const supabase = createSupabaseAdminClient();
-
-  let globalCfg = store.globalConfig;
-  let tenant: TenantOverrideState = store.tenants[organizationId] || {
-    organizationId,
-    organizationName: 'Asra3 Workspace',
-    slug: organizationId.replace(/^org_/, '') || 'workspace',
-    zernioProfileId: null,
-    zernioScopedKeyId: null,
-    zernioScopedKeyPrefix: null,
-    planKey: 'agency',
-    status: 'active',
-    forceHeadlessMode: true,
-    whiteLabelBranding: {
-      companyName: 'Asra3 Workspace',
-      logoUrl: '',
-      primaryColor: globalCfg.brandPrimaryColor || '#eb3514',
-      language: 'en',
-    },
-  };
-
-  if (supabase) {
-    const [{ data: dbGlobal }, { data: dbOrg }, { data: dbOverride }] =
-      await Promise.all([
-        supabase.from('platform_global_config').select('*').eq('id', 1).maybeSingle(),
-        supabase
-          .from('organizations')
-          .select('*')
-          .eq('id', organizationId)
-          .maybeSingle(),
-        supabase
-          .from('org_feature_overrides')
-          .select('*')
-          .eq('organization_id', organizationId)
-          .maybeSingle(),
-      ]);
-
-    if (dbGlobal) {
-      globalCfg = {
-        brandName: dbGlobal.brand_name,
-        brandLogoUrl: dbGlobal.brand_logo_url || '',
-        brandPrimaryColor: dbGlobal.brand_primary_color,
-        enforceHeadlessOAuth: dbGlobal.enforce_headless_oauth,
-        enabledPlatforms: dbGlobal.enabled_platforms,
-        enabledAdPlatforms: dbGlobal.enabled_ad_platforms,
-        enabledOAuthScopes: dbGlobal.enabled_oauth_scopes,
-        enabledSubServices: dbGlobal.enabled_subservices,
-        defaultMaxSupportCostUsd: Number(dbGlobal.default_max_support_cost_usd),
-      };
-    }
-
-    if (dbOrg) {
-      tenant = {
-        organizationId: dbOrg.id,
-        organizationName: dbOrg.name,
-        slug: dbOrg.slug,
-        zernioProfileId: dbOrg.zernio_profile_id,
-        zernioScopedKeyId: dbOrg.zernio_scoped_key_id,
-        zernioScopedKeyPrefix: dbOrg.zernio_scoped_key_prefix,
-        planKey: dbOrg.plan_key,
-        status: dbOrg.status,
-        forceHeadlessMode: dbOverride?.force_headless_mode ?? true,
-        customEnabledSubServices: dbOverride?.custom_enabled_subservices,
-        customAllowedPlatforms: dbOverride?.custom_allowed_platforms,
-        customAllowedAdPlatforms: dbOverride?.custom_allowed_ad_platforms,
-        customAllowedOAuthScopes: dbOverride?.custom_allowed_oauth_scopes,
-        customDisabledResourceGroups: dbOverride?.custom_disabled_resource_groups,
-        customMaxConnectedAccounts: dbOverride?.custom_max_connected_accounts,
-        customMaxMonthlyPosts: dbOverride?.custom_max_monthly_posts,
-        customMaxMonthlyMessages: dbOverride?.custom_max_monthly_messages,
-        customMaxManagedAds: dbOverride?.custom_max_managed_ads,
-        customMaxPhoneNumbers: dbOverride?.custom_max_phone_numbers,
-        customMaxAiSupportUsd: dbOverride?.custom_max_ai_support_usd
-          ? Number(dbOverride.custom_max_ai_support_usd)
-          : null,
-        customMaxXApiSpendUsd: dbOverride?.custom_max_x_api_spend_usd
-          ? Number(dbOverride.custom_max_x_api_spend_usd)
-          : null,
-        whiteLabelBranding: dbOrg.white_label_config || {
-          companyName: dbOrg.name,
-          logoUrl: '',
-          primaryColor: globalCfg.brandPrimaryColor,
-          language: 'en',
-        },
-      };
-    }
-  }
-
-  const plan =
-    fallbackStore.plans[tenant.planKey] || fallbackStore.plans['agency'];
-
-  const tenantSubServices =
-    tenant.customEnabledSubServices && tenant.customEnabledSubServices.length > 0
-      ? tenant.customEnabledSubServices
-      : plan.enabledSubServices;
-
-  const tenantPlatforms =
-    tenant.customAllowedPlatforms && tenant.customAllowedPlatforms.length > 0
-      ? tenant.customAllowedPlatforms
-      : plan.allowedPlatforms;
-
-  const tenantAdPlatforms =
-    tenant.customAllowedAdPlatforms && tenant.customAllowedAdPlatforms.length > 0
-      ? tenant.customAllowedAdPlatforms
-      : plan.allowedAdPlatforms;
-
-  const tenantScopes =
-    tenant.customAllowedOAuthScopes && tenant.customAllowedOAuthScopes.length > 0
-      ? tenant.customAllowedOAuthScopes
-      : plan.allowedOAuthScopes;
-
-  return {
-    organizationId: tenant.organizationId,
-    organizationName: tenant.organizationName,
-    zernioProfileId: tenant.zernioProfileId,
-    planKey: tenant.planKey,
-    status: tenant.status,
-    enforceHeadlessOAuth:
-      globalCfg.enforceHeadlessOAuth || tenant.forceHeadlessMode,
-    whiteLabelBranding: tenant.whiteLabelBranding,
-    // Global Admin switch is always the ceiling
-    enabledSubServices: intersect(globalCfg.enabledSubServices, tenantSubServices),
-    allowedPlatforms: intersect(globalCfg.enabledPlatforms, tenantPlatforms),
-    allowedAdPlatforms: intersect(globalCfg.enabledAdPlatforms, tenantAdPlatforms),
-    allowedOAuthScopes: intersect(globalCfg.enabledOAuthScopes, tenantScopes),
-    disabledZernioResourceGroups:
-      tenant.customDisabledResourceGroups ?? plan.disabledZernioResourceGroups,
-    quotas: {
-      maxConnectedAccounts:
-        tenant.customMaxConnectedAccounts ?? plan.maxConnectedAccounts,
-      maxMonthlyPosts: tenant.customMaxMonthlyPosts ?? plan.maxMonthlyPosts,
-      maxMonthlyMessages:
-        tenant.customMaxMonthlyMessages ?? plan.maxMonthlyMessages,
-      maxManagedAds: tenant.customMaxManagedAds ?? plan.maxManagedAds,
-      maxPhoneNumbers: tenant.customMaxPhoneNumbers ?? plan.maxPhoneNumbers,
-      maxAiSupportUsd: tenant.customMaxAiSupportUsd ?? plan.maxAiSupportUsd,
-      maxXApiSpendUsd: tenant.customMaxXApiSpendUsd ?? plan.maxXApiSpendUsd,
-    },
-  };
+  return strictTenantPolicy(organizationId);
 }
 
 export async function assertSubServiceAllowed(
@@ -422,13 +285,13 @@ export async function assertSubServiceAllowed(
   const policy = await resolveEffectiveTenantPolicy(organizationId);
 
   if (policy.status !== 'active') {
-    throw new Error(
+    throw new TenantAccessError(403,
       `Tenant organization "${policy.organizationName}" is currently ${policy.status}. Contact Super Admin.`
     );
   }
 
   if (!policy.enabledSubServices.includes(subService)) {
-    throw new Error(
+    throw new TenantAccessError(403,
       `Sub-service "${subService}" is disabled for organization "${policy.organizationName}" (Plan: ${policy.planKey}). Super Admin or plan upgrade required.`
     );
   }

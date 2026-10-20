@@ -1,0 +1,31 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "Zernio purchased-number contract fixture",
+    "version": "2026-10-19",
+    "description": "Local test subset derived from Desktop/zernio.txt provisioning lines 41010–41264 and @zernio/node generated PurchasePhoneNumberData, ListPhoneNumbersResponse and OwnedPhoneNumber. No live provider credentials."
+  },
+  "servers": [{ "url": "https://zernio.com/api/v1" }],
+  "paths": {
+    "/phone-numbers/countries": { "get": { "responses": { "200": { "description": "Live country/type prices and capabilities", "content": { "application/json": { "schema": { "type": "object" } } } } } } },
+    "/phone-numbers/available": { "get": { "responses": { "200": { "description": "Carrier inventory: country, numberType, numbers with phoneNumber, features, locality, bestEffort", "content": { "application/json": { "schema": { "type": "object" } } } } } } },
+    "/phone-numbers/availability": { "get": { "responses": { "200": { "description": "Live country/type availability, areaOptions and addressConstraint", "content": { "application/json": { "schema": { "type": "object" } } } } } } },
+    "/phone-numbers": { "get": { "responses": { "200": { "description": "Owned numbers with _id and profileId, plus connected bring-your-own accounts", "content": { "application/json": { "schema": { "type": "object" } } } } } } },
+    "/phone-numbers/{id}": { "get": { "parameters": [{ "in": "path", "name": "id", "required": true, "schema": { "type": "string" } }], "responses": { "200": { "description": "phoneNumber resource with id and current status", "content": { "application/json": { "schema": { "type": "object" } } } }, "404": { "description": "Unknown number" } } } },
+    "/phone-numbers/purchase": {
+      "post": {
+        "requestBody": { "required": true, "content": { "application/json": { "schema": { "type": "object", "required": ["profileId"], "properties": {
+          "profileId": { "type": "string" }, "country": { "type": "string" }, "numberType": { "type": "string", "enum": ["local", "mobile", "national", "toll_free"] }, "phoneNumber": { "type": "string" }, "areaCode": { "type": "string" }, "connectWhatsapp": { "type": "boolean" }, "wantsSms": { "type": "boolean" }, "wantsWhatsapp": { "type": "boolean" }, "purchaseIntentId": { "type": "string" }, "allowMultiple": { "type": "boolean" }
+        }, "additionalProperties": false } } } },
+        "responses": {
+          "200": { "description": "Provisioned number or already_purchased retry", "content": { "application/json": { "schema": { "type": "object" }, "example": { "message": "Phone number provisioned", "phoneNumber": { "id": "66d4e5f6a7b8c9d0e1f2a3b4", "phoneNumber": "+14155550100", "status": "active", "country": "US", "profileId": "66a1f0c2a4b9d3e8f1a2b3c4" } } } } },
+          "202": { "description": "Regulated country: KYC required; no number yet", "content": { "application/json": { "example": { "status": "kyc_required", "country": "GB", "numberType": "local", "kycUrl": "https://zernio.com/kyc/isolated" } } } },
+          "400": { "description": "Invalid field or quota" },
+          "402": { "description": "Provider payment method missing", "content": { "application/json": { "example": { "error": "A payment method is required to purchase a phone number.", "type": "invalid_request_error", "code": "PAYMENT_REQUIRED" } } } },
+          "409": { "description": "Unavailable exact number, area, WhatsApp eligibility, or purchase velocity", "content": { "application/json": { "example": { "error": "The selected number is unavailable.", "type": "invalid_request_error", "code": "PHONE_NUMBER_UNAVAILABLE" } } } },
+          "503": { "description": "Carrier unavailable", "content": { "application/json": { "example": { "error": "Carrier unavailable", "code": "CARRIER_UNAVAILABLE" } } } }
+        }
+      }
+    }
+  }
+}

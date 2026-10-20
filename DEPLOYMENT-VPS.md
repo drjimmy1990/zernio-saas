@@ -1,111 +1,89 @@
-# Ubuntu VPS Deployment Guide (Docker + aaPanel Nginx Reverse Proxy & SSL)
+# Owner deployment to Ubuntu/aaPanel — asra3.com
 
-This guide covers deploying the **Asra3 (Zernio SaaS Platform)** from your Windows machine to your **Ubuntu VPS** running **Docker** and **aaPanel** (Nginx + Let's Encrypt SSL).
+The local integration checks and review are complete; production deployment/live provider actions have not been performed. Deploy from the Git repository using the steps below. The owner has applied only SQL01. Pulling the source can happen first, but pending migrations02..09 must be applied before starting the new application/worker. Follow [SQL backup/preflight/order/postflight](docs/release/sql-migrations.md). Never rerun01/reset/drop or blindly db-push to resolve differences.
 
----
+## Get the release with Git
 
-## 1. Push Code from Windows to GitHub (or Upload to VPS)
+Repository: https://github.com/drjimmy1990/zernio-saas.git. Release branch: `main`. Use the release commit reported with the push to verify the revision you deploy. Keep the checkout in `/opt/asra3`, outside aaPanel's public website root. If the existing private checkout has another location, use that location consistently in these commands.
 
-If using Git, push the repository to your private GitHub/GitLab repository, then SSH into your Ubuntu VPS:
-
-```bash
-mkdir -p /www/wwwroot/asra3.com
-cd /www/wwwroot/asra3.com
-git clone https://github.com/drjimmy1990/zernio-saas.git .
-```
-
-*(Alternatively, you can zip the folder on Windows excluding `node_modules` and `.next`, upload it via **aaPanel → Files** into `/www/wwwroot/asra3.com`, and click **Unzip**).*
-
----
-
-## 2. Create `.env` on the Ubuntu VPS
-
-Inside `/www/wwwroot/asra3.com`, create your `.env` file (or upload your `.env.local` from Windows and rename it to `.env`):
+For an existing checkout, record the old revision and check for server edits before pulling:
 
 ```bash
-nano /www/wwwroot/asra3.com/.env
+cd /opt/asra3
+git remote -v
+git status --short
+git rev-parse HEAD
+git pull --ff-only origin main
+git log -1 --oneline
 ```
 
-Paste your production environment variables:
+If `git status --short` shows source edits, preserve/reconcile them before pulling; stop if Git reports a conflict or refuses the fast-forward. Do not use a hard reset or clean command to discard server files. Git leaves the ignored private `.env` and `.data` in place.
 
-```ini
-# 1. Authentication & Session Security
-SESSION_SECRET=replace_with_a_long_random_32_char_secret
-ADMIN_PASSWORD=YourStrongAdminPassword2026!
-CUSTOMER_PASSWORD=YourDefaultCustomerPassword2026!
-
-# 2. Supabase Database Configuration (PostgreSQL)
-NEXT_PUBLIC_SUPABASE_URL=https://YOUR_PROJECT_ID.supabase.co
-NEXT_PUBLIC_SUPABASE_ANON_KEY=eyJ...
-SUPABASE_SERVICE_ROLE_KEY=eyJ...
-
-# 3. Zernio Master Platform Configuration
-ZERNIO_API_KEY=sk_...
-ZERNIO_WEBHOOK_SECRET=whsec_...
-ZERNIO_BASE_URL=https://zernio.com/api/v1
-
-# 4. Public Domain & White-Label Brand Identity
-NEXT_PUBLIC_APP_URL=https://asra3.com
-NEXT_PUBLIC_BRAND_NAME=Asra3
-NEXT_PUBLIC_BRAND_PRIMARY_COLOR=#4F46E5
-NEXT_PUBLIC_BRAND_LOGO_URL=https://asra3.com/logo.png
-```
-
-> **Important:** Because Next.js bakes `NEXT_PUBLIC_*` variables into the client bundle at build time, always make sure `.env` is present in `/www/wwwroot/asra3.com/.env` **before** running `docker compose up -d --build`.
-
----
-
-## 3. Build & Start the Docker Container on Ubuntu
-
-On your Ubuntu VPS (via SSH or **aaPanel → Terminal**):
+For a first Git deployment only, clone into a new directory owned by your deployment user:
 
 ```bash
-cd /www/wwwroot/asra3.com
-docker compose up -d --build
+sudo install -d -o "$(id -un)" -g "$(id -gn)" /opt/asra3
+git clone --branch main --single-branch https://github.com/drjimmy1990/zernio-saas.git /opt/asra3
+cd /opt/asra3
+git log -1 --oneline
 ```
 
-Verify the container is running and healthy on `127.0.0.1:5651`:
+Clone only when `/opt/asra3` is empty; preserve an existing non-Git installation and its configuration first. If GitHub requests authentication, use a deployment SSH key or Git credential manager/token flow; never put a token in the repository URL or share it in chat. No ZIP upload is required.
+
+After pulling, back up the database/private configuration and pause writes and scheduled sending for the migration window. Stop the existing worker if it is running: `docker compose --env-file .env stop asra3-webhook-worker`. Complete the pending SQL pack and postflight before the build/start steps below. These commands do not run SQL automatically.
+
+## Reviewed release and private configuration
+
+The aaPanel website proxies requests to the application; it must not serve the source directory or `.env`. Record/back up the deployed image/revision and private data before replacing the running release. On first setup, create `.env` from [.env.example](.env.example) with real values; on updates preserve the existing `.env` and compare it with the current example for added variable names. Never overwrite real configuration with the example. Do not copy an old development `.env.local`: Compose reads it after `.env` and can override values.
+
+Set actual public Supabase URL/anonymous key, `NEXT_PUBLIC_APP_URL=https://asra3.com`, brand and logo. Compose supplies these as Docker build arguments; Next embeds them in the browser bundle. Rebuild after public-value changes. The public anonymous key is not the service-role key.
+
+Set server-only Supabase service key, Zernio key/base URL, actual webhook signing secret, exact administrator email/password, private `SESSION_SECRET` and distinct `WEBHOOK_DRAIN_SECRET`32+characters shared by application/worker. Generate signing/bearer secrets with `openssl rand -hex 32` and save privately; never reuse sample passwords. Customer passwords/recovery use Supabase Auth; configure Site URL, redirect allowlist, confirmation and SMTP for `https://asra3.com`.
+
+The default host port is3008; container port stays3008. A changed `PORT` must match Nginx and health commands. Protect `.env` mode600. Runner UID1000 (`node`) needs ownership of the persistent mount:
 
 ```bash
-docker ps
-curl -I http://127.0.0.1:5651/api/v1/openapi.json
+cd /opt/asra3
+chmod 600 .env
+mkdir -p .data
+# Back up existing .data privately before changing ownership.
+sudo chown -R 1000:1000 .data
+sudo chmod 700 .data
 ```
 
----
+`.data` preserves legacy workspace configuration only. Durable CRM/security/sessions/keys/consent/allowances/phone/campaign intents/webhook queues use PostgreSQL and fail closed when unavailable. The volume is not a database backup.
 
-## 4. Configure aaPanel Website, SSL, and Nginx Reverse Proxy
-
-1. Open **aaPanel** $\rightarrow$ go to **Website** $\rightarrow$ click **Add site**:
-   * **Domain name:** `asra3.com` (and `www.asra3.com`)
-   * **PHP Version:** Select **`Pure Static`**
-   * Click **Submit**.
-2. Click on `asra3.com` in the Website list $\rightarrow$ go to **SSL**:
-   * Select **Let's Encrypt** $\rightarrow$ check your domain(s) $\rightarrow$ click **Apply**.
-   * Turn ON **Force HTTPS**.
-3. Still inside the `asra3.com` site settings $\rightarrow$ go to **Reverse proxy** $\rightarrow$ click **Add Reverse Proxy**:
-   * **Proxy Name:** `nextjs-docker`
-   * **Target URL:** `http://127.0.0.1:5651`
-   * **Send Domain (`$host`):** `$host`
-   * Click **Save**.
-4. *(Recommended for Large Media Uploads & Webhooks)* Inside **Reverse proxy** $\rightarrow$ click **Config** (or go to **Config** in the site menu) and ensure these headers are inside the proxy block:
-   ```nginx
-   client_max_body_size 100M;
-   proxy_http_version 1.1;
-   proxy_set_header Upgrade $http_upgrade;
-   proxy_set_header Connection 'upgrade';
-   proxy_set_header Host $host;
-   proxy_set_header X-Real-IP $remote_addr;
-   proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-   proxy_set_header X-Forwarded-Proto $scheme;
-   ```
-
----
-
-## 5. Updating the Deployment in the Future
-
-Whenever you update code and push to Git, run these 2 commands on the Ubuntu VPS:
+## Build, start and verify
 
 ```bash
-cd /www/wwwroot/asra3.com
-git pull && docker compose up -d --build
+cd /opt/asra3
+docker compose --env-file .env config --quiet
+docker compose --env-file .env build asra3-saas
+docker compose --env-file .env up -d
+docker compose ps
+curl --fail --silent --show-error http://127.0.0.1:3008/api/v1/openapi.json >/dev/null
+docker compose logs --tail=100 asra3-saas asra3-webhook-worker
 ```
+
+Build checks TypeScript and requires real public Supabase values. The app runs non-root and the worker waits for app health. Avoid displaying expanded Compose configuration/secrets in support logs. The one shared worker processes both queued webhook deliveries and reviewed due campaigns; do not also run a duplicate cron scheduler.
+
+## HTTPS proxy
+
+In aaPanel create `asra3.com`, point DNS to the VPS, install Let's Encrypt and force HTTPS. Reverse proxy to `http://127.0.0.1:3008` (or chosen host port), preserving Host/forwarded headers. Keep the app port loopback-only. Add www only with matching DNS/certificate/redirects.
+
+```nginx
+client_max_body_size 100M;
+proxy_http_version 1.1;
+proxy_set_header Host $host;
+proxy_set_header X-Real-IP $remote_addr;
+proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+proxy_set_header X-Forwarded-Proto $scheme;
+```
+
+Verify `https://asra3.com/api/v1/openapi.json`, sign-in and protected workspace behavior. Configure actual incoming provider webhook at `https://asra3.com/api/webhooks/zernio`; signature verification is mandatory. Follow [worker/health/live acceptance](docs/release/operations.md). OpenAPI HTTP200 alone does not prove schema, permissions or delivery.
+
+## Update and recover
+
+For each update, record/back up the previous release, pull with `git pull --ff-only origin main`, verify the release commit, apply only confirmed pending migrations, then rebuild and verify app/worker. A successful pull updates the source; the running containers change only after rebuilding/restarting. Payments, AI/automation and self-service outgoing webhook setup remain Coming soon. Configured plan limits are not universally enforced quotas; monthly publishing/account enforcement is not certified.
+
+If rollout fails stop `asra3-webhook-worker`, retain durable pending/unknown jobs and use a compatible prior image or tested restore. Do not drop schema, erase reservations or resend original actions. External actions after the backup point require provider reconciliation before restored jobs resume. Owner deploys/authorizes live acceptance after local completion.

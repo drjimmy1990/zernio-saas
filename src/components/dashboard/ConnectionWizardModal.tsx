@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect, useMemo, useCallback } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { useThemeAndLocale } from '@/i18n/ThemeAndLocaleProvider';
 import { getLocalizedText } from '@/i18n/dictionaries';
 import {
@@ -18,7 +18,6 @@ import {
   ShieldCheck,
   KeyRound,
   Layers,
-  Send,
   MessageSquare,
   Globe,
   Radio,
@@ -337,6 +336,7 @@ export interface SelectableEntity {
   category?: string;
   followers?: string;
   details?: string;
+  wabaId?: string;
 }
 
 export interface ConnectedAccountData {
@@ -351,6 +351,7 @@ export interface ConnectedAccountData {
     expiresAt: string;
     expiresInDays: number;
   };
+  loginMethod?: 'instagram_login' | 'facebook_login';
   syncTime?: string;
   grantedScopes?: string[];
   selectedEntity?: {
@@ -364,7 +365,7 @@ export interface ConnectionWizardModalProps {
   onClose: () => void;
   initialPlatform?: SocialPlatform;
   initialStep?: 1 | 2 | 3 | 4;
-  initialTempToken?: string;
+  initialOAuthSessionId?: string;
   initialSelectionStep?: string;
   initialAccount?: ConnectedAccountData | null;
   organizationId?: string;
@@ -378,7 +379,7 @@ export function ConnectionWizardModal({
   onClose,
   initialPlatform = 'instagram',
   initialStep,
-  initialTempToken,
+  initialOAuthSessionId,
   initialSelectionStep,
   initialAccount,
   organizationId = 'org_admin_platform',
@@ -413,7 +414,7 @@ export function ConnectionWizardModal({
   const [showSecret, setShowSecret] = useState(false);
 
   // OAuth & Sandbox prompt state
-  const [activeTempToken, setActiveTempToken] = useState<string>(initialTempToken || '');
+  const [activeTempToken, setActiveTempToken] = useState<string>(initialOAuthSessionId || '');
   const [sandboxPromptVisible, setSandboxPromptVisible] = useState<boolean>(false);
 
   // Loading, Errors & Handshake state
@@ -426,20 +427,10 @@ export function ConnectionWizardModal({
   const [selectedEntityId, setSelectedEntityId] = useState<string>('');
   const [entitySearch, setEntitySearch] = useState('');
 
-  // Step 4 Connected Account & Test Post State
+  // Step 4 Connected Account State
   const [connectedAccount, setConnectedAccount] = useState<ConnectedAccountData | null>(initialAccount || null);
-  const [testPayloadText, setTestPayloadText] = useState(
-    loc('تم التحقق من ربط القناة بنجاح عبر منصة Asra3. جاهز للنشر الموحد! 🚀', 'Connection Verified: Asra3 omnichannel broadcast pipeline operational. 🚀')
-  );
-  const [testPostLoading, setTestPostLoading] = useState(false);
-  const [deliveryReceipt, setDeliveryReceipt] = useState<{
-    status: string;
-    receiptId: string;
-    deliveredAt: string;
-    latencyMs: number;
-    platformPostUrl: string;
-    message: string;
-  } | null>(null);
+  const [instagramLoginMethod, setInstagramLoginMethod] = useState<'instagram_login' | 'facebook_login'>(initialAccount?.loginMethod || 'instagram_login');
+  const [reconnectAccountId, setReconnectAccountId] = useState<string | undefined>(initialAccount?.accountId || initialAccount?.id);
 
   // Reconnect & Disconnect State
   const [isDisconnecting, setIsDisconnecting] = useState(false);
@@ -464,7 +455,7 @@ export function ConnectionWizardModal({
           organizationId,
           platform,
           ...(stepOverride ? { step: stepOverride } : {}),
-          tempToken: tokenToUse || 'sim_sandbox_preview',
+          oauthSessionId: tokenToUse,
         }),
       });
 
@@ -494,15 +485,17 @@ export function ConnectionWizardModal({
   // Set initial platform & step when modal opens or initial props change
   useEffect(() => {
     if (isOpen) {
+      setInstagramLoginMethod(initialAccount?.loginMethod || 'instagram_login');
+      setReconnectAccountId(initialAccount?.accountId || initialAccount?.id);
       if (initialAccount) {
         setConnectedAccount(initialAccount);
         setSelectedPlatform(initialAccount.platform);
         setCurrentStep((initialStep as 1 | 2 | 3 | 4) || 4);
-      } else if (initialTempToken && initialPlatform) {
+      } else if (initialOAuthSessionId && initialPlatform) {
         setSelectedPlatform(initialPlatform);
-        setActiveTempToken(initialTempToken);
+        setActiveTempToken(initialOAuthSessionId);
         setCurrentStep(3);
-        void fetchEntities(initialPlatform, initialTempToken, initialSelectionStep);
+        void fetchEntities(initialPlatform, initialOAuthSessionId, initialSelectionStep);
       } else {
         if (initialPlatform) {
           setSelectedPlatform(initialPlatform);
@@ -511,13 +504,12 @@ export function ConnectionWizardModal({
         setConnectedAccount(null);
       }
       setErrorMessage(null);
-      setDeliveryReceipt(null);
       setHandshakeStage('idle');
       setShowDisconnectConfirm(false);
       setFeedbackToast(null);
       setSandboxPromptVisible(false);
     }
-  }, [isOpen, initialPlatform, initialStep, initialAccount, initialTempToken, initialSelectionStep]);
+  }, [isOpen, initialPlatform, initialStep, initialAccount, initialOAuthSessionId, initialSelectionStep]);
 
   // Filtered platforms for Step 1
   const filteredPlatforms = useMemo(() => {
@@ -536,9 +528,10 @@ export function ConnectionWizardModal({
 
   // Reset inputs when switching platform (clean empty inputs — no fake sample IDs)
   const handleSelectPlatform = (platform: SocialPlatform) => {
+    setReconnectAccountId(undefined);
+    setInstagramLoginMethod('instagram_login');
     setSelectedPlatform(platform);
     setErrorMessage(null);
-    setDeliveryReceipt(null);
     setHandshakeStage('idle');
     setSandboxPromptVisible(false);
     setCredIdentifier('');
@@ -551,29 +544,7 @@ export function ConnectionWizardModal({
   // Explicit Sandbox Preview Trigger (only when user clicks "Preview in Sandbox Mode")
   const handleProceedInSandboxMode = async () => {
     setSandboxPromptVisible(false);
-    setActiveTempToken('sim_sandbox_preview');
-    if (platformMeta.needsEntitySelection || selectedPlatform === 'whatsapp') {
-      await fetchEntities(selectedPlatform, 'sim_sandbox_preview');
-      setCurrentStep(3);
-    } else {
-      const autoAccount: ConnectedAccountData = {
-        id: `acc_${selectedPlatform}_${Date.now().toString(36)}`,
-        accountId: `acc_${selectedPlatform}_${Date.now().toString(36)}`,
-        platform: selectedPlatform,
-        username: `@sandbox_${selectedPlatform}`,
-        displayName: `${platformMeta.name} (Sandbox Preview)`,
-        status: 'healthy',
-        tokenHealth: {
-          status: 'healthy',
-          expiresAt: new Date(Date.now() + 60 * 24 * 60 * 60 * 1000).toISOString(),
-          expiresInDays: 60,
-        },
-        syncTime: loc('الآن', 'Just now'),
-        grantedScopes: ['posting', 'analytics', 'comments'],
-      };
-      setConnectedAccount(autoAccount);
-      setCurrentStep(4);
-    }
+    setErrorMessage(loc('الربط التجريبي غير متاح. اطلب تفعيل خدمة الربط من المسؤول.', 'Account connection previews are unavailable. Ask your administrator to enable the provider.'));
   };
 
   // STEP 2: Initiate OAuth or Submit Credentials
@@ -608,6 +579,8 @@ export function ConnectionWizardModal({
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             action: 'start_oauth',
+            ...(selectedPlatform === 'instagram' ? { loginMethod: instagramLoginMethod } : {}),
+            ...(reconnectAccountId ? { reconnectAccountId } : {}),
             organizationId,
             platform: selectedPlatform,
             redirectUrl: callbackUrl,
@@ -714,24 +687,8 @@ export function ConnectionWizardModal({
           throw new Error(data.error);
         }
 
-        const accountData: ConnectedAccountData = {
-          id: data.account?.accountId || `acc_${selectedPlatform}_${Date.now().toString(36)}`,
-          accountId: data.account?.accountId || `acc_${selectedPlatform}_${Date.now().toString(36)}`,
-          platform: selectedPlatform,
-          username: data.account?.username || credIdentifier.trim() || `@${selectedPlatform}`,
-          displayName: data.account?.displayName || `${platformMeta.name} Account`,
-          status: 'healthy',
-          tokenHealth: {
-            status: 'healthy',
-            expiresAt: new Date(Date.now() + 60 * 24 * 60 * 60 * 1000).toISOString(),
-            expiresInDays: 60,
-          },
-          syncTime: loc('الآن', 'Just now'),
-          grantedScopes:
-            selectedPlatform === 'whatsapp'
-              ? ['whatsapp_business_messaging', 'whatsapp_business_management', 'webhooks']
-              : ['posting', 'analytics'],
-        };
+        if (!res.ok || !data.success || !data.account?.accountId) throw new Error(data.error || 'The provider did not confirm this connection.');
+        const accountData: ConnectedAccountData = data.account;
 
         setConnectedAccount(accountData);
         setCurrentStep(4);
@@ -763,31 +720,18 @@ export function ConnectionWizardModal({
           entityId: selectedEntityId,
           entityName: chosen?.name,
           entityUsername: chosen?.username,
-          tempToken: activeTempToken || 'sim_sandbox_preview',
+          oauthSessionId: activeTempToken,
+          wabaId: chosen?.wabaId,
         }),
       });
 
       const data = await res.json();
-      if (data.error) throw new Error(data.error);
+      if (!res.ok || data.error) throw new Error(data.error || 'Entity selection failed');
+      if (!data.success || !data.account?.accountId || data.account.status !== 'active') throw new Error('The provider has not confirmed an active connection.');
 
       const accountData: ConnectedAccountData = {
-        id: data.account?.accountId || `acc_${selectedPlatform}_${Date.now().toString(36)}`,
-        accountId: data.account?.accountId || `acc_${selectedPlatform}_${Date.now().toString(36)}`,
-        platform: selectedPlatform,
-        username: data.account?.username || chosen?.username || `@${selectedPlatform}`,
-        displayName: data.account?.displayName || chosen?.name || `${platformMeta.name}`,
-        status: 'healthy',
-        tokenHealth: {
-          status: 'healthy',
-          expiresAt: new Date(Date.now() + 60 * 24 * 60 * 60 * 1000).toISOString(),
-          expiresInDays: 60,
-        },
-        syncTime: loc('الآن', 'Just now'),
-        grantedScopes: ['posting', 'analytics', 'comments', 'messaging'],
-        selectedEntity: {
-          id: selectedEntityId,
-          name: chosen?.name || 'Selected Entity',
-        },
+        ...data.account,
+        selectedEntity: { id: selectedEntityId, name: chosen?.name || 'Selected Entity' },
       };
 
       setConnectedAccount(accountData);
@@ -799,40 +743,8 @@ export function ConnectionWizardModal({
     }
   };
 
-  // STEP 4: Send Test Post / Test Message
-  const handleSendTestPost = async () => {
-    if (!connectedAccount || !testPayloadText.trim()) return;
-    setTestPostLoading(true);
-    setErrorMessage(null);
-
-    try {
-      const res = await fetch('/api/connect', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          action: 'test_post',
-          organizationId,
-          platform: selectedPlatform,
-          accountId: connectedAccount.accountId,
-          handle: connectedAccount.username,
-          content: testPayloadText,
-        }),
-      });
-
-      const data = await res.json();
-      if (data.error) throw new Error(data.error);
-
-      setDeliveryReceipt(data.deliveryReceipt);
-    } catch (err) {
-      setErrorMessage(err instanceof Error ? err.message : 'Test post failed');
-    } finally {
-      setTestPostLoading(false);
-    }
-  };
-
   // STEP 4: Reconnect Channel (resets wizard to Step 2 for this platform)
   const handleReconnect = () => {
-    setDeliveryReceipt(null);
     setErrorMessage(null);
     setHandshakeStage('idle');
     setShowDisconnectConfirm(false);
@@ -859,7 +771,7 @@ export function ConnectionWizardModal({
       });
 
       const data = await res.json();
-      if (data.error) throw new Error(data.error);
+      if (!res.ok || data.success !== true) throw new Error(typeof data.error === 'string' ? data.error : data.error?.message || 'Disconnection was not confirmed. Refresh accounts before retrying.');
 
       if (onAccountDisconnected) {
         onAccountDisconnected(targetId);
@@ -916,7 +828,7 @@ export function ConnectionWizardModal({
                 </span>
               </div>
               <p className="text-xs text-[var(--text-secondary)]">
-                {loc('اربط حساباتك عبر 18 منصة رقمية مع تدقيق فوري لصلاحية الرموز وتجربة النشر الحي', 'Connect all 18 channels with instant OAuth handshake & live delivery verification')}
+                {loc('اربط حسابات أعمالك للنشر والتواصل مع العملاء.', 'Connect your business accounts to publish and reply to customers.')}
               </p>
             </div>
           </div>
@@ -1179,6 +1091,13 @@ export function ConnectionWizardModal({
                 </div>
               )}
 
+              {selectedPlatform === 'instagram' && <fieldset disabled={isSubmitting || !!reconnectAccountId} className="space-y-3 rounded-xl border border-[var(--border-subtle)] p-5">
+                <legend className="px-1 text-sm font-semibold">{loc('كيف تريد ربط حساب إنستغرام الاحترافي؟', 'Connect your professional Instagram account')}</legend>
+                <label className="block text-sm"><input type="radio" name="instagram-login-method" checked={instagramLoginMethod === 'instagram_login'} onChange={() => setInstagramLoginMethod('instagram_login')} className="me-2" />{loc('مباشرة عبر إنستغرام — لا تحتاج صفحة فيسبوك', 'Direct Instagram Login — no Facebook Page needed')}</label>
+                <label className="block text-sm"><input type="radio" name="instagram-login-method" checked={instagramLoginMethod === 'facebook_login'} onChange={() => setInstagramLoginMethod('facebook_login')} className="me-2" />{loc('عبر صفحة فيسبوك المرتبطة بالحساب', 'Through the linked Facebook Page')}</label>
+                <p className="text-xs text-[var(--text-secondary)]">{reconnectAccountId ? loc('إعادة الربط تستخدم طريقة الدخول الأصلية التي يتحقق منها المزود.', 'Reconnect preserves the original login method verified by the provider.') : loc('يلزم حساب أعمال أو منشئ محتوى احترافي. كلا الخيارين يدعم الرسائل والنشر؛ بعض الميزات المتقدمة تتطلب فيسبوك.', 'A Business or Creator account is required. Both options support messaging and publishing; some advanced features require Facebook Login.')}</p>
+              </fieldset>}
+
               {/* A. OAuth 2.0 Consent Handshake Screen */}
               {platformMeta.connectionType === 'oauth' && (
                 <div className="rounded-2xl border border-[var(--border-subtle)] bg-[var(--bg-card)] p-6 space-y-5 shadow-sm">
@@ -1335,7 +1254,7 @@ export function ConnectionWizardModal({
                                     : 'text-[var(--text-secondary)] hover:text-[var(--text-primary)]'
                                 }`}
                               >
-                                {loc('صفحة Zernio الإرشادية (signup=hosted)', 'Zernio Guided Page (signup=hosted)')}
+                                {loc('التسجيل الموجّه', 'Guided signup')}
                               </button>
                               <button
                                 type="button"
@@ -1346,7 +1265,7 @@ export function ConnectionWizardModal({
                                     : 'text-[var(--text-secondary)] hover:text-[var(--text-primary)]'
                                 }`}
                               >
-                                {loc('ربط مباشر (headless=true)', 'Direct Headless (headless=true)')}
+                                {loc('اختر الرقم داخل Asra3', 'Select number in Asra3')}
                               </button>
                             </div>
                           </div>
@@ -1365,7 +1284,6 @@ export function ConnectionWizardModal({
                                 <span className="text-xs font-bold text-[var(--text-primary)]">
                                   {loc('WhatsApp Cloud API القياسي', 'Standard WhatsApp Cloud API')}
                                 </span>
-                                <span className="font-mono text-[10px] text-emerald-600 font-bold">onboarding=api</span>
                               </div>
                               <p className="mt-1 text-[11px] text-[var(--text-secondary)]">
                                 {loc('ربط حساب أعمال واتساب جديد أو حالي مخصص للأتمتة والرسائل السحابية والمجموعات والمكالمات.', 'Connect a new or existing WABA dedicated to Cloud API messaging, broadcasts, groups & calling.')}
@@ -1385,7 +1303,6 @@ export function ConnectionWizardModal({
                                 <span className="text-xs font-bold text-[var(--text-primary)]">
                                   {loc('التعايش مع تطبيق WhatsApp Business (QR)', 'Business App Coexistence (QR)')}
                                 </span>
-                                <span className="font-mono text-[10px] text-emerald-600 font-bold">onboarding=business_app</span>
                               </div>
                               <p className="mt-1 text-[11px] text-[var(--text-secondary)]">
                                 {loc('احتفظ بالرقم داخل تطبيق WhatsApp Business على هاتفك عبر مسح رمز QR مع مزامنة المحادثات لمدة 6 أشهر.', 'Keep your number on the WhatsApp Business phone app via QR scan while syncing 6 months of chats to the API.')}
@@ -1397,11 +1314,9 @@ export function ConnectionWizardModal({
                           <div className="rounded-xl border border-[var(--border-subtle)] bg-[var(--bg-card)] p-3.5 space-y-2">
                             <div className="text-[11px] font-extrabold text-[var(--text-primary)] flex items-center justify-between">
                               <span>
-                                {loc('قائمة خطوات الربط المتتابعة (Zernio Follow-Along Checklist):', 'Zernio Step-by-Step Follow-Along Checklist:')}
+                                {loc('خطوات الربط:', 'Connection steps:')}
                               </span>
-                              <span className="font-mono text-[10px] text-emerald-600">
-                                {whatsappSignupMode === 'hosted' ? 'brandName=Asra3 · #0D9488' : 'headless=true'}
-                              </span>
+
                             </div>
                             <ol className="grid grid-cols-1 gap-1.5 sm:grid-cols-2 text-[11px] text-[var(--text-secondary)]">
                               <li className="flex items-start gap-2">
@@ -1851,7 +1766,7 @@ export function ConnectionWizardModal({
                           {connectedAccount.displayName}
                         </span>
                         <span className="rounded-full bg-emerald-500/10 px-2 py-0.5 text-[10px] font-bold text-emerald-600 border border-emerald-500/20">
-                          {loc('سليم ✓', 'healthy ✓')}
+                          {loc('تم تأكيد الربط', 'Connection confirmed')}
                         </span>
                       </div>
                       <div className="text-xs text-[var(--text-muted)] font-mono mt-0.5">
@@ -1864,7 +1779,7 @@ export function ConnectionWizardModal({
                   <div className="flex items-center gap-2 rounded-xl border border-emerald-500/20 bg-emerald-500/10 px-3 py-1.5 text-xs text-emerald-700">
                     <span className="flex h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
                     <span className="font-bold">
-                      {loc(`الرمز سليم · صالح لـ ${connectedAccount.tokenHealth?.expiresInDays || 60} يوماً`, `Token healthy · Valid for ${connectedAccount.tokenHealth?.expiresInDays || 60} days`)}
+                      {loc('راجع حالة الحساب من قائمة الحسابات', 'Check current health in Accounts')}
                     </span>
                   </div>
                 </div>
@@ -1891,7 +1806,7 @@ export function ConnectionWizardModal({
                       {loc('الصلاحيات النشطة', 'Active Privileges')}
                     </div>
                     <div className="flex flex-wrap gap-1 mt-1">
-                      {['Publishing', 'Analytics', 'Comments', 'Webhooks'].map((p) => (
+                      {(connectedAccount.grantedScopes || []).map((p) => (
                         <span
                           key={p}
                           className="rounded-md bg-[var(--bg-card)] px-1.5 py-0.5 text-[10px] font-bold text-[var(--text-secondary)] border border-[var(--border-subtle)]"
@@ -1957,88 +1872,11 @@ export function ConnectionWizardModal({
                 </div>
               )}
 
-              {/* Interactive Test Post / Test Message Section */}
-              <div className="rounded-2xl border border-[var(--accent-primary)]/30 bg-[var(--bg-card)] p-5 space-y-4 shadow-sm">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <Sparkles className="h-4 w-4 text-[var(--accent-primary)]" />
-                    <h4 className="text-xs font-extrabold text-[var(--text-primary)] uppercase tracking-wider">
-                      {['telegram', 'whatsapp', 'discord', 'slack'].includes(selectedPlatform)
-                        ? (loc('إجراء اختبار إرسال رسالة تجريبية', 'Send Test Verification Message'))
-                        : (loc('إجراء اختبار نشر فوري', 'Send Test Verification Post'))}
-                    </h4>
-                  </div>
-                  <span className="text-[11px] font-bold text-[var(--accent-primary)]">
-                    {loc('تحقق حي', 'Live E2E Verification')}
-                  </span>
-                </div>
-
-                <div className="space-y-2">
-                  <textarea
-                    rows={2}
-                    value={testPayloadText}
-                    onChange={(e) => setTestPayloadText(e.target.value)}
-                    className="w-full rounded-xl border border-[var(--border-subtle)] bg-[var(--bg-subtle)] p-3 text-xs text-[var(--text-primary)] focus:outline-none focus:border-[var(--accent-primary)]"
-                    placeholder={loc('اكتب نص المنشور التجريبي...', 'Enter test caption...')}
-                  />
-
-                  <div className="flex items-center justify-between">
-                    <span className="text-[11px] text-[var(--text-muted)]">
-                      {loc(`سيتم إرسال هذا المنشور إلى ${connectedAccount.username} لتأكيد استجابة الـ API`, `Payload will be dispatched to @${connectedAccount.username} to verify upstream receipt`)}
-                    </span>
-
-                    <button
-                      type="button"
-                      disabled={testPostLoading || !testPayloadText.trim()}
-                      onClick={handleSendTestPost}
-                      className="inline-flex items-center gap-2 rounded-xl bg-[var(--accent-primary)] px-4 py-2 text-xs font-bold text-white hover:bg-[var(--accent-hover)] transition disabled:opacity-50"
-                    >
-                      {testPostLoading ? (
-                        <RefreshCw className="h-3.5 w-3.5 animate-spin" />
-                      ) : (
-                        <Send className="h-3.5 w-3.5" />
-                      )}
-                      <span>
-                        {testPostLoading
-                          ? (loc('جاري الإرسال والتحقق...', 'Verifying...'))
-                          : (loc('إرسال المنشور التجريبي', 'Send Test Post'))}
-                      </span>
-                    </button>
-                  </div>
-                </div>
-
-                {/* Delivery Receipt Card */}
-                {deliveryReceipt && (
-                  <div className="rounded-xl border border-emerald-500/30 bg-emerald-500/10 p-4 space-y-2 animate-in fade-in">
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-2">
-                        <CheckCircle2 className="h-4 w-4 text-emerald-600" />
-                        <span className="text-xs font-extrabold text-emerald-700">
-                          {loc('تم تأكيد استلام المنشور بنجاح (HTTP 200)', 'Delivery Receipt Verified (HTTP 200)')}
-                        </span>
-                      </div>
-                      <span className="text-[11px] font-mono font-bold text-emerald-700">
-                        {deliveryReceipt.latencyMs}ms latency
-                      </span>
-                    </div>
-
-                    <p className="text-xs text-emerald-800">
-                      {deliveryReceipt.message}
-                    </p>
-
-                    <div className="flex flex-wrap items-center justify-between gap-2 pt-2 border-t border-emerald-500/20 text-[11px] font-mono text-emerald-900">
-                      <span>Receipt ID: {deliveryReceipt.receiptId}</span>
-                      <a
-                        href={deliveryReceipt.platformPostUrl}
-                        target="_blank"
-                        rel="noreferrer"
-                        className="inline-flex items-center gap-1 font-bold text-[var(--accent-primary)] hover:underline"
-                      >
-                        <span>{loc('عرض المنشور التجريبي ↗', 'View on Platform ↗')}</span>
-                      </a>
-                    </div>
-                  </div>
-                )}
+              <div className="border-t border-[var(--border-subtle)] pt-5">
+                <h4 className="text-sm font-semibold">{loc('حسابك متصل', 'Your account is connected')}</h4>
+                <p className="mt-2 text-sm text-[var(--text-secondary)]">
+                  {loc('اختر إنهاء للعودة إلى لوحة التحكم. افتح النشر لإعداد منشور ومراجعته قبل الإرسال، أو صندوق الوارد للرد على العملاء.', 'Choose Finish to return to your dashboard. Open Publishing to prepare and review a post, or Inbox to reply to customers.')}
+                </p>
               </div>
             </div>
           )}

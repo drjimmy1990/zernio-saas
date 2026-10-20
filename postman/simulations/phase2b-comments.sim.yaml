@@ -1,0 +1,5 @@
+simulation: phase2b-comments
+routing: path
+mocks:
+  - routeKey: zernio
+    path: ../mocks/phase2b-comments/config.yaml

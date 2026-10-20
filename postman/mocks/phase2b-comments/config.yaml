@@ -1,0 +1,10 @@
+version: 1
+name: Zernio Meta comments SDK contract fixture
+slug: phase2b-comments
+protocol: http
+port: 4951
+interceptRequests: true
+scenarios:
+  - name: default
+    path: ./default.js
+    default: true

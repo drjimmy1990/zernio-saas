@@ -1,382 +1,90 @@
 import { NextResponse } from 'next/server';
-import fs from 'fs';
-import path from 'path';
-import { createSupabaseAdminClient } from '@/lib/supabase/admin';
-import { SuperAdminService } from '@/lib/services/super-admin.service';
-import { getFallbackStore } from '@/lib/zernio/policy-engine';
-import { WorkspaceStore } from '@/lib/storage/workspace-store';
-import {
-  SESSION_COOKIE_NAME,
-  SESSION_MAX_AGE,
-  encodeSession,
-  decodeSession,
-  type AuthSession,
-} from '@/lib/auth/session';
+import { SESSION_COOKIE_NAME, SESSION_MAX_AGE } from '@/lib/auth/session';
+import { getSessionFromCookieHeader } from '@/lib/auth/session';
+import { sessionResponse } from '@/lib/saas/http';
+import { createHash } from 'node:crypto';
+import { requireTenantAccess, TenantAccessError } from '@/lib/auth/tenant-access';
+import { issueUserSession, throttleAuth } from '@/lib/saas/auth';
+import { saasDatabase, saasRpc } from '@/lib/saas/storage';
 
-const DATA_DIR = path.join(process.cwd(), '.data');
-const USERS_FILE = path.join(DATA_DIR, 'users.json');
-
-function getStoredUserPassword(email: string): string | null {
-  try {
-    if (fs.existsSync(USERS_FILE)) {
-      const users = JSON.parse(fs.readFileSync(USERS_FILE, 'utf-8'));
-      return users[email.toLowerCase()] || null;
-    }
-  } catch {
-    // ignore
-  }
-  return null;
+function originGuard(request: Request) {
+  if (request.headers.get('sec-fetch-site') === 'cross-site' || request.headers.get('origin') && request.headers.get('origin') !== new URL(request.url).origin) throw new TenantAccessError(403, 'Cross-origin authentication requests are not allowed.');
 }
-
-function storeUserPassword(email: string, pass: string): void {
-  try {
-    if (!fs.existsSync(DATA_DIR)) {
-      fs.mkdirSync(DATA_DIR, { recursive: true });
-    }
-    let users: Record<string, string> = {};
-    if (fs.existsSync(USERS_FILE)) {
-      users = JSON.parse(fs.readFileSync(USERS_FILE, 'utf-8'));
-    }
-    users[email.toLowerCase()] = pass;
-    fs.writeFileSync(USERS_FILE, JSON.stringify(users, null, 2), 'utf-8');
-  } catch {
-    // ignore
-  }
-}
-
-/**
- * AUTHENTICATION & SESSION MANAGEMENT API (`/api/auth`)
- * - `GET /api/auth?action=session`: Checks the HTTP-only session cookie and returns active user & tenant session
- * - `POST action = "signup"`: Creates a brand-new customer account & workspace, sets session cookie
- * - `POST action = "login"`: Authenticates user, sets HTTP-only session cookie
- * - `POST action = "logout"`: Clears session cookie and logs out
- */
-
 export async function GET(request: Request) {
   try {
-    const { searchParams } = new URL(request.url);
-    const action = searchParams.get('action') || 'session';
-
-    if (action === 'session') {
-      const cookieHeader = request.headers.get('cookie') || '';
-      const cookies = Object.fromEntries(
-        cookieHeader
-          .split(';')
-          .map((c) => c.trim().split('='))
-          .filter(([k]) => Boolean(k))
-          .map(([k, ...v]) => [k, decodeURIComponent(v.join('='))])
-      );
-
-      const token = cookies[SESSION_COOKIE_NAME];
-      const session = decodeSession(token);
-
-      if (!session) {
-        return NextResponse.json({
-          authenticated: false,
-          session: null,
-        });
-      }
-
-      return NextResponse.json({
-        authenticated: true,
-        session,
-      });
-    }
-
-    if (action === 'logout') {
-      const response = NextResponse.json({
-        ok: true,
-        message: 'Logged out successfully',
-      });
-      response.cookies.set(SESSION_COOKIE_NAME, '', {
-        path: '/',
-        httpOnly: true,
-        sameSite: 'lax',
-        maxAge: 0,
-      });
-      return response;
-    }
-
-    return NextResponse.json({ error: `Unsupported action: ${action}` }, { status: 400 });
-  } catch (err) {
-    const message = err instanceof Error ? err.message : 'Session verification failed';
-    return NextResponse.json({ authenticated: false, error: message }, { status: 500 });
+    if ((new URL(request.url).searchParams.get('action') || 'session') !== 'session') return NextResponse.json({ error: 'Use POST to sign out.' }, { status: 405 });
+    const { session, role } = await requireTenantAccess(request); return NextResponse.json({ authenticated: true, session, role });
+  } catch (error) {
+    const status = error instanceof TenantAccessError ? error.status : 503;
+    return NextResponse.json({ authenticated: false, session: null, error: status === 503 ? 'Session verification is unavailable.' : undefined }, { status: status === 503 ? 503 : 200 });
   }
 }
-
 export async function POST(request: Request) {
   try {
-    const body = await request.json();
-    const action = body.action as 'signup' | 'login' | 'logout';
-
-    // =========================================================================
-    // LOGOUT ACTION
-    // =========================================================================
-    if (action === 'logout') {
-      const response = NextResponse.json({
-        ok: true,
-        message: 'Logged out successfully',
-      });
-
-      response.cookies.set(SESSION_COOKIE_NAME, '', {
-        path: '/',
-        httpOnly: true,
-        sameSite: 'lax',
-        maxAge: 0,
-      });
-
-      return response;
+    originGuard(request);
+    const body = await request.json().catch(() => null);
+    if (!body || typeof body !== 'object' || Array.isArray(body)) throw new TenantAccessError(400, 'Expected a JSON object.');
+    const action = body.action;
+    if (action === 'logout' || action === 'logout_all') {
+      const session=action==='logout_all'?(await requireTenantAccess(request)).session:getSessionFromCookieHeader(request.headers.get('cookie'));
+      if (session?.user.role !== 'super_admin'&&session?.sessionId) await saasRpc('saas_revoke_sessions', { p_user_id: session.user.id, p_session_id: action === 'logout_all' ? null : session.sessionId });
+      const response = NextResponse.json({ ok: true }); response.cookies.set(SESSION_COOKIE_NAME, '', { path: '/', httpOnly: true, sameSite: 'lax', maxAge: 0 }); return response;
     }
-
-    // =========================================================================
-    // SIGNUP ACTION
-    // =========================================================================
+    if (!['login','signup','recover','resend','complete_recovery','verify_email'].includes(action)) throw new TenantAccessError(400, 'Unsupported authentication action.');
+    const email = typeof body.email === 'string' ? body.email.trim().toLowerCase() : '';
+    const password = typeof body.password === 'string' ? body.password : '';
+    const adminEmail = process.env.ADMIN_EMAIL?.trim().toLowerCase(); const adminPassword = process.env.ADMIN_PASSWORD;
+    if (action === 'login' && adminEmail && email === adminEmail && adminPassword && !['AdminPassword2026!', 'AnyPasswordForAdmin!'].includes(adminPassword)) {
+      await throttleAuth(request, action, email);
+      if (password !== adminPassword) throw new TenantAccessError(401, 'Invalid email or password.');
+      const now = Date.now(); return sessionResponse({ user: { id: 'usr_super_admin', fullName: 'Platform administrator', email, role: 'super_admin' }, tenant: { organizationId: 'org_admin_platform', organizationName: 'Asra3', slug: 'admin', planKey: 'enterprise' }, createdAt: now, expiresAt: now + SESSION_MAX_AGE * 1000,adminCredentialVersion:createHash('sha256').update(`${adminEmail}:${adminPassword}`).digest('hex') });
+    }
+    const db = saasDatabase();
+    if (action === 'complete_recovery' || action === 'verify_email') {
+      if (typeof body.accessToken !== 'string' || !body.accessToken || body.accessToken.length > 10000) throw new TenantAccessError(400, 'Open a valid authentication email link.');
+      const { data, error } = await db.auth.getUser(body.accessToken);
+      if (error || !data.user?.id || !data.user.email_confirmed_at) throw new TenantAccessError(401, 'This email link is invalid or expired. Request a new link.');
+      const { data: security, error: securityError } = await db.from('saas_user_security').select('disabled,revoked_before').eq('user_id',data.user.id).maybeSingle();
+      if(securityError) throw new TenantAccessError(503,'Recovery security verification is unavailable.');
+      if(security?.disabled) throw new TenantAccessError(403,'This account is disabled.');
+      if(security?.revoked_before) {
+        let issuedAt:number;try {issuedAt=Number(JSON.parse(Buffer.from(body.accessToken.split('.')[1],'base64url').toString('utf8')).iat)*1000;}catch{issuedAt=0;}
+        if(!Number.isFinite(issuedAt)||issuedAt<=Date.parse(security.revoked_before))throw new TenantAccessError(401,'This authentication link was revoked. Request a new email.');
+      }
+      await throttleAuth(request, action, data.user.email || data.user.id);
+      if (action === 'complete_recovery') {
+        if (password.length < 10 || password.length > 200) throw new TenantAccessError(400, 'Use a password between 10 and 200 characters.');
+        await saasRpc('saas_recover_access', { p_user_id: data.user.id });
+        const { error: updateError } = await db.auth.admin.updateUserById(data.user.id, { password });
+        if (updateError) throw new TenantAccessError(503, 'Password change was not confirmed.');
+        await saasRpc('saas_recover_access', { p_user_id: data.user.id });
+        return NextResponse.json({ ok: true, message: 'Password changed. Sign in again.' });
+      }
+      return sessionResponse(await issueUserSession(data.user));
+    }
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) || email.length > 254) throw new TenantAccessError(400, 'Enter a valid email address.');
+    await throttleAuth(request, action, email);
+    const configuredOrigin = process.env.NEXT_PUBLIC_APP_URL || process.env.APP_URL;
+    const redirectTo = `${configuredOrigin ? new URL(configuredOrigin).origin : new URL(request.url).origin}/recovery`;
+    if (action === 'recover' || action === 'resend') {
+      const result = action === 'recover' ? await db.auth.resetPasswordForEmail(email, { redirectTo }) : await db.auth.resend({ type: 'signup', email, options: { emailRedirectTo: redirectTo } });
+      if (result.error && result.error.status && result.error.status >= 500) throw new TenantAccessError(503, 'Authentication email service is unavailable.');
+      return NextResponse.json({ ok: true, message: 'If the account is eligible, an email has been sent.' });
+    }
+    if (password.length < (action === 'signup' ? 10 : 1) || password.length > 200) throw new TenantAccessError(400, 'Use a password between 10 and 200 characters.');
     if (action === 'signup') {
-      const fullName = (body.fullName as string)?.trim() || 'Founder';
-      const email = (body.email as string)?.trim().toLowerCase();
-      const password = body.password as string;
-      const companyName =
-        (body.companyName as string)?.trim() || `${fullName}'s Workspace`;
-      const planKey = (body.planKey as string) || 'agency';
-      const primaryColor = (body.primaryColor as string) || '#10B981';
-      const language =
-        (body.language as 'en' | 'es' | 'pt-BR') || 'en';
-
-      if (!email || !password) {
-        return NextResponse.json(
-          { error: 'Email and password are required to create your workspace.' },
-          { status: 400 }
-        );
-      }
-
-      storeUserPassword(email, password);
-
-      const supabase = createSupabaseAdminClient();
-      let userId = `usr_${Date.now().toString(36)}`;
-
-      if (supabase) {
-        const { data: authUser, error: authErr } =
-          await supabase.auth.admin.createUser({
-            email,
-            password,
-            email_confirm: true,
-            user_metadata: { full_name: fullName, company_name: companyName },
-          });
-        if (!authErr && authUser?.user) {
-          userId = authUser.user.id;
-        }
-      }
-
-      const tenant = await SuperAdminService.createTenantOrganization({
-        organizationName: companyName,
-        planKey,
-        primaryColor,
-        language,
-      });
-
-      // Ensure 100% clean workspace state is initialized in local file store
-      WorkspaceStore.getWorkspace(tenant.organizationId);
-
-      const session: AuthSession = {
-        user: {
-          id: userId,
-          fullName,
-          email,
-          role: 'owner',
-        },
-        tenant: {
-          organizationId: tenant.organizationId,
-          organizationName: tenant.organizationName,
-          slug: tenant.slug,
-          planKey: tenant.planKey,
-        },
-        createdAt: Date.now(),
-        expiresAt: Date.now() + SESSION_MAX_AGE * 1000,
-      };
-
-      const token = encodeSession(session);
-
-      const response = NextResponse.json({
-        ok: true,
-        user: session.user,
-        tenant,
-        redirectTo: `/dashboard?org=${encodeURIComponent(tenant.organizationId)}`,
-      });
-
-      response.cookies.set(SESSION_COOKIE_NAME, token, {
-        path: '/',
-        httpOnly: true,
-        sameSite: 'lax',
-        maxAge: SESSION_MAX_AGE,
-      });
-
-      return response;
+      const fullName = typeof body.fullName === 'string' ? body.fullName.trim().slice(0, 160) : '';
+      const companyName = typeof body.companyName === 'string' ? body.companyName.trim().slice(0, 160) : 'My workspace';
+      if (!fullName) throw new TenantAccessError(400, 'Enter your name.');
+      const { data, error } = await db.auth.signUp({ email, password, options: { emailRedirectTo: redirectTo, data: { full_name: fullName, company_name: companyName } } });
+      if (error) throw new TenantAccessError(error.status && error.status >= 500 ? 503 : 400, 'Registration could not be confirmed. Sign in or request verification if the account exists.');
+      if (data.user?.email_confirmed_at) throw new TenantAccessError(503, 'Email confirmation must be enabled before accepting new registrations. Contact support.');
+      return NextResponse.json({ ok: true, verificationRequired: true, message: 'Check your email to verify your account, then sign in.' });
     }
-
-    // =========================================================================
-    // LOGIN ACTION
-    // =========================================================================
-    if (action === 'login') {
-      const email = ((body.email as string) || '').trim().toLowerCase();
-      const password = (body.password as string) || '';
-      const persona = body.persona as string | undefined;
-
-      if (!email && !persona) {
-        return NextResponse.json(
-          { error: 'Please enter your work email to sign in.' },
-          { status: 400 }
-        );
-      }
-
-      if (!password) {
-        return NextResponse.json(
-          { error: 'Password is required to sign in.' },
-          { status: 400 }
-        );
-      }
-
-      // 1. Super Admin Authentication
-      if (
-        persona === 'super_admin' ||
-        email === 'admin@asra3.com' ||
-        email === 'admin@asra3.com' ||
-        email.startsWith('admin@')
-      ) {
-        const validAdminPasswords = [
-          process.env.ADMIN_PASSWORD || 'AdminPassword2026!',
-          'AnyPasswordForAdmin!',
-        ];
-
-        if (!validAdminPasswords.includes(password)) {
-          return NextResponse.json(
-            { error: 'Invalid email or password.' },
-            { status: 401 }
-          );
-        }
-
-        const adminSession: AuthSession = {
-          user: {
-            id: 'usr_super_admin',
-            fullName: 'Platform Super Admin',
-            email: email || 'admin@asra3.com',
-            role: 'super_admin',
-          },
-          tenant: {
-            organizationId: 'org_admin_platform',
-            organizationName: 'Asra3 Super Admin Control Plane',
-            slug: 'admin',
-            planKey: 'enterprise',
-          },
-          createdAt: Date.now(),
-          expiresAt: Date.now() + SESSION_MAX_AGE * 1000,
-        };
-
-        const token = encodeSession(adminSession);
-        const response = NextResponse.json({
-          ok: true,
-          user: adminSession.user,
-          redirectTo: '/admin',
-        });
-
-        response.cookies.set(SESSION_COOKIE_NAME, token, {
-          path: '/',
-          httpOnly: true,
-          sameSite: 'lax',
-          maxAge: SESSION_MAX_AGE,
-        });
-
-        return response;
-      }
-
-      // 2. Customer / Tenant Authentication
-      const storedPass = getStoredUserPassword(email);
-      const allowedCustomerPasswords = [
-        process.env.CUSTOMER_PASSWORD || 'CustomerPassword2026!',
-        'ValidPassword2026!',
-        'SecurePassword2026!',
-        'CustomerPassword2026!',
-      ];
-
-      const passwordMatches = storedPass
-        ? storedPass === password
-        : allowedCustomerPasswords.includes(password);
-
-      if (!passwordMatches) {
-        return NextResponse.json(
-          { error: 'Invalid email or password.' },
-          { status: 401 }
-        );
-      }
-
-      const store = getFallbackStore();
-      const tenants = Object.values(store.tenants);
-
-      // Match tenant by email domain or slug, or fallback to first tenant, or create one for customer
-      let selectedTenant = tenants.find((t) => {
-        const domain = email.split('@')[1] || '';
-        return domain.includes(t.slug.split('-')[0]) || email.includes(t.slug.split('-')[0]);
-      });
-
-      if (!selectedTenant && email) {
-        // Create an authentic isolated tenant organization for this customer
-        const domainPrefix = email.split('@')[0] || 'customer';
-        const cleanName = `${domainPrefix.charAt(0).toUpperCase() + domainPrefix.slice(1)} Solutions`;
-        selectedTenant = await SuperAdminService.createTenantOrganization({
-          organizationName: cleanName,
-          planKey: 'agency',
-          primaryColor: '#eb3514',
-          language: 'en',
-        });
-      }
-
-      const activeTenant = selectedTenant || tenants[0];
-
-      // Ensure clean workspace is initialized for this tenant
-      WorkspaceStore.getWorkspace(activeTenant.organizationId);
-
-      const customerSession: AuthSession = {
-        user: {
-          id: `usr_${Date.now().toString(36)}`,
-          fullName: activeTenant.organizationName,
-          email,
-          role: 'owner',
-        },
-        tenant: {
-          organizationId: activeTenant.organizationId,
-          organizationName: activeTenant.organizationName,
-          slug: activeTenant.slug,
-          planKey: activeTenant.planKey,
-        },
-        createdAt: Date.now(),
-        expiresAt: Date.now() + SESSION_MAX_AGE * 1000,
-      };
-
-      const token = encodeSession(customerSession);
-
-      const response = NextResponse.json({
-        ok: true,
-        user: customerSession.user,
-        tenant: activeTenant,
-        redirectTo: `/dashboard?org=${encodeURIComponent(activeTenant.organizationId)}`,
-      });
-
-      response.cookies.set(SESSION_COOKIE_NAME, token, {
-        path: '/',
-        httpOnly: true,
-        sameSite: 'lax',
-        maxAge: SESSION_MAX_AGE,
-      });
-
-      return response;
-    }
-
-    return NextResponse.json(
-      { error: `Unsupported auth action: ${action}` },
-      { status: 400 }
-    );
-  } catch (err) {
-    const message =
-      err instanceof Error ? err.message : 'Authentication failed';
-    return NextResponse.json({ error: message }, { status: 400 });
+    const { data, error } = await db.auth.signInWithPassword({ email, password });
+    if (error || !data.user?.id) throw new TenantAccessError(401, 'Invalid email or password. Verify your email before signing in.');
+    return sessionResponse(await issueUserSession(data.user));
+  } catch (error) {
+    return NextResponse.json({ error: error instanceof TenantAccessError ? error.message : 'Authentication could not be completed.' }, { status: error instanceof TenantAccessError ? error.status : 503 });
   }
 }

@@ -1,0 +1,10 @@
+version: 1
+name: Zernio WhatsApp contract fixture
+slug: zernio-whatsapp-contract
+protocol: http
+port: 4949
+interceptRequests: true
+scenarios:
+  - name: default
+    path: ./default.js
+    default: true

@@ -1,0 +1,5 @@
+simulation: launch-reports
+routing: path
+mocks:
+  - routeKey: zernio
+    path: ../mocks/launch-reports/config.yaml

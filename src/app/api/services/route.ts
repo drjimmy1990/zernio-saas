@@ -2,18 +2,23 @@ import { NextResponse } from 'next/server';
 import { CoreConnectService } from '@/lib/services/core-connect.service';
 import { PublishingService } from '@/lib/services/publishing.service';
 import { InboxCrmService } from '@/lib/services/inbox-crm.service';
+import { runInboxReply } from '@/lib/inbox/actions';
 import { AnalyticsService } from '@/lib/services/analytics.service';
 import { AdsService } from '@/lib/services/ads.service';
 import { TelephonyService } from '@/lib/services/telephony.service';
-import { CommerceLocalService } from '@/lib/services/commerce-local.service';
 import { SupportAiService } from '@/lib/services/support-ai.service';
 import {
   getFallbackStore,
   resolveEffectiveTenantPolicy,
 } from '@/lib/zernio/policy-engine';
-import { SESSION_COOKIE_NAME, decodeSession } from '@/lib/auth/session';
-import { WorkspaceStore } from '@/lib/storage/workspace-store';
+import { requireTenantSession, requireTenantAccess, requireWorkspaceRole, canManageWorkspace, TenantAccessError } from '@/lib/auth/tenant-access';
+import { requireTenantAccounts } from '@/lib/auth/tenant-provider';
+import { ZernioApiException } from '@/lib/zernio/client';
 import type { AdPlatform } from '@/types/platform';
+import { disconnectAccount } from '@/lib/accounts/lifecycle';
+import { SaasApiKeyService } from '@/lib/saas/api-keys';
+import { runPhoneLifecycleAction } from '@/lib/phone-lifecycle/actions';
+import { unavailableServiceAction } from '@/lib/launch/availability';
 
 /**
  * UNIFIED SUB-SERVICES API GATEWAY (`/api/services`)
@@ -24,23 +29,12 @@ import type { AdPlatform } from '@/types/platform';
 export async function GET(request: Request) {
   try {
     const { searchParams } = new URL(request.url);
-    let organizationId = searchParams.get('organizationId');
-
-    if (!organizationId) {
-      const cookieHeader = request.headers.get('cookie') || '';
-      const cookies = Object.fromEntries(
-        cookieHeader
-          .split(';')
-          .map((c) => c.trim().split('='))
-          .filter(([k]) => Boolean(k))
-          .map(([k, ...v]) => [k, decodeURIComponent(v.join('='))])
-      );
-      const session = decodeSession(cookies[SESSION_COOKIE_NAME]);
-      organizationId = session?.tenant?.organizationId || 'default_tenant';
-    }
+    const { session, role } = await requireTenantAccess(request, searchParams.get('organizationId'));
+    const organizationId = session.tenant.organizationId;
 
     const policy = await resolveEffectiveTenantPolicy(organizationId);
-    const availableTenants = Object.values(getFallbackStore().tenants).map(
+    const availableTenants = Object.values(getFallbackStore().tenants)
+      .filter((tenant) => tenant.organizationId === organizationId).map(
       (t) => ({
         organizationId: t.organizationId,
         organizationName: t.organizationName,
@@ -51,107 +45,49 @@ export async function GET(request: Request) {
       })
     );
 
-    const ws = WorkspaceStore.getWorkspace(organizationId);
 
     const [accountsHealth, conversations, analytics, ads, telephony, commerce, posts] =
       await Promise.all([
         policy.enabledSubServices.includes('core_connect')
           ? CoreConnectService.listTenantAccountsWithHealth(organizationId).catch(() => ({
-              simulated: true,
-              profileId: policy.zernioProfileId,
-              quota: {
-                used: (ws.connectedAccounts || []).length,
-                max: policy.quotas.maxConnectedAccounts,
-              },
-              summary: {
-                total: (ws.connectedAccounts || []).length,
-                healthy: (ws.connectedAccounts || []).filter((a) => a.status === 'healthy').length,
-                warning: 0,
-                error: 0,
-                needsReconnect: 0,
-              },
-              accounts: ws.connectedAccounts || [],
+              simulated: false, unavailable: true,
+              error: 'Account state could not be refreshed from the provider.',
+              accounts: [],
             }))
           : null,
         policy.enabledSubServices.includes('inbox_crm')
           ? InboxCrmService.listConversations({ organizationId }).catch(() => ({
-              simulated: true,
-              data: ws.inboxConversations || [],
+              simulated: false,
+              unavailable: true,
+              error: 'Inbox state could not be refreshed from the provider.',
+              data: [],
               pagination: { hasMore: false, nextCursor: null },
               meta: { accountsQueried: 0, accountsFailed: 0, failedAccounts: [] },
             }))
           : null,
         policy.enabledSubServices.includes('analytics')
-          ? AnalyticsService.getCustomerDashboard({
-              organizationId,
-              fromDate: '2026-10-01',
-              toDate: '2026-10-17',
-            }).catch(() => ({
-              source: 'clean-tenant',
-              profileId: policy.zernioProfileId,
-              dateRange: { fromDate: '2026-10-01', toDate: '2026-10-17' },
-              totals: {
-                impressions: 0,
-                reach: 0,
-                likes: 0,
-                comments: 0,
-                shares: 0,
-                saves: 0,
-                clicks: 0,
-                views: 0,
-                engagementRate: 0,
-              },
-              previousTotals: {
-                impressions: 0,
-                reach: 0,
-                likes: 0,
-                comments: 0,
-                shares: 0,
-                saves: 0,
-                clicks: 0,
-                views: 0,
-                engagementRate: 0,
-              },
-              followers: { current: 0, gained: 0, byAccount: [] },
-              daily: [],
-              topPosts: [],
-              dataAsOf: new Date().toISOString(),
-            }))
+          ? AnalyticsService.getCustomerDashboard({ organizationId,
+              fromDate: new Date(Date.now() - 29 * 86400000).toISOString().slice(0, 10),
+              toDate: new Date().toISOString().slice(0, 10), platform: 'facebook',
+            }).catch(() => ({ source: 'unavailable', unavailable: true, totals: null, previousTotals: null,
+              followers: null, daily: [], topPosts: [], dataAsOf: null }))
           : null,
-        policy.enabledSubServices.includes('ads')
-          ? AdsService.listCampaigns(organizationId).catch(() => ({
-              simulated: true,
-              profileId: policy.zernioProfileId,
-              quota: {
-                activeAdsManaged: (ws.campaigns || []).length,
-                maxManagedAds: policy.quotas.maxManagedAds,
-              },
-              campaigns: ws.campaigns || [],
-            }))
-          : null,
+        null, // Advertising is outside the selected release.
         policy.enabledSubServices.includes('telephony')
-          ? TelephonyService.listNumbersAndCapabilities(organizationId).catch(() => ({
-              simulated: true,
-              ownedNumbers: ws.ownedNumbers || [],
-              callHistory: ws.callHistory || [],
-              threads: ws.threads || [],
-            }))
-          : null,
-        policy.enabledSubServices.includes('commerce_local')
-          ? CommerceLocalService.getCommerceStoreOverview({
-              organizationId,
-              accountId: 'acc_shopify_01',
-            }).catch(() => ({
+          ? runPhoneLifecycleAction(organizationId, 'numbers', {}).catch(() => ({
               simulated: false,
-              store: null,
-              featuredProducts: [],
-              blogs: [],
-              googleBusinessLocations: [],
+              unavailable: true,
+              error: 'Phone number status could not be verified. Refresh before continuing.',
+              numbers: [],
+              ownedNumbers: [],
+              callHistory: null,
+              threads: null,
             }))
           : null,
+        null, // Commerce is outside the selected release.
         policy.enabledSubServices.includes('publishing')
-          ? PublishingService.listPosts(organizationId).catch(() => ws.posts || [])
-          : [],
+          ? PublishingService.listPosts(organizationId).then(posts => ({ posts })).catch(() => ({ posts: [], unavailable: true, error: 'Posts could not be refreshed from the provider.' }))
+          : { posts: [] },
       ]);
 
     return NextResponse.json({
@@ -159,60 +95,66 @@ export async function GET(request: Request) {
       availableTenants,
       subServicesData: {
         core_connect: accountsHealth,
-        publishing: { posts: posts || [] },
+        publishing: posts,
         inbox_crm: conversations,
         analytics,
         ads,
         telephony,
         commerce_local: commerce,
-        developerHub: {
-          apiKeys: ws.apiKeys || [],
-          webhooks: ws.webhooks || [],
-          apiLogs: ws.apiLogs || [],
-          wallet: ws.wallet || {
-            balanceUsd: 50.0,
-            monthlySpentUsd: 0,
-            currency: 'USD',
-            transactions: [],
-          },
-        },
+        developerHub: { apiKeys: [], webhooks: [], apiLogs: [], wallet: null,
+          legacyTools: 'retired', customerPayments: 'coming_soon', settingsEndpoint: '/api/saas',
+          canManage: canManageWorkspace(role) },
       },
     });
   } catch (err) {
     const message =
       err instanceof Error ? err.message : 'Failed to load workspace';
-    return NextResponse.json({ error: message }, { status: 400 });
+    const status = err instanceof TenantAccessError ? err.status : err instanceof ZernioApiException ? err.envelope.status : 400;
+    return NextResponse.json({ error: message }, { status });
   }
 }
 
 export async function POST(request: Request) {
   try {
+    requireTenantSession(request);
     const body = await request.json();
-    let organizationId = body.organizationId as string;
-
-    if (!organizationId) {
-      const cookieHeader = request.headers.get('cookie') || '';
-      const cookies = Object.fromEntries(
-        cookieHeader
-          .split(';')
-          .map((c) => c.trim().split('='))
-          .filter(([k]) => Boolean(k))
-          .map(([k, ...v]) => [k, decodeURIComponent(v.join('='))])
-      );
-      const session = decodeSession(cookies[SESSION_COOKIE_NAME]);
-      organizationId = session?.tenant?.organizationId || 'default_tenant';
+    if (!body || typeof body !== 'object' || Array.isArray(body)) {
+      return NextResponse.json({ error: 'Expected a JSON object.' }, { status: 400 });
     }
+    const { session, role } = await requireTenantAccess(request, body.organizationId);
+    const organizationId = session.tenant.organizationId;
 
     const subService = body.subService as string;
     const action = body.action as string;
 
+    const unavailable = unavailableServiceAction(subService, action);
+    if (unavailable) return NextResponse.json({ success: false, error: unavailable, code: 'feature_unavailable' }, { status: 501 });
+
+    const readAction = subService === 'telephony' &&
+      ['search_numbers', 'list_call_history', 'list_messages', 'list_numbers'].includes(action);
+    if (!readAction) requireWorkspaceRole(role, ['publishing', 'inbox_crm'].includes(subService));
+
+    // Account IDs are provider-wide. A valid session alone does not authorize them.
+    const accountIds: unknown[] = [];
+    if (body.accountId != null) accountIds.push(body.accountId);
+    if (subService === 'core_connect' && action === 'disconnect_account' && body.accountId == null) accountIds.push(body.id);
+    if (body.whatsappAccountId != null) accountIds.push(body.whatsappAccountId);
+    if (Array.isArray(body.platforms)) accountIds.push(...body.platforms.map((target: { accountId?: unknown }) => target?.accountId));
+    if (body.config?.accountId != null) accountIds.push(body.config.accountId);
+    if (Array.isArray(body.config?.accountIds)) accountIds.push(...body.config.accountIds);
+    if (action === 'send_reply' && !body.accountId) {
+      throw new TenantAccessError(400, 'Select the conversation account.');
+    }
+    if (accountIds.length) await requireTenantAccounts(organizationId, accountIds);
+    if (body.config?.profileId != null) {
+      const profileId = await CoreConnectService.ensureTenantProfile(organizationId);
+      if (body.config.profileId !== profileId) throw new TenantAccessError(403, 'The profile does not belong to this workspace.');
+    }
+
     if (subService === 'core_connect') {
       if (action === 'disconnect_account') {
         const accountId = (body.accountId as string) || (body.id as string) || '';
-        if (accountId) {
-          WorkspaceStore.removeConnectedAccount(organizationId, accountId);
-        }
-        return NextResponse.json({ success: true, accountId });
+        return NextResponse.json(await disconnectAccount(organizationId, accountId));
       }
     }
 
@@ -226,9 +168,12 @@ export async function POST(request: Request) {
           scheduledFor: body.scheduledFor,
           timezone: body.timezone,
           publishNow: body.publishNow,
+          isDraft: body.isDraft,
           useProfileQueue: body.useProfileQueue,
+          queueId: body.queueId,
+          idempotencyKey: request.headers.get('idempotency-key') || body.idempotencyKey,
         });
-        return NextResponse.json(res);
+        return NextResponse.json(res, { status: res.httpStatus || 200 });
       }
       if (action === 'create_queue') {
         const res = await PublishingService.upsertProfileQueue({
@@ -244,6 +189,7 @@ export async function POST(request: Request) {
           organizationId,
           filename: body.filename,
           contentType: body.contentType,
+          size: body.size,
         });
         return NextResponse.json(res);
       }
@@ -251,13 +197,14 @@ export async function POST(request: Request) {
 
     if (subService === 'inbox_crm') {
       if (action === 'send_reply') {
-        const res = await InboxCrmService.sendConversationReply({
-          organizationId,
+        const res = await runInboxReply(organizationId, {
           conversationId: body.conversationId,
           accountId: body.accountId,
           message: body.message,
+          platform: body.platform,
+          idempotencyKey: request.headers.get('idempotency-key') || body.idempotencyKey,
         });
-        return NextResponse.json(res);
+        return NextResponse.json(res, { status: res.httpStatus });
       }
       if (action === 'create_automation') {
         const res = await InboxCrmService.createGrowthAutomation({
@@ -320,35 +267,28 @@ export async function POST(request: Request) {
         return NextResponse.json(res);
       }
       if (action === 'buy_number') {
-        const res = await TelephonyService.buyPhoneNumber({
-          organizationId,
-          country: body.country,
-          phoneNumber: body.phoneNumber,
-          numberType: body.numberType,
-          locality: body.locality,
-        });
-        return NextResponse.json(res);
+        const result = await runPhoneLifecycleAction(organizationId, 'purchase', body);
+        return NextResponse.json(result, {status: result.httpStatus || 200});
       }
       if (action === 'link_whatsapp') {
-        const res = await TelephonyService.linkWhatsAppBusiness({
-          organizationId,
-          phoneNumberId: body.phoneNumberId,
-          displayName: body.displayName,
-          category: body.category,
-          verificationMethod: body.verificationMethod,
-        });
-        return NextResponse.json(res);
+        return NextResponse.json({
+          error: 'Continue with Meta from WhatsApp setup to connect a verified, owned number.',
+          code: 'hosted_onboarding_required',
+        }, { status: 410 });
       }
       if (action === 'send_test_whatsapp') {
         const res = await TelephonyService.sendTestWhatsAppMessage({
           organizationId,
           phoneNumberId: body.phoneNumberId,
+          accountId: body.accountId,
           recipientPhone: body.recipientPhone,
           templateName: body.templateName,
+          templateLanguage: body.templateLanguage,
           parameters: body.parameters,
           customMessage: body.customMessage,
+          idempotencyKey: request.headers.get('idempotency-key') || body.idempotencyKey,
         });
-        return NextResponse.json(res);
+        return NextResponse.json(res, { status: res.httpStatus });
       }
       if (action === 'configure_ai_voice' || action === 'configure_voice_agent') {
         const res = await TelephonyService.configureAiVoiceAgent({
@@ -379,10 +319,7 @@ export async function POST(request: Request) {
         return NextResponse.json(res);
       }
       if (action === 'list_call_history') {
-        const res = await TelephonyService.listCallHistory({
-          organizationId,
-          limit: body.limit,
-        });
+        const res = await runPhoneLifecycleAction(organizationId, 'call_history', body);
         return NextResponse.json(res);
       }
       if (action === 'send_sms') {
@@ -406,16 +343,11 @@ export async function POST(request: Request) {
         return NextResponse.json(res);
       }
       if (action === 'list_messages') {
-        const res = await TelephonyService.listMessages({
-          organizationId,
-          channel: body.channel,
-        });
+        const res = await runPhoneLifecycleAction(organizationId, 'messages', body);
         return NextResponse.json(res);
       }
       if (action === 'list_numbers') {
-        const res = await TelephonyService.listNumbersAndCapabilities(
-          organizationId
-        );
+        const res = await runPhoneLifecycleAction(organizationId, 'numbers', body);
         return NextResponse.json(res);
       }
       if (action === 'create_kyc_link') {
@@ -464,59 +396,16 @@ export async function POST(request: Request) {
         return NextResponse.json(res);
       }
       if (action === 'create_api_key') {
-        const keyItem = WorkspaceStore.createApiKey(organizationId, {
-          name: body.name || 'Production API Key',
-          environment: body.environment === 'test' ? 'test' : 'live',
-          scopes: body.scopes,
-        });
-        return NextResponse.json({ success: true, apiKey: keyItem });
+        const result = await SaasApiKeyService.create({organizationId,actorId:session.user.id,name:body.name,scopes:body.scopes,expiresAt:body.expiresAt});
+        return NextResponse.json({success:true,...result},{headers:{'Cache-Control':'no-store'}});
       }
-      if (action === 'revoke_api_key') {
-        const ws = WorkspaceStore.revokeApiKey(organizationId, body.keyId);
-        return NextResponse.json({ success: true, apiKeys: ws.apiKeys });
+      if (['revoke_api_key','delete_api_key'].includes(action)) {
+        const revoked = await SaasApiKeyService.revoke({organizationId,actorId:session.user.id,keyId:body.keyId});
+        return NextResponse.json({success:revoked,revoked},{headers:{'Cache-Control':'no-store'}});
       }
-      if (action === 'delete_api_key') {
-        const ws = WorkspaceStore.deleteApiKey(organizationId, body.keyId);
-        return NextResponse.json({ success: true, apiKeys: ws.apiKeys });
-      }
-      if (action === 'roll_api_key') {
-        const updated = WorkspaceStore.rollApiKey(organizationId, body.keyId);
-        return NextResponse.json({ success: true, apiKey: updated });
-      }
-      if (action === 'create_webhook') {
-        const wh = WorkspaceStore.createWebhook(organizationId, {
-          url: body.url,
-          description: body.description,
-          events: body.events,
-        });
-        return NextResponse.json({ success: true, webhook: wh });
-      }
-      if (action === 'delete_webhook') {
-        const ws = WorkspaceStore.deleteWebhook(organizationId, body.webhookId);
-        return NextResponse.json({ success: true, webhooks: ws.webhooks });
-      }
-      if (action === 'test_webhook') {
-        const deliveries = await WorkspaceStore.dispatchCustomerWebhook(
-          organizationId,
-          body.eventName || 'webhook.test',
-          {
-            message: 'Test webhook ping from Asra3 Developer Hub',
-            timestamp: new Date().toISOString(),
-            sampleEvent: body.eventName || 'message.received',
-          },
-          body.webhookId
-        );
-        return NextResponse.json({ success: true, deliveries });
-      }
-      if (action === 'topup_wallet') {
-        const amount = Number(body.amountUsd) || 25;
-        const wallet = WorkspaceStore.adjustWalletBalance(
-          organizationId,
-          'credit',
-          amount,
-          body.description || `Developer Telecom & AI Credit Top-Up (+$${amount})`
-        );
-        return NextResponse.json({ success: true, wallet });
+      if (action === 'roll_api_key') return NextResponse.json({error:'Create a new expiring key, update clients, then revoke the previous key.'},{status:501});
+      if (['create_webhook','delete_webhook','test_webhook','topup_wallet'].includes(action)) {
+        return NextResponse.json({success:false,error:'Customer webhook management and payment collection are coming soon. Incoming provider webhooks remain active.'},{status:501});
       }
     }
 
@@ -527,6 +416,7 @@ export async function POST(request: Request) {
   } catch (err) {
     const message =
       err instanceof Error ? err.message : 'Sub-service action failed';
-    return NextResponse.json({ error: message }, { status: 400 });
+    const status = err instanceof TenantAccessError ? err.status : err instanceof ZernioApiException ? err.envelope.status : 400;
+    return NextResponse.json({ error: message, ...(err instanceof ZernioApiException ? { code: err.envelope.code, details: err.envelope.details } : {}) }, { status });
   }
 }

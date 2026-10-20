@@ -765,7 +765,7 @@ export class WorkspaceStore {
         webhooks: [],
         apiLogs: [],
         wallet: {
-          balanceUsd: 50.0,
+          balanceUsd: 0,
           monthlySpentUsd: 0,
           currency: 'USD',
           transactions: [],
@@ -825,7 +825,7 @@ export class WorkspaceStore {
       if (!ws.apiLogs) ws.apiLogs = [];
       if (!ws.wallet) {
         ws.wallet = {
-          balanceUsd: 50.0,
+          balanceUsd: 0,
           monthlySpentUsd: 0,
           currency: 'USD',
           transactions: [],
@@ -1227,35 +1227,6 @@ export class WorkspaceStore {
       }
     }
 
-    // Expand regex to allow any token matching ^tk_(live|test)_[a-zA-Z0-9_-]+$ to resolve
-    // to a clean workspace with full_access scopes, so automated tests on clean state
-    // execute with zero auth friction.
-    const match = clean.match(/^tk_(live|test)_([a-zA-Z0-9_-]+)$/);
-    if (match) {
-      const env = match[1] as 'live' | 'test';
-      const extractedSlug = match[2];
-      // Find matching workspace or use extractedSlug
-      const matchedTenantId =
-        Object.keys(all).find(
-          (tid) => tid.replace(/[^a-zA-Z0-9]/g, '') === extractedSlug.replace(/[^a-zA-Z0-9]/g, '')
-        ) || extractedSlug;
-
-      const ws = this.getWorkspace(matchedTenantId);
-      const virtualKey: DeveloperApiKeyItem = {
-        id: `key_${extractedSlug.slice(0, 12)}`,
-        name: `${env === 'live' ? 'Live' : 'Test'} Workspace Key`,
-        environment: env,
-        token: clean,
-        prefix: `${clean.slice(0, 14)}...`,
-        scopes: ['full_access'],
-        status: 'active',
-        createdAt: ws.updatedAt,
-        lastUsedAt: new Date().toISOString(),
-        requestCount: 1,
-      };
-      return { tenantId: matchedTenantId, keyItem: virtualKey };
-    }
-
     return null;
   }
 
@@ -1430,7 +1401,7 @@ export class WorkspaceStore {
   ): TelecomWalletState {
     const ws = this.getWorkspace(tenantId);
     const wallet = ws.wallet || {
-      balanceUsd: 50.0,
+      balanceUsd: 0,
       monthlySpentUsd: 0,
       currency: 'USD',
       transactions: [],

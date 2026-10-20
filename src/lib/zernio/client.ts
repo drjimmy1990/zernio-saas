@@ -40,12 +40,15 @@ export interface ZernioRequestOptions {
   xRequestId?: string;
   apiKeyOverride?: string; // Used when calling with a tenant's Scoped API Key (zrk_ / sk_)
   extraHeaders?: Record<string, string>;
+  timeoutMs?: number;
+  /** Disable automatic retries for operations with one-shot provider side effects. */
+  retryOnRateLimit?: boolean;
 }
 
 /**
  * Production-grade Zernio HTTP & SDK client.
  * - Automatically attaches `Authorization: Bearer $ZERNIO_API_KEY` (or a tenant's scoped key)
- * - Supports `Idempotency-Key` and `x-request-id` headers for retry-safe mutations
+ * - Supports `Idempotency-Key` and `x-request-id`; replay guarantees depend on the endpoint
  * - Parses Zernio's stable error envelope (`type`, `code`, `platformError`, `Retry-After`)
  * - Automatically retries transient 429s when Retry-After <= 15s
  */
@@ -127,18 +130,35 @@ export class ZernioClient {
       headers['Content-Type'] = 'application/json';
     }
 
-    const response = await fetch(url.toString(), {
-      method,
-      headers,
-      body: options.body !== undefined ? JSON.stringify(options.body) : undefined,
-      cache: 'no-store',
-    });
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), options.timeoutMs ?? 30_000);
+    let response: Response;
+    let rawText: string;
+    try {
+      response = await fetch(url.toString(), {
+        method,
+        headers,
+        body: options.body !== undefined ? JSON.stringify(options.body) : undefined,
+        cache: 'no-store',
+        signal: controller.signal,
+      });
+      rawText = await response.text();
+    } catch {
+      throw new ZernioApiException({
+        status: controller.signal.aborted ? 504 : 503,
+        code: controller.signal.aborted ? 'PROVIDER_TIMEOUT' : 'PROVIDER_UNREACHABLE',
+        error: method === 'GET'
+          ? 'The provider response is unavailable. Try refreshing.'
+          : 'The provider response is unavailable. The request outcome is unknown. Check provider state before retrying and retain the original idempotency key; a key alone does not prevent duplicates.',
+      });
+    } finally {
+      clearTimeout(timeout);
+    }
 
     const requestId = response.headers.get('X-Request-Id') || undefined;
     const remainingHeader = response.headers.get('X-RateLimit-Remaining');
     const rateLimitRemaining = remainingHeader ? Number(remainingHeader) : undefined;
 
-    const rawText = await response.text();
     let parsed: Record<string, unknown> = {};
     if (rawText) {
       try {
@@ -159,7 +179,7 @@ export class ZernioClient {
         : retryAfterDetails;
 
       // Auto-retry rate limits when Retry-After is short (<= 15 seconds) and attempt < 3
-      if (response.status === 429 && attempt < 3 && (retryAfterSeconds ?? 5) <= 15) {
+      if (options.retryOnRateLimit !== false && response.status === 429 && attempt < 3 && (retryAfterSeconds ?? 5) <= 15) {
         const waitMs = Math.max(1, retryAfterSeconds ?? 5) * 1000;
         await new Promise((resolve) => setTimeout(resolve, waitMs));
         return this.request<T>(options, attempt + 1);

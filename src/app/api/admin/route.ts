@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { SuperAdminService } from '@/lib/services/super-admin.service';
-import { getSessionFromCookieHeader } from '@/lib/auth/session';
+import { requireTenantAccess, TenantAccessError } from '@/lib/auth/tenant-access';
 
 /**
  * SUPER ADMIN CONTROL PLANE API (`/api/admin`)
@@ -15,8 +15,8 @@ import { getSessionFromCookieHeader } from '@/lib/auth/session';
  */
 export async function GET(request: Request) {
   try {
-    const session = getSessionFromCookieHeader(request.headers.get('cookie'));
-    if (!session || session.user.role !== 'super_admin') {
+    const { role } = await requireTenantAccess(request);
+    if (role !== 'super_admin') {
       return NextResponse.json(
         { error: 'Unauthorized: Super Admin access required' },
         { status: 401 }
@@ -34,21 +34,23 @@ export async function GET(request: Request) {
     });
   } catch (err) {
     const message = err instanceof Error ? err.message : 'Admin snapshot failed';
-    return NextResponse.json({ error: message }, { status: 500 });
+    return NextResponse.json({ error: err instanceof TenantAccessError ? message : 'Administrator services are unavailable.' }, { status: err instanceof TenantAccessError ? err.status : 503 });
   }
 }
 
 export async function POST(request: Request) {
   try {
-    const session = getSessionFromCookieHeader(request.headers.get('cookie'));
-    if (!session || session.user.role !== 'super_admin') {
+    const { role } = await requireTenantAccess(request);
+    if (role !== 'super_admin') {
       return NextResponse.json(
         { error: 'Unauthorized: Super Admin access required' },
         { status: 401 }
       );
     }
 
-    const body = await request.json();
+    let body;
+    try { body = await request.json(); } catch { throw new TenantAccessError(400, 'Use a JSON object.'); }
+    if (!body || typeof body !== 'object' || Array.isArray(body)) throw new TenantAccessError(400, 'Use a JSON object.');
     const action = body.action as string;
 
     if (action === 'update_global_config') {
@@ -153,6 +155,6 @@ export async function POST(request: Request) {
     );
   } catch (err) {
     const message = err instanceof Error ? err.message : 'Admin update failed';
-    return NextResponse.json({ error: message }, { status: 400 });
+    return NextResponse.json({ error: err instanceof TenantAccessError ? message : 'Administrator update was not confirmed.' }, { status: err instanceof TenantAccessError ? err.status : 503 });
   }
 }

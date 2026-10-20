@@ -28,6 +28,9 @@ export function Navbar() {
   const router = useRouter();
   const { locale, setLocale, theme, toggleTheme, t } = useThemeAndLocale();
   const landingCopy = getLandingCopy(locale);
+  const platformsLabel = locale === 'ar' ? 'القنوات' : 'Channels';
+  const availabilityLabel = locale === 'ar' ? 'الإتاحة' : 'Availability';
+  const signupLabel = locale === 'ar' ? 'إنشاء حساب' : 'Create account';
 
   const [session, setSession] = useState<AuthSession | null>(null);
   const [langOpen, setLangOpen] = useState(false);
@@ -91,20 +94,22 @@ export function Navbar() {
     LOCALE_META.find((l) => l.code === locale) || LOCALE_META[0];
 
   const isLandingPage = pathname === '/';
+  const isPublicGuide = /^\/(ar|en)(\/|$)/.test(pathname);
+  const visibleLocales = isPublicGuide ? LOCALE_META.filter((item) => item.code === 'ar' || item.code === 'en') : LOCALE_META;
 
   // Unified, non-redundant navigation items (compact when signed in so the header never overflows)
   const primaryLinks = [
     { href: '/', label: t.nav.home, exact: true },
+    { href: locale === 'ar' ? '/ar' : '/en', label: locale === 'ar' ? 'دليل المنتج' : 'Product guide', exact: true },
     ...(isLandingPage && !session
       ? [
-          { href: '/#platforms', label: landingCopy.navAnchors.platforms },
+          { href: '/#platforms', label: platformsLabel },
           { href: '/#telephony', label: landingCopy.navAnchors.telephony },
-          { href: '/#ads', label: landingCopy.navAnchors.ads },
-          { href: '/#pricing', label: landingCopy.navAnchors.pricing },
+          { href: '/#pricing', label: availabilityLabel },
         ]
       : [
-          { href: '/#platforms', label: landingCopy.navAnchors.platforms, hideBelowXl: true },
-          { href: '/#pricing', label: landingCopy.navAnchors.pricing, hideBelowXl: true },
+          { href: '/#platforms', label: platformsLabel, hideBelowXl: true },
+          { href: '/#pricing', label: availabilityLabel, hideBelowXl: true },
         ]),
     { href: '/docs', label: t.nav.docs, icon: BookOpen, exact: true },
     ...(session
@@ -201,7 +206,7 @@ export function Navbar() {
 
             {langOpen && (
               <div className="absolute end-0 mt-2 w-60 rounded-2xl border border-[var(--border-subtle)] bg-[var(--bg-card)] p-1.5 shadow-2xl z-50 grid grid-cols-2 gap-1">
-                {LOCALE_META.map((loc) => {
+                {visibleLocales.map((loc) => {
                   const isSelected = loc.code === locale;
                   const shortCode = loc.code.split('-')[0].toUpperCase();
                   return (
@@ -210,6 +215,7 @@ export function Navbar() {
                       type="button"
                       onClick={() => {
                         setLocale(loc.code as SupportedLocale);
+                        if (isPublicGuide) router.push(pathname.replace(/^\/(ar|en)(?=\/|$)/, `/${loc.code}`));
                         setLangOpen(false);
                       }}
                       className={`flex items-center justify-between gap-1.5 rounded-xl px-2.5 py-2 text-start text-xs font-bold transition cursor-pointer ${
@@ -297,7 +303,7 @@ export function Navbar() {
                 href="/signup"
                 className="inline-flex h-9 items-center rounded-xl bg-[var(--brand-coral)] px-4 text-xs font-bold text-white shadow-sm shadow-[var(--brand-coral)]/20 transition hover:bg-[var(--accent-hover)] whitespace-nowrap cursor-pointer"
               >
-                {t.nav.signup}
+                {signupLabel}
               </Link>
             </div>
           )}
@@ -357,7 +363,7 @@ export function Navbar() {
                 onClick={() => setMobileMenuOpen(false)}
                 className="flex-1 text-center rounded-xl bg-[var(--brand-coral)] py-2.5 text-xs font-bold text-white"
               >
-                {t.nav.signup}
+                {signupLabel}
               </Link>
             </div>
           )}

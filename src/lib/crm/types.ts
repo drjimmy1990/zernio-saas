@@ -1,0 +1,8 @@
+import type { CrmConsent } from './audience';
+export type ContactIdentity = { platform: string; accountId?: string; participantId?: string; handle?: string };
+export type CrmField = { id: string; organization_id: string; name: string; kind: 'text' | 'number' | 'boolean' | 'date' | 'select'; options: string[]; archived_at?: string | null };
+export type CrmNote = { id: string; text: string; createdAt: string; authorId: string };
+export type ManualContact = { id: string; organization_id: string; display_name: string; company: string; phone: string | null; email: string | null; phones: string[]; emails: string[]; identities: ContactIdentity[]; channels: unknown[]; tags: string[]; custom_fields: Record<string, unknown>; notes: CrmNote[]; consents: CrmConsent[]; inbox_links: { accountId: string; conversationId: string; platform: string; linkedAt: string }[]; status: 'lead' | 'customer' | 'inactive'; owner_user_id: string | null; do_not_contact: boolean; archived_at: string | null; revision: number; created_at: string; updated_at: string; zernio_contact_id?: string | null };
+export type ContactInput = Pick<ManualContact, 'display_name'> & Partial<Pick<ManualContact, 'company' | 'phones' | 'emails' | 'identities' | 'tags' | 'custom_fields' | 'status' | 'owner_user_id' | 'do_not_contact'>>;
+export type ImportDecision = { row: number; action: 'skip' | 'create' | 'update'; contactId?: string; revision?: number };
+export type ImportPreview = { hash: string; rows: { row: number; contact?: ContactInput; errors: string[]; duplicates: { id: string; display_name: string; revision: number }[] }[] };

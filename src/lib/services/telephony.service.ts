@@ -4,14 +4,16 @@ import { CoreConnectService } from '@/lib/services/core-connect.service';
 import { WorkspaceStore } from '@/lib/storage/workspace-store';
 export * from '@/types/telephony';
 import type {
-  AvailablePhoneNumber,
   OwnedPhoneNumber,
   CallTranscriptLine,
   CallRecord,
   MessageItem,
   ConversationThread,
 } from '@/types/telephony';
-import { GLOBAL_TELEPHONY_COUNTRIES } from '@/types/telephony';
+import { ZernioApiException } from '@/lib/zernio/client';
+import { WhatsAppService } from '@/lib/whatsapp/service';
+import { searchPhoneNumbers, purchasePhoneNumber, listOwnedPhoneNumbers, getOwnedPhoneNumberForWhatsApp } from '@/lib/telephony/phone-numbers';
+import type { PurchasePhoneNumberParams, PhoneNumberType } from '@/lib/telephony/phone-numbers';
 
 
 interface TenantTelephonyData {
@@ -41,299 +43,32 @@ function persistTenantData(orgId: string, data: TenantTelephonyData): void {
  * SUB-SERVICE 6: CLOUD TELEPHONY, AI VOICE AGENTS, SMS, RCS & WHATSAPP SUITE
  */
 export class TelephonyService {
-  /**
-   * Search available virtual phone numbers across 55+ countries
-   * Filtering by country, number type ('local' | 'mobile' | 'toll_free') and capabilities
-   */
+  /** Read provider inventory and the current country/type price catalog. */
   public static async searchAvailableNumbers(params: {
     organizationId: string;
     country?: string;
-    numberType?: 'all' | 'local' | 'mobile' | 'toll_free';
-    capabilities?: {
-      voice?: boolean;
-      sms?: boolean;
-      whatsapp?: boolean;
-    };
+    numberType?: 'all' | PhoneNumberType;
+    capabilities?: { voice?: boolean; sms?: boolean; whatsapp?: boolean };
     search?: string;
     limit?: number;
-  }): Promise<{
-    totalCountries: number;
-    results: AvailablePhoneNumber[];
-  }> {
-    await assertSubServiceAllowed(params.organizationId, 'telephony');
-
-    // Filter countries based on input
-    const selectedCountryCode = params.country && params.country !== 'all' ? params.country.toUpperCase() : null;
-    const targetCountries = selectedCountryCode
-      ? GLOBAL_TELEPHONY_COUNTRIES.filter((c) => c.code === selectedCountryCode)
-      : GLOBAL_TELEPHONY_COUNTRIES;
-
-    const results: AvailablePhoneNumber[] = [];
-    const filterType = params.numberType && params.numberType !== 'all' ? params.numberType : null;
-
-    targetCountries.forEach((c) => {
-      // Pick matching types
-      const typesToGenerate = filterType
-        ? c.types.filter((t) => t === filterType)
-        : c.types;
-
-      typesToGenerate.forEach((type) => {
-        // Generate representative available numbers for each country & type
-        c.localities.forEach((loc, idx) => {
-          const capVoice = true;
-          const capSms = type !== 'toll_free' || c.code === 'US';
-          const capWhatsapp = c.code !== 'IL' && type !== 'toll_free';
-
-          // Check requested capabilities
-          if (params.capabilities?.voice && !capVoice) return;
-          if (params.capabilities?.sms && !capSms) return;
-          if (params.capabilities?.whatsapp && !capWhatsapp) return;
-
-          const numSuffix = (2000 + idx * 317 + results.length * 13).toString().padStart(4, '0');
-          const areaCode = c.samplePrefix;
-          let formattedNumber = `${c.dialCode} ${areaCode} ${numSuffix.slice(0, 3)} ${numSuffix.slice(3)}`;
-          if (c.code === 'US' || c.code === 'CA') {
-            formattedNumber = `${c.dialCode} (${areaCode}) 555-${numSuffix}`;
-          }
-
-          if (params.search && params.search.trim()) {
-            const query = params.search.toLowerCase().trim();
-            const matches =
-              c.name.toLowerCase().includes(query) ||
-              c.code.toLowerCase().includes(query) ||
-              loc.toLowerCase().includes(query) ||
-              formattedNumber.includes(query) ||
-              c.dialCode.includes(query);
-            if (!matches) return;
-          }
-
-          results.push({
-            id: `avail_${c.code.toLowerCase()}_${type}_${idx}_${results.length}`,
-            phoneNumber: formattedNumber,
-            country: c.code,
-            countryName: c.name,
-            flag: c.flag,
-            type,
-            locality: loc,
-            monthlyPriceUsd: c.monthlyUsd,
-            setupPriceUsd: 0,
-            capabilities: {
-              voice: capVoice,
-              sms: capSms,
-              whatsapp: capWhatsapp,
-            },
-            needsKyc: c.needsKyc,
-            addressConstraint: c.needsKyc ? 'country' : 'none',
-          });
-        });
-      });
-    });
-
-    const limit = params.limit || 60;
-    return {
-      totalCountries: GLOBAL_TELEPHONY_COUNTRIES.length,
-      results: results.slice(0, limit),
-    };
+  }) {
+    return searchPhoneNumbers(params);
   }
 
-  /**
-   * Buy / Provision a virtual phone number
-   */
-  public static async buyPhoneNumber(params: {
-    organizationId: string;
-    country: string;
-    phoneNumber?: string;
-    numberType?: 'local' | 'mobile' | 'toll_free';
-    locality?: string;
-  }): Promise<{
-    success: boolean;
-    phoneNumber: OwnedPhoneNumber;
-    message: string;
-    kycRequired: boolean;
-    kycUrl?: string;
-  }> {
-    const policy = await assertSubServiceAllowed(params.organizationId, 'telephony');
-    const tenantData = getTenantData(params.organizationId);
-
-    // Check quota
-    if (tenantData.ownedNumbers.length >= policy.quotas.maxPhoneNumbers) {
-      throw new Error(`Phone number quota exceeded (Max: ${policy.quotas.maxPhoneNumbers}). Upgrade plan in Admin.`);
-    }
-
-    const requestedCountry = (params.country || '').toUpperCase().trim();
-    const countryMeta = GLOBAL_TELEPHONY_COUNTRIES.find((c) => c.code === requestedCountry);
-    if (!countryMeta) {
-      throw new Error(`Unsupported or unknown country code "${params.country}". Must be one of: ${GLOBAL_TELEPHONY_COUNTRIES.map((c) => c.code).join(', ')}`);
-    }
-
-    const type = params.numberType || 'local';
-    const numSuffix = (4000 + Math.floor(Math.random() * 5000)).toString();
-    const generatedPhone =
-      params.phoneNumber ||
-      (countryMeta.code === 'US' || countryMeta.code === 'CA'
-        ? `${countryMeta.dialCode} (${countryMeta.samplePrefix}) 555-${numSuffix}`
-        : `${countryMeta.dialCode} ${countryMeta.samplePrefix} ${numSuffix}`);
-
-    const isKycReq = countryMeta.needsKyc;
-    const kycUrl = isKycReq
-      ? `https://asra3.com/kyc/verify?org=${encodeURIComponent(params.organizationId)}&country=${countryMeta.code}`
-      : undefined;
-
-    const newNumber: OwnedPhoneNumber = {
-      id: `num_${countryMeta.code.toLowerCase()}_${Date.now().toString(36)}`,
-      phoneNumber: generatedPhone,
-      country: countryMeta.code,
-      countryName: countryMeta.name,
-      flag: countryMeta.flag,
-      type,
-      status: isKycReq ? 'kyc_required' : 'active',
-      monthlyPriceUsd: countryMeta.monthlyUsd,
-      provisionedAt: new Date().toISOString(),
-      voiceEnabled: true,
-      smsEnabled: true,
-      whatsappEnabled: false,
-      whatsappLinked: false,
-      kycUrl,
-      brandedCallingStatus: isKycReq ? 'pending_kyc' : 'verified',
-      dlcStatus: countryMeta.code === 'US' ? 'pending_brand_review' : 'not_applicable',
-    };
-
-    // If real Zernio client is configured, also call upstream
-    if (zernioClient.isConfigured()) {
-      try {
-        await zernioClient.request({
-          method: 'POST',
-          path: '/phone-numbers/purchase',
-          body: {
-            country: countryMeta.code,
-            phoneNumber: generatedPhone,
-            numberType: type,
-          },
-        });
-      } catch (err) {
-        console.warn('Upstream Zernio purchase warning (continuing with local tenant provisioning):', err);
-      }
-    }
-
-    tenantData.ownedNumbers.unshift(newNumber);
-    persistTenantData(params.organizationId, tenantData);
-
-    return {
-      success: true,
-      phoneNumber: newNumber,
-      message: isKycReq
-        ? `Number ${generatedPhone} reserved! Regulatory compliance (KYC) documents required for ${countryMeta.name}.`
-        : `Number ${generatedPhone} successfully provisioned and active!`,
-      kycRequired: isKycReq,
-      kycUrl,
-    };
+  /** Purchase with a durable intent, server-owned profile, and verified allocation. */
+  public static async buyPhoneNumber(params: PurchasePhoneNumberParams) {
+    return purchasePhoneNumber(params);
   }
 
-  /**
-   * Step-by-Step WhatsApp Business Linking Wizard
-   */
-  public static async linkWhatsAppBusiness(params: {
+  /** The former OTP wizard is retired; use the provider WhatsApp connection flow. */
+  public static async linkWhatsAppBusiness(_params: {
     organizationId: string;
     phoneNumberId: string;
     displayName: string;
     category: string;
     verificationMethod: 'sms_otp' | 'voice_otp' | 'qr_code';
-  }): Promise<{
-    success: boolean;
-    status: 'linked';
-    verificationOtp?: string;
-    qrCodeData?: string;
-    templatesSynced: number;
-    phoneNumber: OwnedPhoneNumber;
-  }> {
-    await assertSubServiceAllowed(params.organizationId, 'telephony');
-    const tenantData = getTenantData(params.organizationId);
-
-    const targetNumber = tenantData.ownedNumbers.find((n) => n.id === params.phoneNumberId);
-    if (!targetNumber) {
-      throw new Error(`Phone number with ID ${params.phoneNumberId} not found.`);
-    }
-
-    const verificationOtp = '481-923';
-    const wabaId = `waba_${Date.now().toString(36)}`;
-
-    // Sync pre-approved templates
-    const templates: NonNullable<OwnedPhoneNumber['whatsappDetails']>['templates'] = [
-      {
-        name: 'order_update',
-        category: 'UTILITY',
-        status: 'APPROVED',
-        body: 'Hello {{1}}, your order #{{2}} has been confirmed and is on its way. Track live: {{3}}',
-        language: 'en_US',
-      },
-      {
-        name: 'winter_sale_50',
-        category: 'MARKETING',
-        status: 'APPROVED',
-        body: 'Special Offer: Get 50% off all enterprise communication plans with code {{1}} today only!',
-        language: 'en_US',
-      },
-      {
-        name: 'welcome_offer',
-        category: 'MARKETING',
-        status: 'APPROVED',
-        body: 'Welcome to Asra3! Here is your 20% discount code: {{1}}',
-        language: 'en_US',
-      },
-    ];
-
-    targetNumber.whatsappEnabled = true;
-    targetNumber.whatsappLinked = true;
-    targetNumber.whatsappDetails = {
-      displayName: params.displayName,
-      category: params.category,
-      verifiedAt: new Date().toISOString(),
-      verificationMethod: params.verificationMethod,
-      wabaId,
-      templates,
-    };
-
-    // Auto-capture OTP into virtual number's SMS inbox if method is sms_otp
-    if (params.verificationMethod === 'sms_otp') {
-      const otpThreadId = `thread_sms_meta_${Date.now().toString(36)}`;
-      const otpMessage: MessageItem = {
-        id: `msg_otp_${Date.now()}`,
-        conversationId: otpThreadId,
-        channel: 'sms',
-        direction: 'inbound',
-        fromNumber: '+1 (650) 555-0199', // WhatsApp Auth System
-        toNumber: targetNumber.phoneNumber,
-        text: `Your Asra3 WhatsApp Business verification code is ${verificationOtp}. Do not share this code with anyone.`,
-        status: 'delivered',
-        timestamp: new Date().toISOString(),
-      };
-
-      tenantData.threads.unshift({
-        id: otpThreadId,
-        virtualNumber: targetNumber.phoneNumber,
-        customerNumber: '+1 (650) 555-0199',
-        customerName: 'WhatsApp Verification Service',
-        channel: 'sms',
-        unreadCount: 1,
-        lastMessage: otpMessage.text,
-        lastMessageAt: otpMessage.timestamp,
-        messages: [otpMessage],
-      });
-    }
-
-    persistTenantData(params.organizationId, tenantData);
-
-    return {
-      success: true,
-      status: 'linked',
-      verificationOtp: params.verificationMethod === 'sms_otp' ? verificationOtp : undefined,
-      qrCodeData:
-        params.verificationMethod === 'qr_code'
-          ? `https://asra3.com/whatsapp/qr_auth/${wabaId}`
-          : undefined,
-      templatesSynced: templates.length,
-      phoneNumber: targetNumber,
-    };
+  }): Promise<never> {
+    throw new ZernioApiException({ status: 410, code: 'WHATSAPP_LINK_FLOW_RETIRED', error: 'Use the WhatsApp connection flow to connect this phone number.' });
   }
 
   /**
@@ -341,89 +76,25 @@ export class TelephonyService {
    */
   public static async sendTestWhatsAppMessage(params: {
     organizationId: string;
-    phoneNumberId: string;
+    phoneNumberId?: string;
+    accountId?: string;
     recipientPhone: string;
     templateName?: string;
+    templateLanguage?: string;
     parameters?: string[];
     customMessage?: string;
-  }): Promise<{
-    success: boolean;
-    messageId: string;
-    status: 'delivered';
-    readReceipt: boolean;
-    body: string;
-    sentAt: string;
-  }> {
-    await assertSubServiceAllowed(params.organizationId, 'telephony');
-    const tenantData = getTenantData(params.organizationId);
-
-    const targetNumber = tenantData.ownedNumbers.find((n) => n.id === params.phoneNumberId);
-    if (!targetNumber) {
-      throw new Error(`Phone number ${params.phoneNumberId} not found.`);
+    idempotencyKey?: string;
+  }) {
+    let accountId = params.accountId;
+    if (!accountId && params.phoneNumberId) {
+      const number = await getOwnedPhoneNumberForWhatsApp(params.organizationId, params.phoneNumberId);
+      accountId = number.socialAccountId || undefined;
     }
-
-    let messageText = params.customMessage || '';
-    if (params.templateName) {
-      if (params.templateName === 'order_update') {
-        messageText = `Hello ${params.parameters?.[0] || 'Customer'}, your order #${params.parameters?.[1] || '88412'} has been confirmed and is on its way. Track live: https://asra3.com/track/88412`;
-      } else if (params.templateName === 'winter_sale_50') {
-        messageText = `Special Offer: Get 50% off all enterprise communication plans with code ${params.parameters?.[0] || 'SAVE50'} today only!`;
-      } else {
-        messageText = `Welcome to Asra3! Here is your 20% discount code: ${params.parameters?.[0] || 'WELCOME20'}`;
-      }
-    } else if (!messageText) {
-      messageText = 'Hello! This is a live test broadcast message from Asra3 WhatsApp Business API.';
-    }
-
-    // Record into WhatsApp conversation thread
-    let thread = tenantData.threads.find(
-      (th) => th.channel === 'whatsapp' && th.customerNumber === params.recipientPhone
-    );
-
-    const messageId = `wamid.${Date.now().toString(36)}.${Math.random().toString(36).slice(2, 8)}`;
-    const sentAt = new Date().toISOString();
-
-    const newMsg: MessageItem = {
-      id: messageId,
-      conversationId: thread?.id || `thread_wa_${Date.now().toString(36)}`,
-      channel: 'whatsapp',
-      direction: 'outbound',
-      fromNumber: targetNumber.phoneNumber,
-      toNumber: params.recipientPhone,
-      text: messageText,
-      status: 'read', // Double blue checkmark ✓✓
-      timestamp: sentAt,
-    };
-
-    if (thread) {
-      thread.messages.push(newMsg);
-      thread.lastMessage = messageText;
-      thread.lastMessageAt = sentAt;
-    } else {
-      thread = {
-        id: newMsg.conversationId,
-        virtualNumber: targetNumber.phoneNumber,
-        customerNumber: params.recipientPhone,
-        customerName: 'WhatsApp Contact',
-        channel: 'whatsapp',
-        unreadCount: 0,
-        lastMessage: messageText,
-        lastMessageAt: sentAt,
-        messages: [newMsg],
-      };
-      tenantData.threads.unshift(thread);
-    }
-
-    persistTenantData(params.organizationId, tenantData);
-
-    return {
-      success: true,
-      messageId,
-      status: 'delivered',
-      readReceipt: true,
-      body: messageText,
-      sentAt,
-    };
+    if (!accountId) throw new ZernioApiException({ status: 400, code: 'WHATSAPP_ACCOUNT_REQUIRED', error: 'Select the connected WhatsApp account before sending.' });
+    return WhatsAppService.sendMessage({ organizationId: params.organizationId, accountId,
+      recipient: params.recipientPhone, text: params.customMessage,
+      template: params.templateName ? { name: params.templateName, language: params.templateLanguage || '', parameters: params.parameters } : undefined,
+      idempotencyKey: params.idempotencyKey });
   }
 
   /**
@@ -825,18 +496,10 @@ export class TelephonyService {
   public static async listMessages(params: {
     organizationId: string;
     channel?: 'all' | 'sms' | 'whatsapp';
-  }): Promise<{
-    threads: ConversationThread[];
-  }> {
+  }): Promise<{ threads: ConversationThread[]; whatsappEndpoint: string }> {
     await assertSubServiceAllowed(params.organizationId, 'telephony');
-    const tenantData = getTenantData(params.organizationId);
-
-    const filtered =
-      params.channel && params.channel !== 'all'
-        ? tenantData.threads.filter((t) => t.channel === params.channel)
-        : tenantData.threads;
-
-    return { threads: filtered };
+    if (params.channel === 'whatsapp') throw new ZernioApiException({ status: 410, code: 'USE_WHATSAPP_INBOX', error: 'Use the WhatsApp inbox with a connected account to read provider conversations.' });
+    return { threads: getTenantData(params.organizationId).threads.filter(thread => thread.channel === 'sms'), whatsappEndpoint: '/api/whatsapp' };
   }
 
   /**
@@ -1015,18 +678,6 @@ export class TelephonyService {
    * List Numbers and capabilities with quota
    */
   public static async listNumbersAndCapabilities(organizationId: string) {
-    const policy = await assertSubServiceAllowed(organizationId, 'telephony');
-    const tenantData = getTenantData(organizationId);
-
-    return {
-      simulated: !zernioClient.isConfigured(),
-      quota: {
-        used: tenantData.ownedNumbers.length,
-        max: policy.quotas.maxPhoneNumbers,
-      },
-      numbers: tenantData.ownedNumbers,
-      callHistory: tenantData.callHistory,
-      threads: tenantData.threads,
-    };
+    return listOwnedPhoneNumbers(organizationId);
   }
 }

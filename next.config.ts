@@ -3,10 +3,22 @@ import type { NextConfig } from 'next';
 const nextConfig: NextConfig = {
   reactStrictMode: true,
   output: 'standalone',
-  typescript: {
-    // Type checking is verified via `npx tsc --noEmit` in CI/pre-push;
-    // skipping the duplicate check inside Docker build avoids VPS RAM spikes & hangs.
-    ignoreBuildErrors: true,
+  async redirects() {
+    return [{
+      source: '/:path*',
+      has: [{ type: 'host', value: 'www.asra3.com' }],
+      destination: 'https://asra3.com/:path*',
+      permanent: true,
+    }];
+  },
+  async headers() {
+    return [{ source: '/:path*', headers: [
+      { key: 'X-Content-Type-Options', value: 'nosniff' },
+      { key: 'X-Frame-Options', value: 'DENY' },
+      { key: 'Referrer-Policy', value: 'strict-origin-when-cross-origin' },
+    ] }, ...['/api/:path*', '/dashboard/:path*', '/admin/:path*', '/login', '/signup', '/recovery'].map((source) => ({
+      source, headers: [{ key: 'X-Robots-Tag', value: 'noindex, nofollow' }],
+    }))];
   },
 };
 

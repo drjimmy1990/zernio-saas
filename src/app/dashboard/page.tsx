@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useEffect, useState, useCallback, Suspense } from 'react';
+import React, { useEffect, useState, useCallback, useRef, Suspense } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { useThemeAndLocale } from '@/i18n/ThemeAndLocaleProvider';
@@ -44,15 +44,15 @@ import {
   PLATFORM_CATALOG,
   type ConnectedAccountData,
 } from '@/components/dashboard/ConnectionWizardModal';
-import DeveloperApiAndWebhooksConsole from '@/components/dashboard/DeveloperApiAndWebhooksConsole';
+import { SaasWorkspace } from '@/components/dashboard/SaasWorkspace';
 import { useDashboardMode } from '@/lib/hooks/useDashboardMode';
 import { ExperienceModeSwitcher } from '@/components/dashboard/ExperienceModeSwitcher';
-import { SimpleModeConsole } from '@/components/dashboard/SimpleModeConsole';
+import { BusinessWorkspace } from '@/components/dashboard/BusinessWorkspace';
 import { ConnectAndAccountsHub } from '@/components/dashboard/hubs/ConnectAndAccountsHub';
 import { PublishingAndQueueHub } from '@/components/dashboard/hubs/PublishingAndQueueHub';
-import { InboxCrmWorkflowsHub } from '@/components/dashboard/hubs/InboxCrmWorkflowsHub';
-import { TelephonyWhatsAppVoiceHub } from '@/components/dashboard/hubs/TelephonyWhatsAppVoiceHub';
-import { AdsCommerceAnalyticsHub } from '@/components/dashboard/hubs/AdsCommerceAnalyticsHub';
+import { LaunchInboxWorkspace } from '@/components/dashboard/LaunchInboxWorkspace';
+import { AdvancedPhoneWorkspace } from '@/components/dashboard/AdvancedPhoneWorkspace';
+import { CustomerReportsWorkspace } from '@/components/dashboard/CustomerReportsWorkspace';
 import { Asra3Mark } from '@/components/Asra3Logo';
 
 interface WorkspaceResponse {
@@ -210,6 +210,7 @@ function CustomerDashboardContent() {
         `/api/services?organizationId=${encodeURIComponent(organizationId)}`
       );
       const data = await res.json();
+      if (!res.ok || data.error || data.success === false) throw new Error('Dashboard refresh failed');
       setWorkspace(data);
     } catch {
       setStatusBanner({
@@ -239,59 +240,44 @@ function CustomerDashboardContent() {
   const [wizardInitialAccount, setWizardInitialAccount] =
     useState<ConnectedAccountData | null>(null);
 
-  // Handle OAuth Redirect Callback from Zernio (/dashboard?oauth_callback=1&tempToken=... or ?connected=...&accountId=...)
+  const acceptedCallback = useRef<string>('');
+  // Accept once, then remove temporary authorization values from the browser URL.
   useEffect(() => {
     if (authChecking || !organizationId) return;
-    const tempToken = searchParams.get('tempToken');
-    const stepParam = searchParams.get('step');
-    const connectedPlatform = searchParams.get('connected') || searchParams.get('platform');
-    const accountId = searchParams.get('accountId');
-    const username = searchParams.get('username');
-
-    if (tempToken && (connectedPlatform || stepParam)) {
-      const stepToPlatform: Record<string, SocialPlatform> = {
-        select_page: 'facebook',
-        select_organization: 'linkedin',
-        select_board: 'pinterest',
-        select_location: 'googlebusiness',
-        select_public_profile: 'snapchat',
-        select_phone_number: 'whatsapp',
-        select_account: 'instagram',
-      };
-      const resolvedPlatform =
-        (connectedPlatform as SocialPlatform) ||
-        (stepParam && stepToPlatform[stepParam]) ||
-        'facebook';
-
-      setWizardPlatform(resolvedPlatform);
-      setWizardTempToken(tempToken);
-      setWizardSelectionStep(stepParam || '');
-      setWizardInitialStep(3);
-      setIsWizardOpen(true);
-    } else if (connectedPlatform && accountId) {
-      void (async () => {
-        try {
-          const res = await fetch('/api/connect', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              action: 'complete_oauth_callback',
-              organizationId,
-              platform: connectedPlatform,
-              accountId,
-              username: username || `@${connectedPlatform}`,
-              displayName: username || `${connectedPlatform.toUpperCase()} Account`,
-            }),
-          });
-          const data = await res.json();
-          if (data.account) {
-            handleAccountConnected(data.account);
-          }
-        } catch {
-          // Ignore callback error
+    const nonce = searchParams.get('asra3_oauth_state');
+    const hasCallback = nonce || searchParams.has('tempToken') || searchParams.has('accountId') || searchParams.has('error');
+    if (!hasCallback || acceptedCallback.current === searchParams.toString()) return;
+    acceptedCallback.current = searchParams.toString();
+    const callback = Object.fromEntries(searchParams.entries());
+    void (async () => {
+      try {
+        const res = await fetch('/api/connect', {
+          method: 'POST', headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ ...callback, action: 'accept_oauth_callback', organizationId,
+            oauthSessionId: nonce, platform: callback.connected || callback.platform }),
+        });
+        const data = await res.json();
+        if (!res.ok || data.error) throw new Error(data.error || 'The provider callback could not be verified.');
+        if (data.selectionRequired && data.oauthSessionId) {
+          setWizardPlatform(data.platform);
+          setWizardTempToken(data.oauthSessionId);
+          setWizardSelectionStep(data.step);
+          setWizardInitialAccount(null);
+          setWizardInitialStep(3);
+          setIsWizardOpen(true);
+        } else if (data.success && data.account) {
+          handleAccountConnected(data.account);
+        } else {
+          throw new Error('The provider has not confirmed the connection.');
         }
-      })();
-    }
+      } catch (error) {
+        setStatusBanner({ type: 'error', message: error instanceof Error ? error.message : 'Restart the connection and try again.' });
+      } finally {
+        const clean = new URL(window.location.href);
+        for (const key of ['asra3_oauth_state', 'oauth_callback', 'tempToken', 'userProfile', 'connect_token', 'profileId', 'accountId', 'connected', 'platform', 'step', 'username', 'error', 'error_description', 'state', 'request_id', 'stage']) clean.searchParams.delete(key);
+        window.history.replaceState(null, '', clean.pathname + clean.search + clean.hash);
+      }
+    })();
   }, [authChecking, organizationId, searchParams]);
 
   const handleOpenWizard = (
@@ -518,10 +504,10 @@ function CustomerDashboardContent() {
 
       {/* Main Workspace Stage: Clean Branching between Simple Mode & Advanced Pro Mode */}
       {mode === 'simple' ? (
-        <SimpleModeConsole
+        <BusinessWorkspace
           workspace={workspace}
           policy={policy}
-          onSwitchToAdvanced={() => setMode('advanced')}
+          onOpenConnectionWizard={(platform, account) => handleOpenWizard(platform as any, account ? 2 : 1, account || null)}
           onRefreshWorkspace={() => void loadWorkspace()}
         />
       ) : (
@@ -542,7 +528,7 @@ function CustomerDashboardContent() {
               },
               {
                 id: 'inbox_crm',
-                label: loc('المحادثات والعملاء', 'Inbox, CRM & Flows'),
+                label: loc('المحادثات والعملاء', 'Inbox and contacts'),
                 icon: MessageSquare,
               },
               {
@@ -552,12 +538,12 @@ function CustomerDashboardContent() {
               },
               {
                 id: 'ads_commerce',
-                label: loc('الإعلانات والمتاجر', 'Ads & Commerce'),
-                icon: Megaphone,
+                label: loc('التقارير', 'Reports'),
+                icon: BarChart3,
               },
               {
                 id: 'developer',
-                label: loc('الـ API والمحفظة', 'API & Webhooks'),
+                label: loc('الفريق والإعدادات', 'Team and settings'),
                 icon: Code2,
               },
             ].map((hub) => {
@@ -585,8 +571,8 @@ function CustomerDashboardContent() {
             <ConnectAndAccountsHub
               workspace={workspace}
               policy={policy}
-              onOpenConnectionWizard={(platform) =>
-                handleOpenWizard(platform as any, 1, null)
+              onOpenConnectionWizard={(platform, account) =>
+                handleOpenWizard(platform as any, account ? 2 : 1, account || null)
               }
               onRefreshWorkspace={() => void loadWorkspace()}
             />
@@ -601,62 +587,16 @@ function CustomerDashboardContent() {
           )}
 
           {activeHub === 'inbox_crm' && (
-            <InboxCrmWorkflowsHub
+            <LaunchInboxWorkspace
               workspace={workspace}
               policy={policy}
               onRefreshWorkspace={() => void loadWorkspace()}
             />
           )}
 
-          {activeHub === 'telephony' && (
-            <TelephonyWhatsAppVoiceHub
-              workspace={workspace}
-              policy={policy}
-              onRefreshWorkspace={() => void loadWorkspace()}
-            />
-          )}
-
-          {activeHub === 'ads_commerce' && (
-            <AdsCommerceAnalyticsHub
-              workspace={workspace}
-              policy={policy}
-              onRefreshWorkspace={() => void loadWorkspace()}
-            />
-          )}
-
-          {activeHub === 'developer' && (
-            <DeveloperApiAndWebhooksConsole
-              isRTL={isAr}
-              defaultApiKey={`tk_live_${(organizationId || 'org').replace(/[^a-zA-Z0-9]/g, '')}_9f8e7d6c5b4a3`}
-              plan={{
-                id: policy?.planKey || 'growth',
-                name: (policy?.planKey || 'Pro Growth').toUpperCase(),
-                price: '$99/mo',
-                maxConnectedAccounts: policy?.quotas.maxConnectedAccounts ?? 25,
-                maxMonthlyPosts: policy?.quotas.maxMonthlyPosts ?? 500,
-                maxPhoneNumbers: policy?.quotas.maxPhoneNumbers ?? 5,
-                apiRequestsPerMinute: 120,
-              }}
-              usage={{
-                connectedAccounts:
-                  workspace?.subServicesData.core_connect?.accounts?.length || 0,
-                posts:
-                  workspace?.subServicesData.publishing?.posts?.length || 0,
-                phoneNumbers:
-                  workspace?.subServicesData.telephony?.numbers?.length || 0,
-              }}
-              developerHub={workspace?.subServicesData.developerHub}
-              onRunServiceAction={async (payload, toastMsg) =>
-                runServiceAction(
-                  (payload.subService as SubServiceKey) || 'support_ai',
-                  String(payload.action || ''),
-                  payload,
-                  toastMsg || loc('تم تنفيذ العملية بنجاح!', 'Action completed!')
-                )
-              }
-              onRefreshWorkspace={async () => void loadWorkspace()}
-            />
-          )}
+          {activeHub === 'telephony' && <AdvancedPhoneWorkspace />}
+          {activeHub === 'ads_commerce' && <CustomerReportsWorkspace />}
+          {activeHub === 'developer' && <SaasWorkspace />}
         </div>
       )}
 
@@ -672,7 +612,7 @@ function CustomerDashboardContent() {
         }}
         initialPlatform={wizardPlatform}
         initialStep={wizardInitialStep}
-        initialTempToken={wizardTempToken}
+        initialOAuthSessionId={wizardTempToken}
         initialSelectionStep={wizardSelectionStep}
         initialAccount={wizardInitialAccount}
         organizationId={organizationId}
@@ -680,7 +620,8 @@ function CustomerDashboardContent() {
         onAccountDisconnected={handleAccountDisconnected}
         onOpenBuyNumberWizard={() => {
           setIsWizardOpen(false);
-          setMode('simple');
+          setActiveHub('telephony');
+          setMode('advanced');
         }}
       />
     </div>

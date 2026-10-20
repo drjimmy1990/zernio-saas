@@ -1,0 +1,10 @@
+version: 1
+name: Zernio Facebook contract fixture
+slug: zernio-facebook-contract
+protocol: http
+port: 4949
+interceptRequests: true
+scenarios:
+  - name: default
+    path: ./default.js
+    default: true

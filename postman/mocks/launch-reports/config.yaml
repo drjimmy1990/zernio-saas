@@ -1,0 +1,10 @@
+version: 1
+name: Zernio selected channel reporting contract fixture
+slug: launch-reports
+protocol: http
+port: 4955
+interceptRequests: true
+scenarios:
+  - name: default
+    path: ./default.js
+    default: true

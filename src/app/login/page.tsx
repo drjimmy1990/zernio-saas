@@ -19,7 +19,10 @@ import { Asra3Logo } from '@/components/Asra3Logo';
 function LoginFormContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const redirectTarget = searchParams.get('redirect') || '/dashboard';
+  const requestedRedirect = searchParams.get('redirect');
+  const redirectTarget = requestedRedirect?.startsWith('/') && !requestedRedirect.startsWith('//') &&
+    !requestedRedirect.includes('\\') && !/[\u0000-\u001f\u007f]/.test(requestedRedirect)
+    ? requestedRedirect : null;
   const { t, locale, dir } = useThemeAndLocale();
 
   const [email, setEmail] = useState<string>('');
@@ -49,12 +52,7 @@ function LoginFormContent() {
         return;
       }
 
-      // Route according to user role and target redirect
-      if (data.user?.role === 'super_admin' && redirectTarget.startsWith('/admin')) {
-        router.push('/admin');
-      } else {
-        router.push(redirectTarget || data.redirectTo || '/dashboard');
-      }
+      router.push(redirectTarget || data.redirectTo || (data.user?.role === 'super_admin' ? '/admin' : '/dashboard'));
     } catch (err) {
       setError(err instanceof Error ? err.message : t.auth.unableToSignIn);
     } finally {
@@ -63,11 +61,9 @@ function LoginFormContent() {
   };
 
   const handleGoogleOAuth = () => {
-    // Standard OAuth initiation
-    const mockEmail = email.trim() || 'founder@company.com';
-    setEmail(mockEmail);
-    setPassword('oauth_verified_token');
-    void handleLogin({ preventDefault: () => {} } as React.FormEvent);
+    setError(locale === 'ar'
+      ? 'تسجيل الدخول عبر Google غير متاح حالياً. استخدم البريد الإلكتروني وكلمة المرور.'
+      : 'Google sign-in is not available yet. Use your email and password.');
   };
 
   return (
@@ -93,6 +89,7 @@ function LoginFormContent() {
           )}
 
           <form onSubmit={handleLogin} className="mt-6 space-y-4">
+            <Link href="/recovery" className="inline-block text-sm text-[var(--brand-coral)]">{locale === 'ar' ? 'نسيت كلمة المرور أو تحتاج تأكيد البريد؟' : 'Forgot password or need email verification?'}</Link>
             <div>
               <label className="block text-xs font-bold text-[var(--text-secondary)]">
                 {t.auth.emailLabel}

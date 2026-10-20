@@ -4,9 +4,11 @@ export interface AvailablePhoneNumber {
   country: string;
   countryName: string;
   flag: string;
-  type: 'local' | 'mobile' | 'toll_free';
+  type: 'local' | 'mobile' | 'toll_free' | 'national';
   locality: string;
   monthlyPriceUsd: number;
+  monthlyCents?: number;
+  requestOnly?: boolean;
   setupPriceUsd: number;
   capabilities: {
     voice: boolean;
@@ -23,9 +25,12 @@ export interface OwnedPhoneNumber {
   country: string;
   countryName: string;
   flag: string;
-  type: 'local' | 'mobile' | 'toll_free';
-  status: 'active' | 'kyc_required' | 'pending';
-  monthlyPriceUsd: number;
+  type: 'local' | 'mobile' | 'toll_free' | 'national';
+  status: 'active' | 'kyc_required' | 'pending' | 'pending_payment' | 'pending_regulatory' | 'regulatory_declined' | 'provisioning' | 'verifying' | 'suspended' | 'releasing' | 'released';
+  monthlyPriceUsd: number | null;
+  profileId?: string;
+  socialAccountId?: string | null;
+  ownerAccountId?: string | null;
   provisionedAt: string;
   voiceEnabled: boolean;
   smsEnabled: boolean;

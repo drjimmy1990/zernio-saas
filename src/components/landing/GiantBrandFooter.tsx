@@ -1,4 +1,5 @@
 'use client';
+import { launchCopy } from './launch-copy';
 
 import React, { useState } from 'react';
 import Link from 'next/link';
@@ -15,38 +16,25 @@ import {
 import { Asra3Logo } from '@/components/Asra3Logo';
 
 export default function GiantBrandFooter() {
-  const { t, dir, locale } = useThemeAndLocale();
-  const copy = getLandingCopy(locale).footer;
+  const { t: dictionary, dir, locale } = useThemeAndLocale();
+  const t = launchCopy(dictionary, locale === 'ar');
+  const originalCopy = getLandingCopy(locale).footer;
+  const ar = locale === 'ar';
+  const copy = {
+    ...originalCopy,
+    col1Title: ar ? 'أدوات العمل الحالية' : 'Current workspace tools',
+    col1Links: [ar ? 'ربط Facebook وInstagram وWhatsApp' : 'Connect Facebook, Instagram and WhatsApp', ar ? 'النشر والجدولة المدعومان' : 'Supported publishing and scheduling', ar ? 'العملاء والمحادثات اليدوية' : 'Manual customers and conversations', ar ? 'الإعلانات — قريباً' : 'Advertising — Coming soon'],
+    col2Title: ar ? 'الأرقام والمراسلة' : 'Numbers and messaging',
+    col2Links: [ar ? 'أرقام المزود حسب التوافر والموافقة' : 'Provider numbers subject to availability and approval', ar ? 'ربط واتساب للأرقام المؤهلة' : 'WhatsApp connection for eligible numbers', ar ? 'المكالمات اليدوية المدعومة' : 'Supported manual calls', ar ? 'رسائل SMS مع المراجعة والموافقة' : 'Reviewed SMS with consent'],
+    col3Title: ar ? 'الوثائق ومساحة العمل' : 'Documentation and workspace',
+    col3Links: [ar ? 'الوثائق وإتاحة الموارد' : 'Documentation and resource availability', ar ? 'دليل عمليات REST اليدوية' : 'Manual REST operation guide', ar ? 'مواصفات API وحدود الإتاحة' : 'API specifications and availability limits', ar ? 'مساحة العمل والتقارير' : 'Workspace and reports'],
+    col4Title: ar ? 'روابط الاكتشاف العامة' : 'Public discovery links',
+    col4Links: [ar ? 'ملخص المنتج الاختياري llms.txt' : 'Optional product summary: llms.txt', 'sitemap.xml', 'robots.txt', ar ? 'الإتاحة حسب الحساب وصلاحيات المزود' : 'Availability follows account and provider permissions'],
+    statusText: ar ? 'الأدوات اليدوية الحالية؛ الإتاحة حسب المزود' : 'Current manual tools; availability depends on the provider',
+  };
   const [openFaqIndex, setOpenFaqIndex] = useState<number | null>(0);
 
   const ArrowIcon = dir === 'rtl' ? ArrowLeft : ArrowRight;
-
-  const pricingTiers = [
-    {
-      key: 'starter',
-      price: 29,
-      data: t.pricingSection.plans.starter,
-      featured: false,
-    },
-    {
-      key: 'growth',
-      price: 79,
-      data: t.pricingSection.plans.growth,
-      featured: false,
-    },
-    {
-      key: 'agency',
-      price: 199,
-      data: t.pricingSection.plans.agency,
-      featured: true,
-    },
-    {
-      key: 'enterprise',
-      price: 499,
-      data: t.pricingSection.plans.enterprise,
-      featured: false,
-    },
-  ];
 
   const toggleFaq = (index: number) => {
     setOpenFaqIndex((prev) => (prev === index ? null : index));
@@ -69,71 +57,6 @@ export default function GiantBrandFooter() {
           </p>
         </div>
 
-        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
-          {pricingTiers.map((tier) => (
-            <div
-              key={tier.key}
-              className={`luxury-card flex flex-col justify-between rounded-3xl p-7 transition text-start ${
-                tier.featured
-                  ? 'ring-2 ring-[var(--brand-coral)] shadow-xl relative'
-                  : 'hover:border-[var(--brand-coral)]/40'
-              }`}
-            >
-              <div>
-                <div className="flex items-center justify-between gap-2">
-                  <h3 className="text-lg font-bold text-[var(--text-primary)]">
-                    {tier.data.name}
-                  </h3>
-                  {tier.featured && (
-                    <span className="rounded-full bg-[var(--brand-coral)] px-3 py-0.5 text-[11px] font-bold text-white shadow-xs shrink-0">
-                      {t.pricingSection.popularBadge}
-                    </span>
-                  )}
-                </div>
-
-                <div className="mt-5 flex items-baseline gap-1">
-                  <span
-                    dir="ltr"
-                    className="text-4xl font-extrabold text-[var(--text-primary)]"
-                  >
-                    ${tier.price}
-                  </span>
-                  <span className="text-xs text-[var(--text-secondary)]">
-                    {t.pricingSection.perMonth}
-                  </span>
-                </div>
-
-                <p className="mt-2 text-xs leading-relaxed text-[var(--text-secondary)]">
-                  {tier.data.desc}
-                </p>
-
-                <ul className="mt-6 space-y-3 border-t border-[var(--border-subtle)] pt-6">
-                  {tier.data.features.map((feat) => (
-                    <li
-                      key={feat}
-                      className="flex items-start gap-2.5 text-xs text-[var(--text-primary)]"
-                    >
-                      <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-[var(--brand-coral)]" />
-                      <span>{feat}</span>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-
-              <Link
-                href={`/signup?plan=${tier.key}`}
-                className={`mt-8 inline-flex w-full items-center justify-center gap-2 rounded-2xl py-3.5 text-xs font-bold transition cursor-pointer shadow-sm ${
-                  tier.featured
-                    ? 'bg-[var(--brand-coral)] text-white hover:bg-[var(--accent-hover)]'
-                    : 'border border-[var(--border-subtle)] bg-[var(--bg-muted)] text-[var(--text-primary)] hover:border-[var(--brand-coral)]/40 hover:text-[var(--brand-coral)]'
-                }`}
-              >
-                <span>{t.pricingSection.choosePlan}</span>
-                <ArrowIcon className="h-3.5 w-3.5" />
-              </Link>
-            </div>
-          ))}
-        </div>
       </section>
 
       {/* 2. AEO & GEO DIRECT-ANSWER FAQ ACCORDION */}
@@ -203,7 +126,7 @@ export default function GiantBrandFooter() {
           ASRA3
         </div>
         <div className="mt-3 text-xs sm:text-sm font-bold tracking-wide text-[var(--text-secondary)]">
-          {copy.brandSubtitle}
+          {locale==='ar'?'عملاء ومحادثات ونشر وحملات واتساب يدوية. الأتمتة والدفع قريباً.':'Manual customers, conversations, publishing and WhatsApp campaigns. Automation and payments are coming soon.'}
         </div>
       </section>
 
@@ -242,7 +165,7 @@ export default function GiantBrandFooter() {
               </li>
               <li>
                 <Link
-                  href="/dashboard?tab=ads"
+                  href="#ads"
                   className="hover:text-[var(--brand-coral)] transition"
                 >
                   {copy.col1Links[3]}
@@ -313,7 +236,7 @@ export default function GiantBrandFooter() {
               </li>
               <li>
                 <Link
-                  href="/docs#mcp"
+                  href="/docs"
                   className="hover:text-[var(--brand-coral)] transition"
                 >
                   {copy.col3Links[2]}

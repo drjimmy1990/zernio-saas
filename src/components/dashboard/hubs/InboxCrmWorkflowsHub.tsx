@@ -26,6 +26,10 @@ import {
 } from 'lucide-react';
 import { useThemeAndLocale } from '@/i18n/ThemeAndLocaleProvider';
 import { getLocalizedText } from '@/i18n/dictionaries';
+import { ProviderMetaInbox } from '@/components/dashboard/ProviderMetaInbox';
+import { ProviderMetaComments } from '@/components/dashboard/ProviderMetaComments';
+import { ProviderMetaSettings } from '@/components/dashboard/ProviderMetaSettings';
+import { ProviderWhatsAppInbox } from '@/components/dashboard/ProviderWhatsAppInbox';
 
 interface InboxCrmWorkflowsHubProps {
   workspace: any;
@@ -40,22 +44,11 @@ export function InboxCrmWorkflowsHub({
 }: InboxCrmWorkflowsHubProps) {
   const { locale, dir } = useThemeAndLocale();
   const isRTL = dir === 'rtl';
-  const loc = (ar: string, en: string) => getLocalizedText(locale, { ar, en });
+  const loc = useCallback((ar: string, en: string) => getLocalizedText(locale, { ar, en }), [locale]);
 
   const [mainTab, setMainTab] = useState<'inbox' | 'crm' | 'broadcasts' | 'workflows'>('inbox');
-  const [inboxSubTab, setInboxSubTab] = useState<'dms' | 'comments' | 'reviews' | 'mentions'>('dms');
-
-  // DMs State
-  const [threads, setThreads] = useState<any[]>([]);
-  const [activeThreadId, setActiveThreadId] = useState<string>('');
-  const [searchQuery, setSearchQuery] = useState<string>('');
-  const [replyText, setReplyText] = useState<string>('');
-  const [messages, setMessages] = useState<any[]>([]);
-  const [sendingMessage, setSendingMessage] = useState<boolean>(false);
-
-  // Social Comments State
-  const [comments, setComments] = useState<any[]>([]);
-  const [commentReplyMap, setCommentReplyMap] = useState<Record<string, string>>({});
+  const [inboxSubTab, setInboxSubTab] = useState<'dms' | 'comments' | 'settings' | 'reviews' | 'mentions'>('dms');
+  const [messageChannel, setMessageChannel] = useState<'meta' | 'whatsapp'>('meta');
 
   // Reviews State
   const [reviews, setReviews] = useState<any[]>([]);
@@ -94,11 +87,9 @@ export function InboxCrmWorkflowsHub({
     setLoadingHubData(true);
     setHubError(null);
     try {
-      const [cRes, fRes, tRes, commRes, revRes, wfRes, bRes] = await Promise.all([
+      const [cRes, fRes, revRes, wfRes, bRes] = await Promise.all([
         fetch('/api/v1/contacts').catch(() => null),
         fetch('/api/v1/custom-fields').catch(() => null),
-        fetch('/api/v1/inbox/conversations').catch(() => null),
-        fetch('/api/v1/inbox/comments').catch(() => null),
         fetch('/api/v1/inbox/reviews').catch(() => null),
         fetch('/api/v1/workflows').catch(() => null),
         fetch('/api/v1/broadcasts').catch(() => null),
@@ -114,21 +105,6 @@ export function InboxCrmWorkflowsHub({
         const fData = await fRes.json().catch(() => ({}));
         if (fData.success && Array.isArray(fData.customFields || fData.data)) {
           setCustomFields(fData.customFields || fData.data);
-        }
-      }
-      if (tRes && tRes.ok) {
-        const tData = await tRes.json().catch(() => ({}));
-        if (tData.success && Array.isArray(tData.data)) {
-          setThreads(tData.data);
-          if (tData.data.length > 0 && !activeThreadId) {
-            setActiveThreadId(tData.data[0].id);
-          }
-        }
-      }
-      if (commRes && commRes.ok) {
-        const commData = await commRes.json().catch(() => ({}));
-        if (commData.success && Array.isArray(commData.comments || commData.data)) {
-          setComments(commData.comments || commData.data);
         }
       }
       if (revRes && revRes.ok) {
@@ -158,82 +134,12 @@ export function InboxCrmWorkflowsHub({
     } finally {
       setLoadingHubData(false);
     }
-  }, [activeThreadId, selectedWorkflow, loc]);
+  }, [selectedWorkflow, loc]);
 
   useEffect(() => {
+    if (mainTab === 'inbox' && ['dms', 'comments', 'settings'].includes(inboxSubTab)) return;
     void fetchHubData();
-  }, [fetchHubData, workspace]);
-
-  // Messages loader for active thread
-  useEffect(() => {
-    if (!activeThreadId) {
-      setMessages([]);
-      return;
-    }
-    const loadThreadMessages = async () => {
-      try {
-        const res = await fetch(`/api/v1/inbox/conversations/${activeThreadId}/messages`);
-        const data = await res.json().catch(() => ({}));
-        if (res.ok && data.success && Array.isArray(data.messages || data.data)) {
-          const list = data.messages || data.data;
-          setMessages(
-            list.map((m: any) => ({
-              id: m.id,
-              sender: m.direction === 'outgoing' ? 'agent' : 'customer',
-              text: m.text,
-              time: new Date(m.createdAt || Date.now()).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-            }))
-          );
-        }
-      } catch (err) {
-        console.error('Error fetching messages for conversation:', err);
-      }
-    };
-    void loadThreadMessages();
-  }, [activeThreadId]);
-
-  // Send message in DMs
-  const handleSendMessage = async () => {
-    if (!replyText.trim() || !activeThreadId) return;
-    const textToSend = replyText.trim();
-    setSendingMessage(true);
-    setHubError(null);
-    try {
-      const res = await fetch(`/api/v1/inbox/conversations/${activeThreadId}/messages`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Idempotency-Key': `msg_${Date.now()}`,
-        },
-        body: JSON.stringify({ text: textToSend }),
-      });
-      const data = await res.json().catch(() => ({}));
-      if (!res.ok || !data.success) {
-        throw new Error(data.message || data.error?.message || data.error || `HTTP ${res.status}`);
-      }
-      const sentMsg = data.data || { id: `m_${Date.now()}`, text: textToSend, createdAt: new Date().toISOString() };
-      const formatted = {
-        id: sentMsg.id,
-        sender: 'agent',
-        text: sentMsg.text,
-        time: new Date(sentMsg.createdAt || Date.now()).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-      };
-      setMessages((prev) => [...prev, formatted]);
-      setThreads((prev) =>
-        prev.map((t) =>
-          t.id === activeThreadId
-            ? { ...t, lastMessage: textToSend, updatedAt: loc('الآن', 'Just now') }
-            : t
-        )
-      );
-      setReplyText('');
-      onRefreshWorkspace?.();
-    } catch (err: any) {
-      setHubError(err?.message || loc('فشل في إرسال الرسالة', 'Failed to send message'));
-    } finally {
-      setSendingMessage(false);
-    }
-  };
+  }, [fetchHubData, workspace, mainTab, inboxSubTab]);
 
   // Add Contact
   const handleAddContact = async () => {
@@ -282,70 +188,6 @@ export function InboxCrmWorkflowsHub({
       }
     } catch (err) {
       console.error('Error deleting contact:', err);
-    }
-  };
-
-  // Comments Actions
-  const handleReplyComment = async (commentId: string, isPrivate = false) => {
-    const text = commentReplyMap[commentId]?.trim();
-    if (!text) return;
-    try {
-      const res = await fetch(`/api/v1/inbox/comments/${commentId}/reply`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ text, isPrivate }),
-      });
-      const data = await res.json().catch(() => ({}));
-      if (res.ok && data.success) {
-        setComments((prev) =>
-          prev.map((c) =>
-            c.id === commentId
-              ? {
-                  ...c,
-                  isReplied: true,
-                  replies: [
-                    ...(c.replies || []),
-                    { id: data.replyId || `rep_${Date.now()}`, text, isPrivate, createdAt: new Date().toISOString() },
-                  ],
-                }
-              : c
-          )
-        );
-        setCommentReplyMap((prev) => ({ ...prev, [commentId]: '' }));
-        onRefreshWorkspace?.();
-      }
-    } catch (err) {
-      console.error('Error replying to comment:', err);
-    }
-  };
-
-  const handleLikeComment = async (commentId: string) => {
-    try {
-      const res = await fetch(`/api/v1/inbox/comments/${commentId}/like`, { method: 'POST' });
-      const data = await res.json().catch(() => ({}));
-      if (res.ok && data.success) {
-        setComments((prev) => prev.map((c) => (c.id === commentId ? { ...c, isLiked: true } : c)));
-        onRefreshWorkspace?.();
-      }
-    } catch (err) {
-      console.error('Error liking comment:', err);
-    }
-  };
-
-  const handleHideComment = async (commentId: string, currentHidden: boolean) => {
-    try {
-      const res = await fetch(`/api/v1/inbox/comments/${commentId}/hide`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ hide: !currentHidden }),
-      });
-      const data = await res.json().catch(() => ({}));
-      if (res.ok && data.success) {
-        setComments((prev) => prev.map((c) => (c.id === commentId ? { ...c, isHidden: !currentHidden } : c)));
-        onRefreshWorkspace?.();
-      }
-    } catch (err) {
-      console.error('Error hiding comment:', err);
     }
   };
 
@@ -408,16 +250,13 @@ export function InboxCrmWorkflowsHub({
         <div>
           <div className="flex items-center gap-2">
             <h2 className="text-lg font-bold text-[var(--text-primary)]">
-              {loc('مركز المحادثات وإدارة العملاء ومسارات العمل', 'Unified Inbox, CRM & Workflows Hub')}
+              {loc('التواصل مع العملاء', 'Customer conversations')}
             </h2>
-            <span className="rounded-full bg-purple-500/10 px-2.5 py-0.5 text-xs font-bold text-purple-600">
-              Omnichannel CRM
-            </span>
           </div>
           <p className="text-xs text-[var(--text-secondary)]">
             {loc(
-              'صندوق محادثات موحد للرسائل والتعليقات والتقييمات، جدول بيانات جهات الاتصال وحقول مخصصة، ومحرر مسارات عمل مرئي',
-              'Manage DMs, public comments, star reviews, CRM contacts, and visual node-based workflow automations'
+              'اقرأ رسائل العملاء، راجع ردك، ثم أرسله من الحساب المناسب.',
+              'Read customer messages, review your reply, and send from the right account.'
             )}
           </p>
         </div>
@@ -434,10 +273,10 @@ export function InboxCrmWorkflowsHub({
       {/* Main Tabs Navigation */}
       <div className="flex flex-wrap items-center gap-2 border-b border-[var(--border-subtle)] pb-3">
         {[
-          { id: 'inbox', label: loc('صندوق المحادثات الموحد (Omnichannel Inbox)', 'Unified Inbox'), icon: MessageSquare },
-          { id: 'crm', label: loc('سجل العملاء والحقول المخصصة (CRM Contacts)', 'CRM & Contacts'), icon: Users },
-          { id: 'broadcasts', label: loc('حملات البث والتسلسل (Broadcasts & Drips)', 'Broadcasts & Drips'), icon: Send },
-          { id: 'workflows', label: loc('محرر مسارات العمل المرئي (Visual Workflows)', 'Visual Workflow Studio'), icon: GitBranch },
+          { id: 'inbox', label: loc('الرسائل', 'Messages'), icon: MessageSquare },
+          { id: 'crm', label: loc('العملاء', 'Contacts'), icon: Users },
+          { id: 'broadcasts', label: loc('الحملات', 'Campaigns'), icon: Send },
+          { id: 'workflows', label: loc('الأتمتة', 'Automations'), icon: GitBranch },
         ].map((tab) => {
           const Icon = tab.icon;
           const active = mainTab === tab.id;
@@ -462,10 +301,11 @@ export function InboxCrmWorkflowsHub({
       {mainTab === 'inbox' && (
         <div className="space-y-4">
           {/* Sub-channel pill bar */}
-          <div className="flex items-center gap-2">
+          <div className="flex flex-wrap items-center gap-2">
             {[
               { id: 'dms', label: loc('الرسائل الخاصة (DMs)', 'Direct Messages (DMs)') },
               { id: 'comments', label: loc('التعليقات الاجتماعية (Comments)', 'Social Comments') },
+              { id: 'settings', label: loc('إعدادات الرسائل', 'Messaging settings') },
               { id: 'reviews', label: loc('التقييمات والنجوم (Reviews)', 'Google & FB Reviews') },
               { id: 'mentions', label: loc('الإشارات والمنشن (Mentions)', 'Brand Mentions') },
             ].map((sub) => (
@@ -483,241 +323,16 @@ export function InboxCrmWorkflowsHub({
             ))}
           </div>
 
-          {/* DMs Split View */}
-          {inboxSubTab === 'dms' && (
-            threads.length === 0 ? (
-              <div className="rounded-3xl border border-dashed border-[var(--border-subtle)] bg-[var(--bg-card)]/50 p-10 text-center flex flex-col items-center justify-center min-h-[420px]">
-                <div className="h-16 w-16 rounded-2xl bg-[var(--accent-soft)] text-[var(--accent-primary)] flex items-center justify-center mb-4 shadow-sm">
-                  <MessageSquare className="h-8 w-8" />
-                </div>
-                <h3 className="text-sm font-bold text-[var(--text-primary)]">
-                  {loc('لا توجد محادثات واردة حتى الآن', 'No Customer Conversations Yet')}
-                </h3>
-                <p className="mt-1.5 text-xs text-[var(--text-secondary)] max-w-md leading-relaxed">
-                  {loc(
-                    'صندوق المحادثات نظيف وجاهز. قم بربط قنوات التواصل كـ واتساب وإنستغرام وفيسبوك لتلقي رسائل العملاء والرد الفوري في نافذة واحدة.',
-                    'Your omnichannel inbox is pristine. Connect your messaging channels (WhatsApp, Instagram, Messenger) to manage all customer communications in one unified workspace.'
-                  )}
-                </p>
-                <div className="mt-5 flex flex-wrap gap-2 justify-center">
-                  <button
-                    onClick={() => (window.location.href = '/dashboard?hub=connect')}
-                    className="inline-flex items-center gap-1.5 rounded-xl bg-[var(--accent-primary)] px-4 py-2 text-xs font-bold text-white hover:bg-[var(--accent-hover)] transition cursor-pointer shadow-xs"
-                  >
-                    <Plus className="h-3.5 w-3.5" />
-                    <span>{loc('ربط قنوات التواصل', 'Connect Channels')}</span>
-                  </button>
-                </div>
-              </div>
-            ) : (
-              <div className="grid grid-cols-1 gap-4 lg:grid-cols-12 rounded-3xl border border-[var(--border-subtle)] bg-[var(--bg-card)] overflow-hidden shadow-2xs min-h-[480px]">
-                {/* Thread list (4 cols) */}
-                <div className="lg:col-span-4 border-e border-[var(--border-subtle)] flex flex-col">
-                  <div className="p-3 border-b border-[var(--border-subtle)]">
-                    <div className="relative">
-                      <Search className="pointer-events-none absolute start-3 top-2.5 h-3.5 w-3.5 text-[var(--text-muted)]" />
-                      <input
-                        type="text"
-                        value={searchQuery}
-                        onChange={(e) => setSearchQuery(e.target.value)}
-                        placeholder={loc('بحث في المحادثات...', 'Search threads...')}
-                        className="w-full rounded-xl border border-[var(--border-subtle)] bg-[var(--bg-subtle)] py-2 ps-8 pe-3 text-xs text-[var(--text-primary)] focus:outline-none"
-                      />
-                    </div>
-                  </div>
+          {inboxSubTab === 'dms' && <div className="space-y-5">
+            <div className="flex flex-wrap gap-2" aria-label={loc('قناة الرسائل', 'Messaging channel')}>
+              <button aria-pressed={messageChannel === 'meta'} className="rounded-xl border border-[var(--border-subtle)] px-4 py-2 text-sm aria-pressed:bg-[var(--accent-soft)]" onClick={() => setMessageChannel('meta')}>Messenger · Instagram</button>
+              <button aria-pressed={messageChannel === 'whatsapp'} className="rounded-xl border border-[var(--border-subtle)] px-4 py-2 text-sm aria-pressed:bg-[var(--accent-soft)]" onClick={() => setMessageChannel('whatsapp')}>WhatsApp</button>
+            </div>
+            {messageChannel === 'meta' ? <ProviderMetaInbox isRTL={isRTL} /> : <ProviderWhatsAppInbox />}
+          </div>}
 
-                  <div className="flex-1 divide-y divide-[var(--border-subtle)] overflow-y-auto">
-                    {threads.map((t) => {
-                      const isSelected = activeThreadId === t.id;
-                      return (
-                        <div
-                          key={t.id}
-                          onClick={() => setActiveThreadId(t.id)}
-                          className={`p-3.5 text-start cursor-pointer transition ${
-                            isSelected ? 'bg-[var(--accent-soft)]/50' : 'hover:bg-[var(--bg-subtle)]/30'
-                          }`}
-                        >
-                          <div className="flex items-center justify-between mb-1">
-                            <span className="font-bold text-xs text-[var(--text-primary)]">{t.participantName}</span>
-                            <span className="text-[10px] text-[var(--text-muted)]">{t.updatedAt}</span>
-                          </div>
-                          <p className="text-[11px] text-[var(--text-secondary)] truncate">{t.lastMessage}</p>
-                          <div className="mt-1.5 flex items-center justify-between">
-                            <span className="rounded bg-[var(--bg-subtle)] px-1.5 py-0.2 font-mono text-[9px] uppercase text-[var(--text-muted)]">
-                              {t.platform}
-                            </span>
-                            {t.unreadCount > 0 && (
-                              <span className="rounded-full bg-emerald-500 px-1.5 py-0.2 text-[9px] font-bold text-white">
-                                {t.unreadCount}
-                              </span>
-                            )}
-                          </div>
-                        </div>
-                      );
-                    })}
-                  </div>
-                </div>
-
-                {/* Active Conversation Stream (8 cols) */}
-                {(() => {
-                  const activeThread = threads.find((t) => t.id === activeThreadId) || threads[0];
-                  return (
-                    <div className="lg:col-span-8 flex flex-col justify-between p-4">
-                      <div className="border-b border-[var(--border-subtle)] pb-3 flex items-center justify-between">
-                        <div className="flex items-center gap-2">
-                          <div className="h-8 w-8 rounded-full bg-[var(--accent-primary)] text-white text-xs font-bold flex items-center justify-center">
-                            {(activeThread?.participantName || 'C').charAt(0).toUpperCase()}
-                          </div>
-                          <div>
-                            <div className="font-bold text-xs text-[var(--text-primary)]">
-                              {activeThread?.participantName || loc('محادثة عميل', 'Customer Conversation')}
-                            </div>
-                            <div className="text-[10px] text-emerald-600 font-semibold capitalize">
-                              Online · {activeThread?.platform || 'WhatsApp'}
-                            </div>
-                          </div>
-                        </div>
-                        <div className="flex items-center gap-2">
-                          <button className="rounded-lg border border-[var(--border-subtle)] px-2.5 py-1 text-[11px] text-[var(--text-secondary)] hover:text-[var(--text-primary)]">
-                            {loc('تحويل لموظف', 'Handover to Human')}
-                          </button>
-                        </div>
-                      </div>
-
-                      {/* Message bubbles */}
-                      <div className="py-4 space-y-3 flex-1 overflow-y-auto max-h-[320px]">
-                        {messages.length === 0 ? (
-                          <div className="text-center py-12 text-xs text-[var(--text-muted)]">
-                            {loc('لا توجد رسائل في هذه المحادثة بعد.', 'No messages in this conversation yet.')}
-                          </div>
-                        ) : (
-                          messages.map((m) => {
-                            const isAgent = m.sender === 'agent';
-                            return (
-                              <div
-                                key={m.id}
-                                className={`flex flex-col ${isAgent ? 'items-end' : 'items-start'}`}
-                              >
-                                <div
-                                  className={`max-w-md rounded-2xl p-3 text-xs leading-relaxed ${
-                                    isAgent
-                                      ? 'bg-[var(--accent-primary)] text-white rounded-te-none'
-                                      : 'bg-[var(--bg-subtle)] text-[var(--text-primary)] rounded-ts-none'
-                                  }`}
-                                >
-                                  {m.text}
-                                </div>
-                                <span className="text-[9px] text-[var(--text-muted)] mt-1 px-1 font-mono">{m.time}</span>
-                              </div>
-                            );
-                          })
-                        )}
-                      </div>
-
-                      {/* Reply Input Box */}
-                      <div className="border-t border-[var(--border-subtle)] pt-3 flex items-center gap-2">
-                        <input
-                          type="text"
-                          value={replyText}
-                          onChange={(e) => setReplyText(e.target.value)}
-                          onKeyDown={(e) => e.key === 'Enter' && handleSendMessage()}
-                          placeholder={loc('اكتب ردك هنا...', 'Type reply...')}
-                          className="flex-1 rounded-xl border border-[var(--border-subtle)] bg-[var(--bg-subtle)] px-3.5 py-2 text-xs text-[var(--text-primary)] focus:outline-none"
-                        />
-                        <button
-                          onClick={handleSendMessage}
-                          disabled={sendingMessage}
-                          className="inline-flex items-center gap-1.5 rounded-xl bg-[var(--accent-primary)] px-4 py-2 text-xs font-bold text-white hover:bg-[var(--accent-hover)] transition cursor-pointer disabled:opacity-50"
-                        >
-                          {sendingMessage ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Send className="h-3.5 w-3.5" />}
-                          <span>{loc('إرسال', 'Send')}</span>
-                        </button>
-                      </div>
-                    </div>
-                  );
-                })()}
-              </div>
-            )
-          )}
-
-          {/* Social Comments */}
-          {/* Social Comments */}
-          {inboxSubTab === 'comments' && (
-            comments.length === 0 ? (
-              <div className="rounded-3xl border border-dashed border-[var(--border-subtle)] bg-[var(--bg-card)]/50 p-10 text-center flex flex-col items-center justify-center min-h-[300px]">
-                <div className="h-14 w-14 rounded-2xl bg-pink-500/10 text-pink-600 flex items-center justify-center mb-3">
-                  <MessageCircle className="h-7 w-7" />
-                </div>
-                <h3 className="text-sm font-bold text-[var(--text-primary)]">
-                  {loc('لا توجد تعليقات اجتماعية جديدة', 'No Social Comments Yet')}
-                </h3>
-                <p className="mt-1 text-xs text-[var(--text-secondary)] max-w-md">
-                  {loc(
-                    'ستظهر تعليقات المتابعين على منشورات إنستغرام وفيسبوك هنا للرد السريع، الإعجاب، وإرسال قسائم الخصم التلقائية في الخاص.',
-                    'Public comments on your social posts will appear here for 1-click moderation, automated likes, and instant DM voucher follow-ups.'
-                  )}
-                </p>
-              </div>
-            ) : (
-              <div className="space-y-3">
-                {comments.map((comm) => (
-                  <div key={comm.id} className="rounded-2xl border border-[var(--border-subtle)] bg-[var(--bg-card)] p-4 shadow-2xs space-y-2">
-                    <div className="flex items-center justify-between text-xs">
-                      <div className="flex items-center gap-2">
-                        <span className="font-bold text-[var(--text-primary)]">{comm.author}</span>
-                        <span className="rounded bg-[var(--bg-subtle)] px-2 py-0.2 text-[10px] font-mono uppercase text-[var(--text-muted)]">
-                          {comm.platform}
-                        </span>
-                        {comm.isHidden && (
-                          <span className="rounded bg-rose-500/15 px-2 py-0.2 text-[9px] font-bold text-rose-600">
-                            {loc('مخفي', 'Hidden')}
-                          </span>
-                        )}
-                      </div>
-                      <span className="text-[10px] text-[var(--text-muted)]">{comm.time || 'Recent'}</span>
-                    </div>
-                    <p className="text-xs text-[var(--text-secondary)]">{comm.content}</p>
-                    <div className="flex items-center gap-3 pt-2 text-xs text-[var(--text-muted)]">
-                      <button
-                        onClick={() => handleLikeComment(comm.id)}
-                        className={`flex items-center gap-1 transition cursor-pointer ${comm.isLiked ? 'text-rose-500 font-bold' : 'hover:text-rose-500'}`}
-                      >
-                        <Heart className="h-3.5 w-3.5 fill-current" /> <span>{comm.isLiked ? loc('معجب به ✓', 'Liked ✓') : loc('إعجاب', 'Like')}</span>
-                      </button>
-                      <button
-                        onClick={() => handleHideComment(comm.id, !!comm.isHidden)}
-                        className="flex items-center gap-1 hover:text-amber-500 transition cursor-pointer"
-                      >
-                        <EyeOff className="h-3.5 w-3.5" /> <span>{comm.isHidden ? loc('إلغاء الإخفاء', 'Unhide') : loc('إخفاء', 'Hide')}</span>
-                      </button>
-                    </div>
-                    {/* Inline reply composer */}
-                    <div className="mt-2 flex items-center gap-2 pt-2 border-t border-[var(--border-subtle)]">
-                      <input
-                        type="text"
-                        value={commentReplyMap[comm.id] || ''}
-                        onChange={(e) => setCommentReplyMap((prev) => ({ ...prev, [comm.id]: e.target.value }))}
-                        placeholder={loc('اكتب رداً عاماً أو خاصاً...', 'Type reply...')}
-                        className="flex-1 rounded-xl border border-[var(--border-subtle)] bg-[var(--bg-subtle)] px-3 py-1.5 text-xs text-[var(--text-primary)] focus:outline-none"
-                      />
-                      <button
-                        onClick={() => handleReplyComment(comm.id, false)}
-                        className="rounded-xl bg-[var(--accent-primary)] px-3 py-1.5 text-xs font-bold text-white hover:bg-[var(--accent-hover)] transition cursor-pointer"
-                      >
-                        {loc('رد عام', 'Reply')}
-                      </button>
-                      <button
-                        onClick={() => handleReplyComment(comm.id, true)}
-                        className="rounded-xl border border-[var(--accent-primary)] text-[var(--accent-primary)] px-3 py-1.5 text-xs font-bold hover:bg-[var(--accent-soft)] transition cursor-pointer"
-                      >
-                        {loc('رد في الخاص DM', 'Reply DM')}
-                      </button>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            )
-          )}
+          {inboxSubTab === 'comments' && <ProviderMetaComments isRTL={isRTL} />}
+          {inboxSubTab === 'settings' && <ProviderMetaSettings isRTL={isRTL} />}
 
           {/* Reviews */}
           {inboxSubTab === 'reviews' && (

@@ -34,7 +34,7 @@ type ResponseTab = 'formatted' | 'raw' | 'headers';
 export default function TryItLiveConsole({ spec, isAr }: TryItLiveConsoleProps) {
   // Auth Mode State
   const [authMode, setAuthMode] = useState<AuthMode>('bearer');
-  const [apiKey, setApiKey] = useState<string>('tk_live_org_workspace_9f8e7d6c5b4a3');
+  const [apiKey, setApiKey] = useState<string>('asra3_YOUR_CURRENT_WORKSPACE_KEY');
   const [sessionUser, setSessionUser] = useState<{ name: string; org: string } | null>(null);
   const [sessionLoading, setSessionLoading] = useState<boolean>(false);
 
@@ -206,7 +206,7 @@ export default function TryItLiveConsole({ spec, isAr }: TryItLiveConsoleProps) 
         'Content-Type': 'application/json',
       };
       if (authMode === 'bearer') {
-        headers['Authorization'] = `Bearer ${apiKey.trim() || 'tk_live_org_workspace_9f8e7d6c5b4a3'}`;
+        headers['Authorization'] = `Bearer ${apiKey.trim() || 'asra3_YOUR_CURRENT_WORKSPACE_KEY'}`;
       }
 
       const hasBody = ['POST', 'PUT', 'PATCH'].includes(spec.method) && bodyText.trim().length > 0;
@@ -269,7 +269,7 @@ export default function TryItLiveConsole({ spec, isAr }: TryItLiveConsoleProps) 
     // 1. cURL Snippet
     let curl = `curl -X ${spec.method} "${fullUrl}" \\\n`;
     if (authMode === 'bearer') {
-      curl += `  -H "Authorization: Bearer ${apiKey.trim() || 'tk_live_org_workspace_9f8e7d6c5b4a3'}" \\\n`;
+      curl += `  -H "Authorization: Bearer ${apiKey.trim() || 'asra3_YOUR_CURRENT_WORKSPACE_KEY'}" \\\n`;
     } else {
       curl += `  --cookie "asra3_session=<active_session_cookie>" \\\n`;
     }
@@ -284,7 +284,7 @@ export default function TryItLiveConsole({ spec, isAr }: TryItLiveConsoleProps) 
     js += `  method: '${spec.method}',\n`;
     js += `  headers: {\n`;
     if (authMode === 'bearer') {
-      js += `    'Authorization': 'Bearer ${apiKey.trim() || 'tk_live_org_workspace_9f8e7d6c5b4a3'}',\n`;
+      js += `    'Authorization': 'Bearer ${apiKey.trim() || 'asra3_YOUR_CURRENT_WORKSPACE_KEY'}',\n`;
     }
     js += `    'Content-Type': 'application/json',\n`;
     js += `  },\n`;
@@ -304,7 +304,7 @@ export default function TryItLiveConsole({ spec, isAr }: TryItLiveConsoleProps) 
     py += `url = "${fullUrl}"\n`;
     py += `headers = {\n`;
     if (authMode === 'bearer') {
-      py += `    "Authorization": "Bearer ${apiKey.trim() || 'tk_live_org_workspace_9f8e7d6c5b4a3'}",\n`;
+      py += `    "Authorization": "Bearer ${apiKey.trim() || 'asra3_YOUR_CURRENT_WORKSPACE_KEY'}",\n`;
     }
     py += `    "Content-Type": "application/json",\n`;
     py += `}\n`;
@@ -432,7 +432,7 @@ export default function TryItLiveConsole({ spec, isAr }: TryItLiveConsoleProps) 
                       type="text"
                       value={apiKey}
                       onChange={(e) => setApiKey(e.target.value)}
-                      placeholder="tk_live_..."
+                      placeholder="asra3_..."
                       className="w-full rounded-xl border border-[var(--border-subtle)] bg-[var(--bg-subtle)] px-3 py-2 font-mono text-xs text-[var(--text-primary)] placeholder-[var(--text-muted)] focus:border-[var(--accent-primary)] focus:outline-none"
                     />
                   </div>
@@ -446,7 +446,7 @@ export default function TryItLiveConsole({ spec, isAr }: TryItLiveConsoleProps) 
                   </button>
                   <button
                     type="button"
-                    onClick={() => setApiKey('tk_live_org_workspace_9f8e7d6c5b4a3')}
+                    onClick={() => setApiKey('asra3_YOUR_CURRENT_WORKSPACE_KEY')}
                     className="inline-flex items-center gap-1 rounded-xl border border-[var(--border-subtle)] bg-[var(--bg-subtle)] px-3 py-2 text-xs font-bold text-[var(--text-secondary)] hover:text-[var(--text-primary)] cursor-pointer"
                   >
                     <RotateCcw className="h-3.5 w-3.5" />
@@ -455,8 +455,8 @@ export default function TryItLiveConsole({ spec, isAr }: TryItLiveConsoleProps) 
                 </div>
                 <p className="text-[11px] text-[var(--text-muted)]">
                   {isAr
-                    ? 'يتم إرسال المفتاح عبر ترويسة Authorization: Bearer tk_live_... وله صلاحية full_access.'
-                    : 'Dispatches header Authorization: Bearer tk_live_... with full_access scopes.'}
+                    ? 'استخدم مفتاح مساحة عمل حالياً. يتحدد الوصول بصلاحيات المفتاح ودورك في مساحة العمل.'
+                    : 'Use a current workspace key. Access follows its scopes and your current workspace role.'}
                 </p>
               </div>
             ) : (

@@ -1,0 +1,10 @@
+version: 1
+name: SaaS allowance and WhatsApp send boundary
+slug: launch-saas
+protocol: http
+port: 4957
+interceptRequests: true
+scenarios:
+  - name: default
+    path: ./default.js
+    default: true

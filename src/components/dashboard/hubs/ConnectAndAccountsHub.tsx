@@ -1,5 +1,7 @@
 'use client';
 
+import { ProviderAccountsPanel } from '@/components/dashboard/ProviderAccountsPanel';
+import type { ConnectedAccountData } from '@/components/dashboard/ConnectionWizardModal';
 import React, { useState, useEffect } from 'react';
 import {
   Link2,
@@ -25,7 +27,7 @@ import { getLocalizedText } from '@/i18n/dictionaries';
 interface ConnectAndAccountsHubProps {
   workspace: any;
   policy: any;
-  onOpenConnectionWizard: (platform?: string) => void;
+  onOpenConnectionWizard: (platform?: string, account?: ConnectedAccountData) => void;
   onRefreshWorkspace?: () => void;
 }
 
@@ -40,13 +42,6 @@ export function ConnectAndAccountsHub({
   const loc = (ar: string, en: string) => getLocalizedText(locale, { ar, en });
 
   const [activeSubTab, setActiveSubTab] = useState<'health' | 'groups' | 'entities' | 'settings'>('health');
-
-  // 1. Health State
-  const [healthData, setHealthData] = useState<{
-    summary: { total: number; healthy: number; warning: number; error: number; needsReconnect: number };
-    accounts: any[];
-  } | null>(null);
-  const [loadingHealth, setLoadingHealth] = useState<boolean>(false);
 
   // 2. Groups State
   const [groups, setGroups] = useState<any[]>([]);
@@ -71,61 +66,6 @@ export function ConnectAndAccountsHub({
   const [settingsSaved, setSettingsSaved] = useState<boolean>(false);
   const [settingsError, setSettingsError] = useState<string | null>(null);
   const [groupError, setGroupError] = useState<string | null>(null);
-
-  // Fetch Account Health
-  const fetchHealth = async () => {
-    setLoadingHealth(true);
-    try {
-      const res = await fetch('/api/v1/accounts/health');
-      const data = await res.json().catch(() => ({}));
-      if (data.success && (data.summary || data.accounts || data.data)) {
-        const rawAccounts = Array.isArray(data.accounts)
-          ? data.accounts
-          : Array.isArray(data.data?.accounts)
-          ? data.data.accounts
-          : Array.isArray(data.data)
-          ? data.data
-          : [];
-        const rawSummary = data.summary || data.data?.summary || {
-          total: rawAccounts.length,
-          healthy: rawAccounts.filter((a: any) => a.status === 'healthy').length,
-          warning: rawAccounts.filter((a: any) => a.status === 'warning').length,
-          error: rawAccounts.filter((a: any) => a.status === 'error' || a.needsReconnect).length,
-          needsReconnect: rawAccounts.filter((a: any) => a.needsReconnect).length,
-        };
-        setHealthData({
-          summary: rawSummary,
-          accounts: rawAccounts,
-        });
-      } else {
-        const rawAccounts = workspace?.subServicesData?.core_connect?.accounts || [];
-        setHealthData({
-          summary: {
-            total: rawAccounts.length,
-            healthy: rawAccounts.filter((a: any) => a.status === 'healthy').length,
-            warning: 0,
-            error: 0,
-            needsReconnect: rawAccounts.filter((a: any) => a.needsReconnect).length,
-          },
-          accounts: rawAccounts,
-        });
-      }
-    } catch {
-      const rawAccounts = workspace?.subServicesData?.core_connect?.accounts || [];
-      setHealthData({
-        summary: {
-          total: rawAccounts.length,
-          healthy: rawAccounts.filter((a: any) => a.status === 'healthy').length,
-          warning: 0,
-          error: 0,
-          needsReconnect: rawAccounts.filter((a: any) => a.needsReconnect).length,
-        },
-        accounts: rawAccounts,
-      });
-    } finally {
-      setLoadingHealth(false);
-    }
-  };
 
   // Fetch Groups
   const fetchGroups = async () => {
@@ -162,7 +102,6 @@ export function ConnectAndAccountsHub({
   };
 
   useEffect(() => {
-    void fetchHealth();
     void fetchGroups();
   }, [workspace]);
 
@@ -266,7 +205,7 @@ export function ConnectAndAccountsHub({
               {loc('مركز الحسابات والربط المتقدم', 'Connect & Accounts Advanced Hub')}
             </h2>
             <span className="rounded-full bg-emerald-500/10 px-2.5 py-0.5 text-xs font-bold text-emerald-600">
-              {healthData?.summary?.total || 0} {loc('قناة نشطة', 'Active Channels')}
+              {loc('حسابات الأعمال', 'Business accounts')}
             </span>
           </div>
           <p className="text-xs text-[var(--text-secondary)]">
@@ -315,139 +254,7 @@ export function ConnectAndAccountsHub({
         })}
       </div>
 
-      {/* SUB-PANEL 1: Live Account Health Inspector */}
-      {activeSubTab === 'health' && (
-        <div className="space-y-5">
-          {/* Summary KPI Cards */}
-          <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
-            <div className="rounded-2xl border border-[var(--border-subtle)] bg-[var(--bg-card)] p-4 text-start">
-              <span className="text-[10px] font-bold text-[var(--text-muted)] uppercase tracking-wider block">
-                {loc('إجمالي القنوات المربوطة', 'Total Connected')}
-              </span>
-              <span className="font-mono text-xl font-black text-[var(--text-primary)]">
-                {healthData?.summary?.total ?? 0}
-              </span>
-            </div>
-
-            <div className="rounded-2xl border border-emerald-500/20 bg-emerald-500/5 p-4 text-start">
-              <span className="text-[10px] font-bold text-emerald-600 uppercase tracking-wider block">
-                {loc('حسابات سليمة وتعمل', 'Healthy & Active')}
-              </span>
-              <span className="font-mono text-xl font-black text-emerald-600">
-                {healthData?.summary?.healthy ?? 0}
-              </span>
-            </div>
-
-            <div className="rounded-2xl border border-amber-500/20 bg-amber-500/5 p-4 text-start">
-              <span className="text-[10px] font-bold text-amber-600 uppercase tracking-wider block">
-                {loc('تنبيهات وتجديد قادم', 'Warnings')}
-              </span>
-              <span className="font-mono text-xl font-black text-amber-600">
-                {healthData?.summary?.warning ?? 0}
-              </span>
-            </div>
-
-            <div className="rounded-2xl border border-rose-500/20 bg-rose-500/5 p-4 text-start">
-              <span className="text-[10px] font-bold text-rose-600 uppercase tracking-wider block">
-                {loc('تتطلب إعادة الربط', 'Needs Reconnect')}
-              </span>
-              <span className="font-mono text-xl font-black text-rose-600">
-                {healthData?.summary?.needsReconnect ?? 0}
-              </span>
-            </div>
-          </div>
-
-          {/* Accounts Diagnostic Table */}
-          <div className="rounded-3xl border border-[var(--border-subtle)] bg-[var(--bg-card)] overflow-hidden shadow-2xs">
-            <div className="flex items-center justify-between border-b border-[var(--border-subtle)] px-6 py-4">
-              <h3 className="text-sm font-bold text-[var(--text-primary)]">
-                {loc('جدول الفحص التشخيصي للقنوات وصلاحيات الـ API', 'Account Diagnostics & Permission Matrix')}
-              </h3>
-              <button
-                onClick={() => void fetchHealth()}
-                disabled={loadingHealth}
-                className="inline-flex items-center gap-1.5 rounded-xl border border-[var(--border-subtle)] px-3 py-1.5 text-xs font-semibold text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition"
-              >
-                <RefreshCw className={`h-3.5 w-3.5 ${loadingHealth ? 'animate-spin' : ''}`} />
-                <span>{loc('فحص الآن', 'Run Audit')}</span>
-              </button>
-            </div>
-
-            <div className="overflow-x-auto">
-              <table className="w-full text-start text-xs">
-                <thead>
-                  <tr className="border-b border-[var(--border-subtle)] bg-[var(--bg-subtle)]/50 text-[11px] font-bold text-[var(--text-muted)] uppercase tracking-wider">
-                    <th className="px-6 py-3 text-start">{loc('القناة / الحساب', 'Channel / Account')}</th>
-                    <th className="px-4 py-3 text-start">{loc('صلاحية الرمز (Token)', 'Token Validity')}</th>
-                    <th className="px-4 py-3 text-start">{loc('إذن النشر', 'Publishing')}</th>
-                    <th className="px-4 py-3 text-start">{loc('إذن التحليلات', 'Analytics')}</th>
-                    <th className="px-4 py-3 text-start">{loc('الويب هوك', 'Webhook')}</th>
-                    <th className="px-6 py-3 text-end">{loc('الإجراءات', 'Actions')}</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-[var(--border-subtle)]">
-                  {(!healthData?.accounts || healthData.accounts.length === 0) ? (
-                    <tr>
-                      <td colSpan={6} className="p-10 text-center">
-                        <div className="flex flex-col items-center justify-center space-y-3">
-                          <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-emerald-500/10 text-emerald-600">
-                            <ShieldCheck className="h-6 w-6" />
-                          </div>
-                          <div>
-                            <h4 className="text-sm font-bold text-[var(--text-primary)]">
-                              {loc('لا توجد قنوات مربوطة حالياً', 'No Connected Channels Found')}
-                            </h4>
-                            <p className="mt-1 text-xs text-[var(--text-secondary)] max-w-sm">
-                              {loc('قم بربط قنوات التواصل وحسابات الوسائط الاجتماعية للبدء في نشر المحتوى وإدارة الرسائل الموحدة.', 'Connect your social media accounts and channels to start publishing content and managing unified messaging.')}
-                            </p>
-                          </div>
-                          <button
-                            onClick={() => onOpenConnectionWizard()}
-                            className="inline-flex items-center gap-1.5 rounded-xl bg-[var(--accent-primary)] px-4 py-2 text-xs font-bold text-white hover:bg-[var(--accent-hover)] transition cursor-pointer shadow-sm"
-                          >
-                            <Plus className="h-4 w-4" />
-                            <span>{loc('ربط قناة جديدة', '+ Connect Channel')}</span>
-                          </button>
-                        </div>
-                      </td>
-                    </tr>
-                  ) : (
-                    healthData.accounts.map((acc, idx) => (
-                      <tr key={acc.id || idx} className="hover:bg-[var(--bg-subtle)]/30 transition">
-                        <td className="px-6 py-4">
-                          <div className="flex items-center gap-2.5">
-                            <span className="font-bold text-[var(--text-primary)]">{acc.displayName || acc.username}</span>
-                            <span className="rounded bg-[var(--bg-subtle)] px-2 py-0.5 font-mono text-[10px] text-[var(--text-muted)] uppercase">
-                              {acc.platform}
-                            </span>
-                          </div>
-                        </td>
-                        <td className="px-4 py-4">
-                          <span className="inline-flex items-center gap-1 font-semibold text-emerald-600">
-                            <CheckCircle2 className="h-3.5 w-3.5" />
-                            {loc('صالح (Valid)', 'Valid')}
-                          </span>
-                        </td>
-                        <td className="px-4 py-4 text-emerald-600 font-bold">✓ Granted</td>
-                        <td className="px-4 py-4 text-emerald-600 font-bold">✓ Granted</td>
-                        <td className="px-4 py-4 text-emerald-600 font-bold">Active (Live)</td>
-                        <td className="px-6 py-4 text-end">
-                          <button
-                            onClick={() => onOpenConnectionWizard(acc.platform)}
-                            className="rounded-lg border border-[var(--border-subtle)] px-2.5 py-1 text-[11px] font-semibold text-[var(--text-secondary)] hover:text-[var(--text-primary)]"
-                          >
-                            {loc('اختبار الرمز', 'Test Token')}
-                          </button>
-                        </td>
-                      </tr>
-                    ))
-                  )}
-                </tbody>
-              </table>
-            </div>
-          </div>
-        </div>
-      )}
+      {activeSubTab === 'health' && <ProviderAccountsPanel refreshKey={workspace} onOpenConnectionWizard={onOpenConnectionWizard} onRefreshWorkspace={onRefreshWorkspace} />}
 
       {/* SUB-PANEL 2: Account Groups CRUD Manager */}
       {activeSubTab === 'groups' && (

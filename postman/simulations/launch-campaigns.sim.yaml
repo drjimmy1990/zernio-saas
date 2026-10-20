@@ -1,0 +1,5 @@
+simulation: launch-campaigns
+routing: path
+mocks:
+  - routeKey: zernio
+    path: ../mocks/launch-campaigns/config.yaml

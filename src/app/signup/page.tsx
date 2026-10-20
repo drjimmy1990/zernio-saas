@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, Suspense } from 'react';
-import { useRouter, useSearchParams } from 'next/navigation';
+import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { useThemeAndLocale } from '@/i18n/ThemeAndLocaleProvider';
 import {
@@ -16,16 +16,14 @@ import { Asra3Logo } from '@/components/Asra3Logo';
 function SignUpFormContent() {
   const router = useRouter();
   const { t, locale, dir } = useThemeAndLocale();
-  const searchParams = useSearchParams();
-  const initialPlan = searchParams.get('plan') || 'growth';
 
   const [fullName, setFullName] = useState<string>('');
   const [email, setEmail] = useState<string>('');
   const [password, setPassword] = useState<string>('');
   const [companyName, setCompanyName] = useState<string>('');
-  const [planKey, setPlanKey] = useState<string>(initialPlan);
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string>('');
+  const [notice, setNotice] = useState<string>('');
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -41,7 +39,6 @@ function SignUpFormContent() {
           email,
           password,
           companyName: companyName || `${fullName}'s Workspace`,
-          planKey,
           primaryColor: '#eb3514',
           language: locale,
         }),
@@ -49,6 +46,10 @@ function SignUpFormContent() {
       const data = await res.json();
       if (!res.ok) {
         setError(data.error || 'Could not create account');
+        return;
+      }
+      if (data.verificationRequired) {
+        setNotice(locale === 'ar' ? 'راجع بريدك لتأكيد ملكية الحساب ثم سجّل الدخول. لم يتم إنشاء جلسة دخول بعد.' : 'Check your email to verify ownership, then sign in. Your account is awaiting verification.');
         return;
       }
       router.push(
@@ -82,6 +83,7 @@ function SignUpFormContent() {
               {error}
             </div>
           )}
+          {notice && <div role="status" className="mt-4 rounded-xl border border-emerald-500/30 p-3 text-sm">{notice} <Link href="/login" className="underline">{locale === 'ar' ? 'تسجيل الدخول' : 'Sign in'}</Link></div>}
 
           <form onSubmit={handleSubmit} className="mt-6 space-y-4">
             <div className="grid gap-4 sm:grid-cols-2">
@@ -135,6 +137,7 @@ function SignUpFormContent() {
                 <input
                   type="password"
                   required
+                  minLength={10}
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder="••••••••••••"
@@ -143,52 +146,11 @@ function SignUpFormContent() {
               </div>
             </div>
 
-            {/* Simple Plan Selector */}
-            <div>
-              <label className="block text-xs font-bold text-[var(--text-secondary)]">
-                {t.auth.selectPlanLabel}
-              </label>
-              <div className="mt-2 grid grid-cols-2 gap-2.5 sm:grid-cols-4">
-                {[
-                  {
-                    key: 'starter',
-                    label: t.pricingSection.plans.starter.name,
-                    price: '$29',
-                  },
-                  {
-                    key: 'growth',
-                    label: t.pricingSection.plans.growth.name,
-                    price: '$79',
-                  },
-                  {
-                    key: 'agency_pro',
-                    label: t.pricingSection.plans.agency.name,
-                    price: '$199',
-                  },
-                  {
-                    key: 'enterprise',
-                    label: t.pricingSection.plans.enterprise.name,
-                    price: '$499',
-                  },
-                ].map((tier) => (
-                  <button
-                    key={tier.key}
-                    type="button"
-                    onClick={() => setPlanKey(tier.key)}
-                    className={`rounded-xl border p-3 text-start transition ${
-                      planKey === tier.key
-                        ? 'border-[var(--accent-primary)] bg-[var(--accent-soft)] text-[var(--accent-primary)]'
-                        : 'border-[var(--border-subtle)] bg-[var(--bg-subtle)] text-[var(--text-secondary)]'
-                    }`}
-                  >
-                    <div className="text-xs font-bold">{tier.label}</div>
-                    <div className="mt-0.5 font-mono text-xs font-extrabold">
-                      {tier.price}
-                      {t.pricingSection.perMonth}
-                    </div>
-                  </button>
-                ))}
-              </div>
+            <div className="rounded-xl border border-[var(--border-subtle)] bg-[var(--bg-subtle)] p-3">
+              <p className="text-xs font-bold">{t.pricingSection.plans.starter.name}</p>
+              <p className="mt-1 text-xs text-[var(--text-secondary)]">
+                {locale === 'ar' ? 'تبدأ مساحات العمل الجديدة بخطة Starter.' : 'New workspaces start on the Starter plan.'}
+              </p>
             </div>
 
             <button

@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import { useThemeAndLocale } from '@/i18n/ThemeAndLocaleProvider';
+import { ProviderWhatsAppInbox } from './ProviderWhatsAppInbox';
 import { getLocalizedText } from '@/i18n/dictionaries';
 import {
   MessageSquare,
@@ -37,10 +38,11 @@ interface LiveSmsAndWhatsAppInboxProps {
 export function LiveSmsAndWhatsAppInbox({
   organizationId,
   ownedNumbers,
-  threads: initialThreads,
+  threads: suppliedThreads,
   onThreadsUpdated,
   preselectedVirtualNumber,
 }: LiveSmsAndWhatsAppInboxProps) {
+  const initialThreads = suppliedThreads.filter(thread => thread.channel === 'sms');
   const { locale } = useThemeAndLocale();
   const isAr = locale === 'ar';
   const loc = (ar: string, en: string) => getLocalizedText(locale, { ar, en });
@@ -96,21 +98,6 @@ export function LiveSmsAndWhatsAppInbox({
     setMessageText('');
 
     try {
-      if (activeThread.channel === 'whatsapp') {
-        const targetNumberObj = ownedNumbers.find((n) => n.phoneNumber === activeThread.virtualNumber);
-        await fetch('/api/services', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            subService: 'telephony',
-            action: 'send_test_whatsapp',
-            organizationId,
-            phoneNumberId: targetNumberObj?.id || ownedNumbers[0]?.id || 'num_us_01',
-            recipientPhone: activeThread.customerNumber,
-            customMessage: textToSend,
-          }),
-        });
-      } else {
         await fetch('/api/services', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -123,7 +110,6 @@ export function LiveSmsAndWhatsAppInbox({
             text: textToSend,
           }),
         });
-      }
 
       onThreadsUpdated?.();
     } catch {
@@ -181,14 +167,15 @@ export function LiveSmsAndWhatsAppInbox({
 
   return (
     <div className="space-y-4">
+      <ProviderWhatsAppInbox />
       {/* Top Banner with Inbound Simulation Actions */}
       <div className="luxury-card flex flex-col gap-3 p-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h3 className="text-sm font-bold text-[var(--text-primary)]">
-            {loc('صندوق الرسائل الحية المشتركة (Live 2-Way SMS & WhatsApp Inbox)', 'Live 2-Way SMS & WhatsApp Omnichannel Inbox')}
+            {loc('صندوق الرسائل الحية المشتركة (Live 2-Way SMS & WhatsApp Inbox)', 'SMS inbox and simulator')}
           </h3>
           <p className="text-xs text-[var(--text-secondary)]">
-            {loc('استقبال وإرسال الرسائل الحية ورسائل OTP والتنبيهات عبر أرقامك الافتراضية', 'Receive inbound customer SMS, OTPs & send WhatsApp messages from purchased virtual numbers')}
+            {loc('استقبال وإرسال الرسائل الحية ورسائل OTP والتنبيهات عبر أرقامك الافتراضية', 'Existing SMS tools; WhatsApp provider messages appear above')}
           </p>
         </div>
 
@@ -233,16 +220,7 @@ export function LiveSmsAndWhatsAppInbox({
               >
                 {loc('الكل', 'All')}
               </button>
-              <button
-                onClick={() => setChannelFilter('whatsapp')}
-                className={`flex-1 rounded-lg py-1.5 text-center transition ${
-                  channelFilter === 'whatsapp'
-                    ? 'bg-emerald-600 text-white shadow-xs'
-                    : 'text-[var(--text-muted)]'
-                }`}
-              >
-                WhatsApp
-              </button>
+
               <button
                 onClick={() => setChannelFilter('sms')}
                 className={`flex-1 rounded-lg py-1.5 text-center transition ${
@@ -471,7 +449,7 @@ export function LiveSmsAndWhatsAppInbox({
                     <span className="font-bold">{activeThread.channel === 'whatsapp' ? 'WhatsApp Cloud API' : 'Direct PSTN Carrier SMS'}</span>
                   </span>
                   <span>
-                    {loc('الإيصال: فوري (Delivered & Read ✓✓)', 'Delivery: Instant ✓✓')}
+                    {loc('الإيصال: فوري (Delivered & Read ✓✓)', 'Delivery status comes from receipts')}
                   </span>
                 </div>
               </div>

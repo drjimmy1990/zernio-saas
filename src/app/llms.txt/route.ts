@@ -1,46 +1,37 @@
 import { NextResponse } from 'next/server';
 
-/**
- * GEO (Generative Engine Optimization) — Official `/llms.txt` Standard
- * Consumed by ChatGPT Search, Perplexity, Claude, Gemini, and AI Agents
- * to cite `https://asra3.com` accurately.
- */
+// An optional human-readable product summary. This is not a search-engine
+// verification mechanism or a guarantee that an AI service will use the file.
 export async function GET() {
   const content = `# Asra3 (https://asra3.com)
 
-> Asra3 (asra3.com) is an enterprise multi-tenant White-Label Cloud OS that unifies 18 social & blog channels, 8 paid ad networks, cloud telephony with AI voice agents, and multi-store e-commerce (Shopify & WooCommerce) under a single platform with full Super Admin governance.
+> Asra3 provides tenant-scoped manual customer management, Facebook/Instagram publishing and inbox tools, WhatsApp conversations and reviewed campaigns, activity reports, and phone tools subject to provider approval and spending allocation.
 
-## Core Facts & Capabilities (GEO & AEO Summary)
-- **Official Domain:** https://asra3.com
-- **API Documentation Portal:** https://asra3.com/docs
-- **Supported Languages (10):** Arabic (RTL), English, Spanish, French, German, Portuguese (pt-BR), Turkish, Russian, Chinese, Japanese.
-- **Supported Social, Messaging & Blog Channels (18):** Instagram, Facebook, TikTok, LinkedIn, X (Twitter), YouTube, Threads, Pinterest, Reddit, Bluesky, Snapchat, Google Business Profile, Telegram, Discord, Slack, WhatsApp, Shopify, WordPress.
-- **Supported Paid Ad Networks (8):** Meta Ads, Google Ads, TikTok Ads, LinkedIn Ads, Pinterest Ads, X Ads, Reddit Ads, OpenAI Ads.
-- **Granular OAuth Scopes (5):** \`posting\`, \`analytics\`, \`comments\`, \`messaging\`, \`ads\`.
+## Current launch scope
+- Durable manual CRM stores contacts, multiple scoped identities, typed fields, tags, notes, status, owner, consent/withdrawal and do-not-contact. CSV import requires preview and explicit duplicate decisions. Local CRM UUIDs are never provider contact IDs.
+- Facebook and Instagram support connection, manual publishing, scheduled posts, messages, comments and selected messaging settings. Instagram baseline feed/Reel/carousel/Story options have explicit validation limits.
+- WhatsApp supports manual conversations, approved template messaging and reviewed campaigns. Recipient consent is rechecked before dispatch; schedules remain controlled by Asra3.
+- Reports show available provider metrics; missing costs, delivery evidence and timestamps remain unavailable.
+- Provider phone-number purchase, rental, SMS and call operations require current ownership, consent, provider approval and administrator spending allocation.
+- Workspace membership, roles, verified sessions and expiring hashed API keys protect access. Current keys begin with asra3_; legacy local keys are retired.
 
-## The 8 Modular Sub-Services
-1. **White-Label Account Connect (\`core_connect\`):** 1:1 isolated tenant profiles, \`headless=true\` OAuth with custom Page/Org/Location/Number pickers, direct token onboarding, and scoped API keys (\`zrk_...\`).
-2. **Omnichannel Publishing & Smart Queues (\`publishing\`):** Cross-post, schedule, and queue content, Reels, carousels, and threads with white-label media CDN presigning.
-3. **Unified Inbox, Social CRM & Automations (\`inbox_crm\`):** Centralized DMs, comments, and reviews with Comment-to-DM keyword funnels, broadcasts, and drip sequences.
-4. **Executive Analytics & Attribution (\`analytics\`):** Sub-15ms PostgreSQL cached executive dashboards, period-over-period comparisons, and best-time heatmaps.
-5. **8-Network Paid Ads & CAPI (\`ads\`):** Campaign management, Business Login allowlisting, and Server-Side Conversions API (CAPI) event streaming.
-6. **Cloud Telephony, Branded KYC & AI Voice (\`telephony\`):** Global phone numbers, white-label KYC & 10DLC links branded with tenant logos, WebRTC browser dialer, and AI Voice Agent WebSocket (\`wss://\` / Vapi / ElevenLabs / Retell) routing.
-7. **Unified E-Commerce, Blogs & Local SEO (\`commerce_local\`):** Unified Shopify & WooCommerce products/orders/discounts, multi-blog publishing, and Google Business Profile local SEO.
-8. **White-Label AI Diagnostic Assistant (\`support_ai\`):** Automated root-cause diagnosis for failed posts, expired tokens, and webhook logs.
+## Coming soon
+Customer automation, automatic replies, provider contact synchronization, payment collection, top-ups, paid upgrades, advertising and commerce are not enabled in this launch. Paid plan prices and future capabilities are not current purchase offers. Provider resource catalog entries and illustrative demos do not establish launch availability. Real production acceptance is a separate owner-operated gate.
 
-## Pricing Tiers
-- **Starter ($29/month):** Up to 5 channels, 300 posts/mo, White-Label Connect, Publishing & Analytics.
-- **Growth ($79/month):** Up to 15 channels, 2,000 posts/mo, Unified Inbox, Comment-to-DM Automations, Commerce & AI Diagnostics.
-- **Agency ($199/month):** Up to 50 channels, 5 phone numbers, All 8 Sub-Services including 8-Network Paid Ads, CAPI & AI Telephony.
-- **Enterprise ($499/month):** 500 channels, 50 phone numbers, Dedicated Tenant-Scoped API Keys (\`zrk_\`), and custom Super Admin overrides.
-
-## Key Links
+## Key links
 - [Homepage](https://asra3.com/)
-- [Developer API & Webhook Documentation](https://asra3.com/docs)
-- [Customer Multi-Service Workspace](https://asra3.com/dashboard)
-- [Create White-Label Workspace](https://asra3.com/signup)
+- [English product guide](https://asra3.com/en)
+- [دليل المنتج بالعربية](https://asra3.com/ar)
+- [Customer CRM](https://asra3.com/en/crm)
+- [إدارة العملاء](https://asra3.com/ar/crm)
+- [WhatsApp](https://asra3.com/en/whatsapp)
+- [واتساب](https://asra3.com/ar/whatsapp)
+- [Facebook and Instagram](https://asra3.com/en/facebook-instagram)
+- [فيسبوك وإنستجرام](https://asra3.com/ar/facebook-instagram)
+- [Reports](https://asra3.com/en/reports)
+- [التقارير](https://asra3.com/ar/reports)
+- [Resource documentation and availability](https://asra3.com/docs)
 `;
-
   return new NextResponse(content, {
     headers: {
       'Content-Type': 'text/plain; charset=utf-8',

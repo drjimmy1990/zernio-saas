@@ -1,4 +1,5 @@
 'use client';
+import { launchCopy } from './launch-copy';
 
 import React, { useState } from 'react';
 import Link from 'next/link';
@@ -35,11 +36,12 @@ const PLATFORM_IDS: PlatformId[] = [
 ];
 
 export default function PlatformShowcase() {
-  const { t, locale } = useThemeAndLocale();
+  const { t: dictionary, locale } = useThemeAndLocale();
+  const t = launchCopy(dictionary, locale === 'ar');
   const copy = getLandingCopy(locale).platformShowcase;
   const [activePlatform, setActivePlatform] = useState<PlatformId>('instagram');
 
-  const activeData = copy.platforms[activePlatform];
+  const activeData = {...copy.platforms[activePlatform],tag:locale==='ar'?'نشر ورسائل وتعليقات يدوية':'Manual publishing, messages and comments',description:locale==='ar'?'راجع المحتوى والردود قبل التنفيذ. الأتمتة ومزامنة جهات الاتصال ليست مفعّلة.':'Review content and replies before execution. Automation and contact synchronization are not enabled.'};
 
   return (
     <section id="platforms" className="scroll-mt-24 space-y-10 py-6">
@@ -59,7 +61,7 @@ export default function PlatformShowcase() {
 
       {/* Platform Navigation Pills */}
       <div className="flex flex-wrap items-center justify-center gap-2 px-2">
-        {PLATFORM_IDS.map((pid) => {
+        {PLATFORM_IDS.filter(pid=>['instagram','facebook'].includes(pid)).map((pid) => {
           const item = copy.platforms[pid];
           const isActive = activePlatform === pid;
           return (
@@ -111,7 +113,7 @@ export default function PlatformShowcase() {
 
               {/* Platform API Capabilities Checklist */}
               <div className="space-y-2.5 pt-3 border-t border-[var(--border-subtle)]">
-                {copy.checklists.map((item) => (
+                {['Manual review · '+(locale==='ar'?'مراجعة يدوية':'manual review'),locale==='ar'?'النشر حسب الحالة الفعلية للمزود':'Publishing follows the actual provider status',locale==='ar'?'الرسائل حسب صلاحيات الحساب وموافقة العميل':'Messaging follows account permissions and customer consent'].map((item) => (
                   <div
                     key={item}
                     className="flex items-start gap-2.5 text-xs text-[var(--text-primary)]"
@@ -153,7 +155,7 @@ export default function PlatformShowcase() {
       {/* 18 Platforms Compact Grid Badge Bar */}
       <div className="mx-auto max-w-5xl rounded-2xl border border-[var(--border-subtle)] bg-[var(--bg-subtle)]/60 p-5">
         <div className="text-center text-xs font-bold text-[var(--text-secondary)] mb-3.5">
-          {copy.all18Title}
+          {locale==='ar'?'قنوات الإطلاق الحالية':'Current launch channels'}
         </div>
         <div className="flex flex-wrap items-center justify-center gap-2 text-xs">
           {[
@@ -175,7 +177,7 @@ export default function PlatformShowcase() {
             'Bluesky',
             'Google Business',
             'Shopify & WordPress',
-          ].map((ch) => (
+          ].filter(ch=>['Instagram','Facebook','WhatsApp Business','Messenger'].includes(ch)).map((ch) => (
             <span
               key={ch}
               dir="ltr"

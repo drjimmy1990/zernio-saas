@@ -2,6 +2,7 @@
 
 import React, { useEffect, useState, useCallback } from 'react';
 import Link from 'next/link';
+import { SaasWorkspace } from '@/components/dashboard/SaasWorkspace';
 import { useRouter } from 'next/navigation';
 import { useThemeAndLocale } from '@/i18n/ThemeAndLocaleProvider';
 import {
@@ -45,19 +46,27 @@ interface AdminSnapshot {
       zernioProfileId: string | null;
       planKey: string;
       retailRevenueUsd: number;
-      zernioWholesaleUsd: number;
-      grossMarginUsd: number;
-      marginPercent: number;
+      zernioWholesaleUsd: number | null;
+      grossMarginUsd: number | null;
+      marginPercent: number | null;
     }>;
   };
 }
 
 const SUB_SERVICES_LIST = Object.values(SUB_SERVICE_CATALOG);
-type AdminTab = 'global' | 'plans' | 'tenants' | 'billing';
+type AdminTab = 'global' | 'plans' | 'tenants' | 'billing' | 'allowances';
 
 export default function SuperAdminControlPlanePage() {
   const router = useRouter();
   const { t, locale } = useThemeAndLocale();
+  const [error, setError] = useState('');
+  const unavailable = locale === 'ar' ? 'غير متاح' : 'Unavailable';
+  const money = (value: number | null) => value == null ? unavailable : `$${value.toLocaleString(undefined, {maximumFractionDigits:2})}`;
+  async function adminRequest(url: string, init?: RequestInit) {
+    setError('');
+    try { const response = await fetch(url, init); if (!response.ok) { const body = await response.clone().json(); setError(body.error || 'Administrator request failed.'); } return response; }
+    catch { setError('Administrator services are unavailable. Refresh before retrying.'); return Response.json({error:'Service unavailable'},{status:503}); }
+  }
   const [authChecking, setAuthChecking] = useState<boolean>(true);
   const [activeTab, setActiveTab] = useState<AdminTab>('global');
   const [data, setData] = useState<AdminSnapshot | null>(null);
@@ -75,12 +84,13 @@ export default function SuperAdminControlPlanePage() {
   const fetchSnapshot = useCallback(async () => {
     setLoading(true);
     try {
-      const res = await fetch('/api/admin');
+      const res = await adminRequest('/api/admin');
       if (res.status === 401) {
         router.push('/login?redirect=/admin');
         return;
       }
       const json = await res.json();
+    if (!res.ok) return;
       setData(json);
     } finally {
       setLoading(false);
@@ -106,7 +116,7 @@ export default function SuperAdminControlPlanePage() {
   }, [router, fetchSnapshot]);
 
   const updateGlobalConfig = async (patch: Record<string, unknown>) => {
-    const res = await fetch('/api/admin', {
+    const res = await adminRequest('/api/admin', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
@@ -115,6 +125,7 @@ export default function SuperAdminControlPlanePage() {
       }),
     });
     const json = await res.json();
+    if (!res.ok) return;
     if (json.snapshot) {
       setData((prev) => (prev ? { ...prev, ...json.snapshot } : json.snapshot));
     }
@@ -168,7 +179,7 @@ export default function SuperAdminControlPlanePage() {
       ? current.filter((s) => s !== subService)
       : [...current, subService];
 
-    const res = await fetch('/api/admin', {
+    const res = await adminRequest('/api/admin', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
@@ -178,6 +189,7 @@ export default function SuperAdminControlPlanePage() {
       }),
     });
     const json = await res.json();
+    if (!res.ok) return;
     if (json.snapshot) {
       setData((prev) => (prev ? { ...prev, ...json.snapshot } : json.snapshot));
     }
@@ -192,7 +204,7 @@ export default function SuperAdminControlPlanePage() {
       ? current.filter((s) => s !== scope)
       : [...current, scope];
 
-    const res = await fetch('/api/admin', {
+    const res = await adminRequest('/api/admin', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
@@ -202,6 +214,7 @@ export default function SuperAdminControlPlanePage() {
       }),
     });
     const json = await res.json();
+    if (!res.ok) return;
     if (json.snapshot) {
       setData((prev) => (prev ? { ...prev, ...json.snapshot } : json.snapshot));
     }
@@ -211,7 +224,7 @@ export default function SuperAdminControlPlanePage() {
     organizationId: string,
     patch: Record<string, unknown>
   ) => {
-    const res = await fetch('/api/admin', {
+    const res = await adminRequest('/api/admin', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
@@ -221,13 +234,14 @@ export default function SuperAdminControlPlanePage() {
       }),
     });
     const json = await res.json();
+    if (!res.ok) return;
     if (json.snapshot) {
       setData((prev) => (prev ? { ...prev, ...json.snapshot } : json.snapshot));
     }
   };
 
   const handleMintScopedKey = async (organizationId: string) => {
-    const res = await fetch('/api/admin', {
+    const res = await adminRequest('/api/admin', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
@@ -237,6 +251,7 @@ export default function SuperAdminControlPlanePage() {
       }),
     });
     const json = await res.json();
+    if (!res.ok) return;
     if (json.snapshot) {
       setData((prev) => (prev ? { ...prev, ...json.snapshot } : json.snapshot));
     }
@@ -250,7 +265,7 @@ export default function SuperAdminControlPlanePage() {
   const handleCreateTenantInAdmin = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!newOrgName.trim()) return;
-    const res = await fetch('/api/admin', {
+    const res = await adminRequest('/api/admin', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
@@ -261,6 +276,7 @@ export default function SuperAdminControlPlanePage() {
       }),
     });
     const json = await res.json();
+    if (!res.ok) return;
     if (json.snapshot) {
       setData((prev) => (prev ? { ...prev, ...json.snapshot } : json.snapshot));
     }
@@ -268,7 +284,7 @@ export default function SuperAdminControlPlanePage() {
   };
 
   const handleDeleteTenant = async (organizationId: string) => {
-    const res = await fetch('/api/admin', {
+    const res = await adminRequest('/api/admin', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
@@ -277,6 +293,7 @@ export default function SuperAdminControlPlanePage() {
       }),
     });
     const json = await res.json();
+    if (!res.ok) return;
     if (json.snapshot) {
       setData((prev) => (prev ? { ...prev, ...json.snapshot } : json.snapshot));
     }
@@ -352,6 +369,7 @@ export default function SuperAdminControlPlanePage() {
               { id: 'plans', label: t.admin.tabPlans, icon: KeyRound },
               { id: 'tenants', label: t.admin.tabTenants, icon: Building2 },
               { id: 'billing', label: t.admin.tabBilling, icon: DollarSign },
+              { id: 'allowances', label: locale === 'ar' ? 'مخصصات التشغيل' : 'Spending allocations', icon: ShieldCheck },
             ] as const
           ).map((tab) => {
             const Icon = tab.icon;
@@ -570,6 +588,9 @@ export default function SuperAdminControlPlanePage() {
           </div>
         )}
 
+        {error && <p role="alert" className="rounded-xl border border-rose-400 p-4 text-sm">{error}</p>}
+        {activeTab === 'allowances' && <SaasWorkspace />}
+
         {/* TAB 2: PLAN TEMPLATES */}
         {activeTab === 'plans' && data && (
           <div className="luxury-card p-6 space-y-6">
@@ -767,7 +788,7 @@ export default function SuperAdminControlPlanePage() {
                       </Link>
 
                       <button
-                        onClick={() => handleMintScopedKey(tenant.organizationId)}
+                        disabled title={locale === 'ar' ? 'إدارة المفاتيح من إعدادات مساحة العمل' : 'Manage API keys in workspace settings'} onClick={() => handleMintScopedKey(tenant.organizationId)}
                         className="rounded-xl bg-[var(--accent-primary)] px-3.5 py-2 text-xs font-bold text-white hover:bg-[var(--accent-hover)]"
                       >
                         {t.admin.mintKeyBtn}
@@ -838,7 +859,7 @@ export default function SuperAdminControlPlanePage() {
                         colSpan={6}
                         className="px-6 py-10 text-center text-xs text-[var(--text-muted)]"
                       >
-                        No customer workspaces registered yet. Once real accounts sign up or are provisioned, their live wholesale usage and retail subscription margins will appear here.
+                        No customer workspaces registered yet. Payment collection is coming soon; unobserved provider costs remain unavailable.
                       </td>
                     </tr>
                   ) : (
@@ -854,13 +875,13 @@ export default function SuperAdminControlPlanePage() {
                           {row.planKey}
                         </td>
                         <td className="px-6 py-4 font-mono">
-                          ${row.zernioWholesaleUsd}
+                          {money(row.zernioWholesaleUsd)}
                         </td>
                         <td className="px-6 py-4 font-mono font-bold">
-                          ${row.retailRevenueUsd}
+                          {money(row.retailRevenueUsd)}
                         </td>
                         <td className="px-6 py-4 font-mono font-bold text-emerald-600">
-                          +${row.grossMarginUsd} ({row.marginPercent}%)
+                          {money(row.grossMarginUsd)} ({row.marginPercent == null ? unavailable : `${row.marginPercent}%`})
                         </td>
                       </tr>
                     ))

@@ -1,4 +1,5 @@
 'use client';
+import { launchCopy } from './launch-copy';
 
 import React, { useState } from 'react';
 import Link from 'next/link';
@@ -20,8 +21,9 @@ import {
 import { Asra3Mark } from '@/components/Asra3Logo';
 
 export default function HeroStage() {
-  const { t, dir, locale } = useThemeAndLocale();
-  const copy = getLandingCopy(locale).heroExtra;
+  const { t: dictionary, dir, locale } = useThemeAndLocale();
+  const t = launchCopy(dictionary, locale === 'ar');
+  const copy = {...getLandingCopy(locale).heroExtra, agentReadyLabel:locale==='ar'?'REST مع مراجعة يدوية':'REST with manual review', windowConnectedBadge:locale==='ar'?'مثال توضيحي':'Illustrative example',stat1Value:'1',stat2Value:'3',stat2Sub:'Facebook · Instagram · WhatsApp',stat3Value:'Manual',stat3Sub:locale==='ar'?'الأتمتة قريباً':'Automation — Coming soon',stat4Value:'EN / AR',radarCards:{igTitle:'Instagram',igStatus:locale==='ar'?'مراجعة يدوية':'Manual review',ttTitle:'Facebook',ttStatus:locale==='ar'?'مراجعة يدوية':'Manual review',liTitle:locale==='ar'?'العملاء':'Manual CRM',liStatus:locale==='ar'?'بيانات دائمة':'Durable data',waTitle:'WhatsApp',waStatus:locale==='ar'?'موافقة ومراجعة':'Consent and review'},radarFooter:locale==='ar'?'نماذج توضيحية؛ النتائج الفعلية من المزود.':'Illustrative previews; actual results come from the provider.'};
 
   const [copiedCode, setCopiedCode] = useState(false);
   const [copiedPrompt, setCopiedPrompt] = useState(false);
@@ -29,28 +31,14 @@ export default function HeroStage() {
 
   const ArrowIcon = dir === 'rtl' ? ArrowLeft : ArrowRight;
 
-  const agentPromptText =
-    'You are configuring Asra3 Unified API (asra3.com). Connect to POST https://asra3.com/api/v1/posts using Bearer tk_live_... token to manage 18 social channels, virtual phone numbers, WhatsApp Business broadcasts, and AI Voice telephony.';
-
-  const codeSnippet = `import Asra3 from '@asra3/node';
-
-const asra3 = new Asra3(process.env.ASRA3_API_KEY);
-
-// Broadcast across 18 channels + WhatsApp in 1 API call
-const response = await asra3.posts.create({
-  content: 'Major product drop 🚀 Available worldwide today!',
-  mediaUrls: ['https://cdn.asra3.com/assets/launch-reel.mp4'],
-  platforms: ['instagram', 'tiktok', 'linkedin', 'whatsapp'],
-  schedule: 'immediate',
-  metadata: {
-    instagram: { reelsAudio: 'original', shareToFeed: true },
-    tiktok: { privacy: 'public', allowComments: true },
-    whatsapp: { templateName: 'winter_sale_50', broadcast: true }
-  }
+  const agentPromptText = 'Read https://asra3.com/docs for reviewed manual REST operations. Use a current asra3_ workspace key. Preserve tenant ownership, consent and idempotency. Automation, payments, advertising and commerce are coming soon.';
+  const codeSnippet = `const response = await fetch('/api/publishing', {
+  method: 'POST', headers: {'Content-Type': 'application/json'},
+  body: JSON.stringify({action: 'create', isDraft: true,
+    idempotencyKey: crypto.randomUUID(), content: 'Our new collection',
+    platforms: [{platform: 'facebook', accountId: 'OWNED_ACCOUNT_ID'}]})
 });
-
-console.log(response.status); // 'published_synced'`;
-
+const result = await response.json(); // Review the returned real status`;
   const copyToClipboard = (text: string, type: 'code' | 'prompt') => {
     if (navigator?.clipboard) {
       navigator.clipboard.writeText(text);
@@ -72,8 +60,8 @@ console.log(response.status); // 'published_synced'`;
     { name: 'Claude Code', tag: copy.agentTags.cli },
     { name: 'Cursor', tag: copy.agentTags.composer },
     { name: 'Codex / GPT-4o', tag: copy.agentTags.actions },
-    { name: 'OpenClaw', tag: copy.agentTags.autonomous },
-    { name: 'n8n Workflow', tag: copy.agentTags.nodes },
+
+
   ];
 
   return (
@@ -234,7 +222,7 @@ console.log(response.status); // 'published_synced'`;
                   <div className="flex items-center gap-2">
                     <Terminal className="h-3.5 w-3.5 text-[var(--brand-coral)]" />
                     <span className="text-[11px] text-white/80 font-semibold">
-                      publish-omnichannel.ts
+                      reviewed-draft.ts
                     </span>
                   </div>
                   <button
@@ -252,48 +240,13 @@ console.log(response.status); // 'published_synced'`;
                 </div>
 
                 <pre className="mt-4 overflow-x-auto text-[11px] sm:text-xs leading-relaxed text-slate-200">
-                  <code>
-                    <span className="text-purple-400">import</span> Asra3{' '}
-                    <span className="text-purple-400">from</span>{' '}
-                    <span className="text-emerald-400">&apos;@asra3/node&apos;</span>;{'\n\n'}
-                    <span className="text-purple-400">const</span> asra3 ={' '}
-                    <span className="text-purple-400">new</span> Asra3(process.env.
-                    <span className="text-amber-300">ASRA3_API_KEY</span>);{'\n\n'}
-                    <span className="text-slate-500">
-                      // Broadcast across 18 channels + WhatsApp in 1 call
-                    </span>
-                    {'\n'}
-                    <span className="text-purple-400">const</span> post ={' '}
-                    <span className="text-purple-400">await</span> asra3.posts.create({'{'}{'\n'}
-                    {'  '}content:{' '}
-                    <span className="text-emerald-300">
-                      &apos;Major product drop 🚀 Available worldwide!&apos;
-                    </span>
-                    ,{'\n'}
-                    {'  '}mediaUrls: [
-                    <span className="text-emerald-300">
-                      &apos;https://cdn.asra3.com/launch.mp4&apos;
-                    </span>
-                    ],{'\n'}
-                    {'  '}platforms: [
-                    <span className="text-amber-300">&apos;instagram&apos;</span>,{' '}
-                    <span className="text-amber-300">&apos;tiktok&apos;</span>,{' '}
-                    <span className="text-amber-300">&apos;linkedin&apos;</span>,{' '}
-                    <span className="text-amber-300">&apos;whatsapp&apos;</span>
-                    ],{'\n'}
-                    {'  '}schedule:{' '}
-                    <span className="text-emerald-300">&apos;immediate&apos;</span>
-                    {'\n'}
-                    {'}'});{'\n\n'}
-                    <span className="text-blue-400">console</span>.log(post.status);{' '}
-                    <span className="text-emerald-400">// &quot;published_synced&quot;</span>
-                  </code>
+                  <code>{codeSnippet}</code>
                 </pre>
               </div>
 
               <div className="mt-4 pt-3 border-t border-white/10 flex items-center justify-between text-[11px] text-slate-400">
-                <span>HTTP 200 OK • JSON-LD</span>
-                <span className="text-emerald-400 font-semibold">✓ synced_18_channels</span>
+                <span>Illustrative draft request</span>
+                <span className="text-emerald-400 font-semibold">Review the returned status</span>
               </div>
             </div>
 
@@ -336,7 +289,7 @@ console.log(response.status); // 'published_synced'`;
                 {/* TikTok Card */}
                 <div className="rounded-2xl border border-[var(--border-subtle)] bg-[var(--bg-card)] p-3 shadow-sm text-start flex items-center gap-3">
                   <div className="h-9 w-9 shrink-0 rounded-xl bg-black text-white flex items-center justify-center text-xs font-extrabold border border-white/15">
-                    TT
+                    FB
                   </div>
                   <div className="min-w-0">
                     <div className="truncate text-xs font-bold text-[var(--text-primary)]">
@@ -352,7 +305,7 @@ console.log(response.status); // 'published_synced'`;
                 {/* LinkedIn Card */}
                 <div className="rounded-2xl border border-[var(--border-subtle)] bg-[var(--bg-card)] p-3 shadow-sm text-start flex items-center gap-3">
                   <div className="h-9 w-9 shrink-0 rounded-xl bg-[#0077b5] text-white flex items-center justify-center text-xs font-extrabold">
-                    in
+                    CRM
                   </div>
                   <div className="min-w-0">
                     <div className="truncate text-xs font-bold text-[var(--text-primary)]">

@@ -1,0 +1,10 @@
+version: 1
+name: Zernio Meta settings contract fixture
+slug: zernio-meta-settings-contract
+protocol: http
+port: 4950
+interceptRequests: true
+scenarios:
+  - name: default
+    path: ./default.js
+    default: true

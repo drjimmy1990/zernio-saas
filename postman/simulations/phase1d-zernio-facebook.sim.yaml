@@ -1,0 +1,5 @@
+simulation: phase1d-zernio-facebook
+routing: path
+mocks:
+  - routeKey: zernio
+    path: ../mocks/zernio-facebook/config.yaml

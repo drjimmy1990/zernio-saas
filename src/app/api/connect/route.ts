@@ -1,232 +1,82 @@
 import { NextResponse } from 'next/server';
 import { CoreConnectService } from '@/lib/services/core-connect.service';
 import { PublishingService } from '@/lib/services/publishing.service';
-import { zernioClient } from '@/lib/zernio/client';
+import { ZernioApiException, zernioClient } from '@/lib/zernio/client';
+import { requireTenantSession, requireTenantAccess, requireWorkspaceRole, TenantAccessError } from '@/lib/auth/tenant-access';
+import { requireTenantAccounts } from '@/lib/auth/tenant-provider';
+import { startOAuthSession, acceptOAuthCallback, listOAuthResources, completeOAuthSelection } from '@/lib/auth/oauth-session';
+import { disconnectAccount } from '@/lib/accounts/lifecycle';
+import { getOwnedPhoneNumberForWhatsApp } from '@/lib/telephony/phone-numbers';
 import { WorkspaceStore } from '@/lib/storage/workspace-store';
 import type {
   OAuthScopeArea,
-  SecondarySelectionStep,
   SocialPlatform,
 } from '@/types/platform';
-
-/**
- * Platform to Secondary Selection Step mapping
- */
-const PLATFORM_TO_STEP_MAP: Record<string, SecondarySelectionStep> = {
-  facebook: 'select_page',
-  instagram: 'select_account',
-  linkedin: 'select_organization',
-  pinterest: 'select_board',
-  googlebusiness: 'select_location',
-  snapchat: 'select_public_profile',
-  whatsapp: 'select_phone_number',
-};
-
-/**
- * Rich simulated entities catalog for Smart Hybrid mode
- */
-const SIMULATED_ENTITIES_BY_PLATFORM: Record<
-  string,
-  Array<{
-    id: string;
-    name: string;
-    username: string;
-    category: string;
-    followers?: string;
-    details?: string;
-  }>
-> = {
-  facebook: [
-    {
-      id: 'fb_page_01',
-      name: 'Asra3 Official Brand',
-      username: '@asra3_official',
-      category: 'Enterprise Software & Security',
-      followers: '142,500 Followers',
-      details: 'Verified Page · Admin Access',
-    },
-    {
-      id: 'fb_page_02',
-      name: 'Asra3 MENA Community',
-      username: '@asra3_mena',
-      category: 'Software & Technology',
-      followers: '48,200 Followers',
-      details: 'Regional Branch · Admin Access',
-    },
-    {
-      id: 'fb_page_03',
-      name: 'Asra3 Developers Hub',
-      username: '@asra3_devs',
-      category: 'Developer Community',
-      followers: '29,400 Followers',
-      details: 'Community Page · Editor Access',
-    },
-  ],
-  instagram: [
-    {
-      id: 'ig_acc_01',
-      name: 'Asra3 Global (@asra3.official)',
-      username: '@asra3.official',
-      category: 'Technology & Cloud Platform',
-      followers: '215,000 Followers',
-      details: 'Business Account · Linked to Facebook Page',
-    },
-    {
-      id: 'ig_acc_02',
-      name: 'Asra3 Engineering Lab (@asra3.lab)',
-      username: '@asra3.lab',
-      category: 'Creator / Engineering',
-      followers: '68,300 Followers',
-      details: 'Professional Creator Account',
-    },
-  ],
-  linkedin: [
-    {
-      id: 'li_org_01',
-      name: 'Asra3 International Corp',
-      username: 'asra3-corp',
-      category: 'Information Technology & Services',
-      followers: '85,000 Followers',
-      details: '1,200+ Employees · Super Admin Role',
-    },
-    {
-      id: 'li_org_02',
-      name: 'Asra3 EMEA Hub',
-      username: 'asra3-emea',
-      category: 'Software Development',
-      followers: '22,400 Followers',
-      details: '350 Employees · Content Admin Role',
-    },
-  ],
-  pinterest: [
-    {
-      id: 'pin_brd_01',
-      name: 'Brand Identity & Visual Campaigns',
-      username: 'asra3/branding',
-      category: 'Design & Visual Architecture',
-      followers: '18,500 Followers',
-      details: 'Public Board · 54 Pins',
-    },
-    {
-      id: 'pin_brd_02',
-      name: 'UI/UX Prototypes & Product Drops',
-      username: 'asra3/product-drops',
-      category: 'Product Design',
-      followers: '12,200 Followers',
-      details: 'Public Board · 86 Pins',
-    },
-  ],
-  googlebusiness: [
-    {
-      id: 'gmb_loc_01',
-      name: 'Asra3 Headquarters — Ljubljana',
-      username: 'loc_ljubljana_hq',
-      category: 'Corporate Headquarters',
-      followers: '4.9 ★ (420 Reviews)',
-      details: 'Slovenska cesta 24, Ljubljana · Verified Location',
-    },
-    {
-      id: 'gmb_loc_02',
-      name: 'Asra3 Middle East Hub — Dubai',
-      username: 'loc_dubai_hub',
-      category: 'Regional Office',
-      followers: '4.8 ★ (185 Reviews)',
-      details: 'Dubai Internet City, Bldg 3 · Verified Location',
-    },
-  ],
-  discord: [
-    {
-      id: 'disc_chn_01',
-      name: '#announcements',
-      username: 'asra3-hq/announcements',
-      category: 'Announcement Channel',
-      followers: '12,400 Members',
-      details: 'Asra3 Developer Hub Guild · Webhook Active',
-    },
-    {
-      id: 'disc_chn_02',
-      name: '#product-updates',
-      username: 'asra3-hq/product-updates',
-      category: 'Public Feed Channel',
-      followers: '12,400 Members',
-      details: 'Asra3 Developer Hub Guild · Webhook Active',
-    },
-  ],
-  snapchat: [
-    {
-      id: 'snap_prof_01',
-      name: 'Asra3 Official Public Profile',
-      username: '@asra3_snaps',
-      category: 'Verified Public Profile',
-      followers: '52,000 Subscribers',
-      details: 'Public Profile · Spotlights & Stories Enabled',
-    },
-  ],
-  whatsapp: [
-    {
-      id: 'wa_num_01',
-      name: 'Asra3 VIP Customer Support',
-      username: '+1 (415) 890-2341',
-      category: 'WhatsApp Business Account',
-      followers: 'High Tier · Verified Green Badge',
-      details: 'WABA ID: waba_881923 · Phone Number ID: pni_991823',
-    },
-    {
-      id: 'wa_num_02',
-      name: 'Asra3 MENA Operations',
-      username: '+971 4 812 9900',
-      category: 'WhatsApp Business Account',
-      followers: 'High Tier · Verified Green Badge',
-      details: 'WABA ID: waba_881924 · Phone Number ID: pni_991824',
-    },
-  ],
-};
 
 /**
  * HEADLESS OAUTH, CREDENTIAL CONNECTION & TEST POST ENDPOINT (`/api/connect`)
  *
  * Supports:
- * 1. `action = "start_oauth"`: Initiates headless OAuth flow or generates simulated consent handshake.
- * 2. `action = "list_entities"`: Lists selectable Pages, Accounts, Organizations, Channels, or Locations.
- * 3. `action = "select_entity"`: Completes headless binding of selected entity to tenant profile.
- * 4. `action = "connect_credentials"`: Direct credential onboarding (Telegram, Shopify, WordPress, Bluesky, WhatsApp).
- * 5. `action = "test_post"`: Triggers an immediate verification test post or test message and returns live delivery receipt.
+ * 1. `start_oauth`: Creates a durable authorization session and starts provider signup.
+ * 2. `accept_oauth_callback`: Verifies session binding and stores encrypted selection context.
+ * 3. `list_entities` / `select_entity`: Use the stored session to select a verified resource.
+ * 4. `connect_credentials`: Connects supported credential platforms through the provider.
+ * 5. `test_post`: Publishes a test post and reports the provider status; messaging is unsupported.
  * 6. `action = "check_health"`: Returns live token health telemetry.
  * 7. `action = "disconnect"`: Safely disconnects or unbinds an account.
  */
 export async function POST(request: Request) {
   try {
+    requireTenantSession(request);
     const body = await request.json();
+    if (!body || typeof body !== 'object' || Array.isArray(body)) {
+      return NextResponse.json({ error: 'Expected a JSON object.' }, { status: 400 });
+    }
     const action = body.action as string;
-    const organizationId = (body.organizationId as string) || 'org_demo_acme';
+    const { session, role } = await requireTenantAccess(request, body.organizationId);
+    const organizationId = session.tenant.organizationId;
+    if (action !== 'check_health') requireWorkspaceRole(role, action === 'test_post');
     const platform = (body.platform as string) || '';
+
+    if (!zernioClient.isConfigured()) {
+      throw new ZernioApiException({ status: 503, error: 'Zernio is not configured. Account connections are unavailable.' });
+    }
+    if (typeof body.tempToken === 'string' && body.tempToken.startsWith('sim_')) {
+      throw new TenantAccessError(400, 'Restart the connection to obtain a valid authorization session.');
+    }
+    if (action === 'connect_credentials' && !['bluesky', 'wordpress', 'shopify', 'whatsapp'].includes(platform)) {
+      throw new TenantAccessError(501, 'This credential connection is not implemented yet.');
+    }
+    if (action === 'start_oauth') {
+      const callback = new URL(body.redirectUrl || '/dashboard?oauth_callback=1', process.env.NEXT_PUBLIC_APP_URL || request.url);
+      const appOrigin = new URL(process.env.NEXT_PUBLIC_APP_URL || request.url).origin;
+      if (callback.origin !== appOrigin || callback.username || callback.password) {
+        throw new TenantAccessError(400, 'The connection callback must return to this application.');
+      }
+    }
 
     // =========================================================================
     // 1. START OAUTH
     // =========================================================================
     if (action === 'start_oauth') {
-      const appUrl =
-        process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:5651';
-      const result = await CoreConnectService.startHeadlessOAuth({
-        organizationId,
+      let expectedPhoneNumber: string | undefined;
+      if (body.purchasedNumberId != null) {
+        if (platform !== 'whatsapp' || typeof body.purchasedNumberId !== 'string' || !body.purchasedNumberId.trim()) {
+          throw new TenantAccessError(400, 'Select an owned phone number for WhatsApp.');
+        }
+        if (body.whatsappOnboarding && body.whatsappOnboarding !== 'api') throw new TenantAccessError(400, 'Purchased numbers require Cloud API onboarding.');
+        const number = await getOwnedPhoneNumberForWhatsApp(organizationId, body.purchasedNumberId);
+        expectedPhoneNumber = number.phoneNumber;
+      }
+      const result = await startOAuthSession(request, session, {
         platform: body.platform as SocialPlatform,
         requestedScopes: body.requestedScopes as OAuthScopeArea[] | undefined,
-        redirectUrl:
-          (body.redirectUrl as string) || `${appUrl}/dashboard?oauth_callback=1`,
         shopDomain: body.shopDomain as string | undefined,
-        loginMethod: body.loginMethod as
-          | 'instagram_login'
-          | 'facebook_login'
-          | undefined,
-        whatsappOnboarding: body.whatsappOnboarding as
-          | 'api'
-          | 'business_app'
-          | undefined,
-        whatsappSignupMode: body.whatsappSignupMode as
-          | 'hosted'
-          | 'headless'
-          | undefined,
-      });
+        loginMethod: body.loginMethod as 'instagram_login' | 'facebook_login' | undefined,
+        whatsappOnboarding: expectedPhoneNumber ? 'api' : body.whatsappOnboarding as 'api' | 'business_app' | undefined,
+        whatsappSignupMode: body.whatsappSignupMode as 'hosted' | 'headless' | undefined,
+        reconnectAccountId: body.reconnectAccountId,
+      }, expectedPhoneNumber, typeof body.purchasedNumberId === 'string' ? body.purchasedNumberId : undefined);
 
       return NextResponse.json({
         ...result,
@@ -240,208 +90,14 @@ export async function POST(request: Request) {
       });
     }
 
-    // =========================================================================
-    // 2. LIST ENTITIES (Pages, Orgs, Locations, Channels, Boards)
-    // =========================================================================
+    if (action === 'accept_oauth_callback' || action === 'complete_oauth_callback') {
+      return NextResponse.json(await acceptOAuthCallback(request, session, body));
+    }
     if (action === 'list_entities') {
-      const step =
-        (body.step as SecondarySelectionStep) ||
-        PLATFORM_TO_STEP_MAP[platform] ||
-        'select_page';
-
-      // Smart Hybrid: If Zernio is not configured or in simulated mode, provide rich platform entities
-      if (!zernioClient.isConfigured() || (body.tempToken && body.tempToken.startsWith('sim_'))) {
-        const items =
-          SIMULATED_ENTITIES_BY_PLATFORM[platform] ||
-          SIMULATED_ENTITIES_BY_PLATFORM[step] || [
-            {
-              id: `entity_${platform}_01`,
-              name: `Asra3 ${platform.toUpperCase()} Official`,
-              username: `@asra3_${platform}`,
-              category: 'Official Brand Channel',
-              followers: '50,000+ Followers',
-              details: 'Admin verified · Full publishing privileges',
-            },
-            {
-              id: `entity_${platform}_02`,
-              name: `Asra3 EMEA Regional`,
-              username: `@asra3_${platform}_emea`,
-              category: 'Regional Branch',
-              followers: '15,000+ Followers',
-              details: 'Regional profile · Content creator access',
-            },
-          ];
-
-        return NextResponse.json({
-          simulated: true,
-          platform,
-          step,
-          items,
-        });
-      }
-
-      const result = await CoreConnectService.listHeadlessSelectableEntities({
-        organizationId,
-        step,
-        tempToken: (body.tempToken as string) || '',
-      });
-
-      const raw = (result as { raw?: Record<string, unknown> }).raw || {};
-      const rawList =
-        (Array.isArray(raw.pages) && raw.pages) ||
-        (Array.isArray(raw.organizations) && raw.organizations) ||
-        (Array.isArray(raw.boards) && raw.boards) ||
-        (Array.isArray(raw.locations) && raw.locations) ||
-        (Array.isArray(raw.profiles) && raw.profiles) ||
-        (Array.isArray(raw.numbers) && raw.numbers) ||
-        (Array.isArray(raw.phoneNumbers) && raw.phoneNumbers) ||
-        (Array.isArray(raw.accounts) && raw.accounts) ||
-        (Array.isArray((result as { items?: unknown[] }).items) && (result as { items?: unknown[] }).items) ||
-        [];
-
-      const items = (rawList as Array<Record<string, unknown>>).map((item, idx) => ({
-        id: String(item.id || item.pageId || item.phoneNumberId || item.locationId || item.boardId || item.organizationId || item._id || `entity_${idx}`),
-        name: String(item.name || item.displayName || item.verifiedName || item.title || item.username || `Account ${idx + 1}`),
-        username: String(item.username || item.displayPhoneNumber || item.phoneNumber || item.vanityName || item.id || ''),
-        category: String(item.category || platform.toUpperCase()),
-        followers: item.followersCount ? `${item.followersCount} Followers` : 'Live Verified Entity',
-        details: String(item.address || item.about || item.wabaId || `ID: ${item.id || item.pageId || item.phoneNumberId || ''}`),
-      }));
-
-      return NextResponse.json({
-        ...result,
-        platform,
-        step,
-        items,
-      });
+      return NextResponse.json(await listOAuthResources(request, session, body.oauthSessionId, platform));
     }
-
-    // =========================================================================
-    // 2b. COMPLETE DIRECT OAUTH CALLBACK (when Zernio redirects with ?connected=...&accountId=...)
-    // =========================================================================
-    if (action === 'complete_oauth_callback') {
-      const accountId = (body.accountId as string) || `acc_${platform}_${Date.now().toString(36)}`;
-      const username = (body.username as string) || `@${platform}_account`;
-      const displayName = (body.displayName as string) || username;
-
-      const callbackAccount = {
-        id: accountId,
-        accountId,
-        platform: platform || 'facebook',
-        username,
-        displayName,
-        status: 'healthy',
-        tokenHealth: {
-          status: 'healthy',
-          expiresAt: new Date(Date.now() + 60 * 24 * 60 * 60 * 1000).toISOString(),
-          expiresInDays: 60,
-        },
-        syncTime: 'Just now',
-        grantedScopes: ['posting', 'analytics', 'comments', 'messaging'],
-        canPost: true,
-        canFetchAnalytics: true,
-        needsReconnect: false,
-      };
-
-      WorkspaceStore.addConnectedAccount(organizationId, callbackAccount);
-
-      return NextResponse.json({
-        success: true,
-        simulated: !zernioClient.isConfigured(),
-        account: callbackAccount,
-      });
-    }
-
-    // =========================================================================
-    // 3. SELECT ENTITY
-    // =========================================================================
     if (action === 'select_entity') {
-      const step =
-        (body.step as SecondarySelectionStep) ||
-        PLATFORM_TO_STEP_MAP[platform] ||
-        'select_page';
-
-      const entityId = (body.entityId as string) || 'entity_primary_01';
-      const entityName = (body.entityName as string) || 'Connected Page';
-      const entityUsername = (body.entityUsername as string) || `@${platform || 'official'}`;
-
-      if (!zernioClient.isConfigured() || (body.tempToken && String(body.tempToken).startsWith('sim_'))) {
-        const accountId = `acc_${platform || 'entity'}_${Date.now().toString(36)}`;
-        const newAccount = {
-          id: accountId,
-          accountId,
-          platform: platform || 'facebook',
-          username: entityUsername,
-          displayName: entityName,
-          status: 'healthy',
-          tokenHealth: {
-            status: 'healthy',
-            expiresAt: new Date(Date.now() + 60 * 24 * 60 * 60 * 1000).toISOString(),
-            expiresInDays: 60,
-          },
-          syncTime: 'Just now',
-          grantedScopes: ['posting', 'analytics', 'comments', 'messaging'],
-          canPost: true,
-          canFetchAnalytics: true,
-          needsReconnect: false,
-          selectedEntity: {
-            id: entityId,
-            name: entityName,
-          },
-        };
-
-        WorkspaceStore.addConnectedAccount(organizationId, newAccount);
-
-        return NextResponse.json({
-          success: true,
-          simulated: true,
-          account: newAccount,
-        });
-      }
-
-      const result = await CoreConnectService.completeHeadlessSelection({
-        organizationId,
-        step,
-        entityId,
-        tempToken: body.tempToken as string,
-        userProfile: body.userProfile as Record<string, unknown> | undefined,
-        wabaId: body.wabaId as string | undefined,
-        redirectUrl: body.redirectUrl as string | undefined,
-      });
-
-      const remoteAcc = (result as { account?: Record<string, unknown> }).account || {};
-      const realAccountId = String(remoteAcc._id || remoteAcc.accountId || `acc_${platform}_${Date.now().toString(36)}`);
-      const liveAccount = {
-        id: realAccountId,
-        accountId: realAccountId,
-        platform: platform || 'facebook',
-        username: String(remoteAcc.username || entityUsername),
-        displayName: String(remoteAcc.displayName || entityName),
-        status: 'healthy',
-        tokenHealth: {
-          status: 'healthy',
-          expiresAt: new Date(Date.now() + 60 * 24 * 60 * 60 * 1000).toISOString(),
-          expiresInDays: 60,
-        },
-        syncTime: 'Just now',
-        grantedScopes: ['posting', 'analytics', 'comments', 'messaging'],
-        canPost: true,
-        canFetchAnalytics: true,
-        needsReconnect: false,
-        selectedEntity: {
-          id: entityId,
-          name: entityName,
-        },
-      };
-
-      WorkspaceStore.addConnectedAccount(organizationId, liveAccount);
-
-      return NextResponse.json({
-        ...result,
-        success: true,
-        simulated: false,
-        account: liveAccount,
-      });
+      return NextResponse.json(await completeOAuthSelection(request, session, body));
     }
 
     // =========================================================================
@@ -500,7 +156,7 @@ export async function POST(request: Request) {
           }
         }
 
-        let remoteAccountId = `acc_${platform}_${Date.now().toString(36)}`;
+        let remoteAccountId = '';
         let isSimulated = true;
 
         if (zernioClient.isConfigured()) {
@@ -513,8 +169,11 @@ export async function POST(request: Request) {
           if (remoteAcc && (remoteAcc._id || remoteAcc.accountId)) {
             remoteAccountId = String(remoteAcc._id || remoteAcc.accountId);
           }
+          if (!remoteAccountId) throw new ZernioApiException({ status: 502, error: 'Zernio did not confirm a connected account.' });
           isSimulated = false;
         }
+
+        const [verifiedAccount] = await requireTenantAccounts(organizationId, [remoteAccountId]);
 
         let username = `@${platform}`;
         let displayName = `${platform.toUpperCase()} Account`;
@@ -538,23 +197,12 @@ export async function POST(request: Request) {
         const credAccount = {
           id: remoteAccountId,
           accountId: remoteAccountId,
-          platform,
-          username,
-          displayName,
-          status: 'healthy',
-          tokenHealth: {
-            status: 'healthy',
-            expiresAt: new Date(Date.now() + 60 * 24 * 60 * 60 * 1000).toISOString(),
-            expiresInDays: 60,
-          },
+          platform: verifiedAccount.platform,
+          username: verifiedAccount.username || username,
+          displayName: verifiedAccount.displayName || displayName,
+          status: verifiedAccount.isActive && !verifiedAccount.needsReconnection ? 'active' : 'disconnected',
           syncTime: 'Just now',
-          grantedScopes:
-            platform === 'whatsapp'
-              ? ['whatsapp_business_messaging', 'whatsapp_business_management', 'webhooks']
-              : ['posting', 'analytics', 'comments'],
-          canPost: true,
-          canFetchAnalytics: true,
-          needsReconnect: false,
+          needsReconnect: Boolean(verifiedAccount.needsReconnection),
         };
 
         WorkspaceStore.addConnectedAccount(organizationId, credAccount);
@@ -600,78 +248,46 @@ export async function POST(request: Request) {
     // 5. TEST POST / TEST MESSAGE VERIFICATION
     // =========================================================================
     if (action === 'test_post') {
-      const handle = (body.handle as string) || 'brand_official';
+      const [account] = await requireTenantAccounts(organizationId, [body.accountId]);
+      if (account.platform !== platform) throw new TenantAccessError(400, 'The platform does not match the connected account.');
+      if (!account.isActive || account.needsReconnection) throw new TenantAccessError(409, 'Reconnect this account before publishing.');
       const content =
         (body.content as string) ||
         'Asra3 Omnichannel Connection Verified: Broadcast pipeline operational. 🚀';
-      const accountId = (body.accountId as string) || `acc_${platform}_live`;
       const isMessaging = ['telegram', 'whatsapp', 'discord', 'slack'].includes(platform);
-
-      // In live mode with real API key, invoke PublishingService
-      if (zernioClient.isConfigured() && !isMessaging) {
-        try {
-          const postResult = await PublishingService.createPost({
-            organizationId,
-            content,
-            publishNow: true,
-            platforms: [{ platform: platform as SocialPlatform, accountId }],
-          });
-
-          const postPlatforms = (postResult as { post?: { platforms?: Array<{ platformPostUrl?: string }> } }).post?.platforms;
-          const liveUrl =
-            postPlatforms?.[0]?.platformPostUrl ||
-            `https://${platform}.com/p/live_${Date.now().toString(36)}`;
-
-          return NextResponse.json({
-            success: true,
-            action: 'test_post',
-            platform,
-            simulated: false,
-            deliveryReceipt: {
-              status: 'delivered',
-              deliveryCode: 200,
-              receiptId: `rec_live_${Date.now().toString(36)}`,
-              deliveredAt: new Date().toISOString(),
-              latencyMs: 148,
-              platformPostUrl: liveUrl,
-              message: `Live post verified & published to @${handle}!`,
-              healthStatus: 'healthy',
-              tokenExpiresInDays: 60,
-            },
-          });
-        } catch (publishErr) {
-          // If live publish fails, return descriptive message
-          const msg = publishErr instanceof Error ? publishErr.message : 'Publishing test failed';
-          return NextResponse.json({ error: msg }, { status: 400 });
-        }
+      if (isMessaging) {
+        throw new TenantAccessError(501, 'Message verification requires a recipient and a supported messaging flow. This connection test does not send messages.');
       }
-
-      // Smart Hybrid simulated delivery receipt
-      const latencyMs = Math.floor(Math.random() * 60) + 115;
-      const receiptId = `rec_${Date.now().toString(36)}_${Math.random().toString(36).substring(2, 6)}`;
-      const platformPostUrl = isMessaging
-        ? `https://${platform}.com/messages/msg_${Date.now().toString(36)}`
-        : `https://${platform}.com/p/test_${Date.now().toString(36)}`;
-
+      const postResult = await PublishingService.createPost({
+        organizationId,
+        content,
+        publishNow: true,
+        idempotencyKey: request.headers.get('idempotency-key') || body.idempotencyKey,
+        platforms: [{ platform: account.platform as SocialPlatform, accountId: account._id }],
+      });
+      const post = postResult.post as Record<string, unknown> | undefined;
+      if (postResult.simulated || typeof post?._id !== 'string' || typeof post.status !== 'string') {
+        throw new ZernioApiException({ status: 502, error: 'The provider did not return a verifiable post result.' });
+      }
+      const targets = Array.isArray(post.platforms) ? post.platforms as Array<Record<string, unknown>> : [];
+      const target = targets.find((item) => (typeof item.accountId === 'string' ? item.accountId : (item.accountId as { _id?: string })?._id) === account._id);
+      const status = typeof target?.status === 'string' ? target.status : post.status;
+      const failed = ['failed', 'partial'].includes(post.status) || ['failed', 'partial'].includes(status) || postResult.httpStatus === 207;
+      const published = !failed && post.status === 'published' && status === 'published';
       return NextResponse.json({
-        success: true,
+        ...postResult,
+        success: published,
         action: 'test_post',
         platform,
-        simulated: true,
+        simulated: false,
+        ...(failed ? { error: 'The provider could not fully publish this test post.' } : {}),
         deliveryReceipt: {
-          status: 'delivered',
-          deliveryCode: 200,
-          receiptId,
-          deliveredAt: new Date().toISOString(),
-          latencyMs,
-          platformPostUrl,
-          message: isMessaging
-            ? `Test message verified & received via webhook by @${handle}!`
-            : `Test post verified & rendered live on @${handle}!`,
-          healthStatus: 'healthy',
-          tokenExpiresInDays: 60,
+          status,
+          receiptId: post._id,
+          ...(typeof target?.platformPostUrl === 'string' ? { platformPostUrl: target.platformPostUrl } : {}),
+          message: published ? 'The provider confirmed publication.' : `Provider post status: ${status}. Publication is not confirmed.`,
         },
-      });
+      }, { status: postResult.httpStatus || 200 });
     }
 
     // =========================================================================
@@ -687,16 +303,7 @@ export async function POST(request: Request) {
     // =========================================================================
     if (action === 'disconnect') {
       const accountId = (body.accountId as string) || (body.id as string) || '';
-      if (accountId) {
-        WorkspaceStore.removeConnectedAccount(organizationId, accountId);
-      }
-      return NextResponse.json({
-        success: true,
-        accountId: accountId || undefined,
-        platform: platform || undefined,
-        message: `Account ${accountId || platform} disconnected successfully`,
-        disconnectedAt: new Date().toISOString(),
-      });
+      return NextResponse.json(await disconnectAccount(organizationId, accountId));
     }
 
     return NextResponse.json(
@@ -705,6 +312,7 @@ export async function POST(request: Request) {
     );
   } catch (err) {
     const message = err instanceof Error ? err.message : 'Connect error';
-    return NextResponse.json({ error: message }, { status: 400 });
+    const status = err instanceof TenantAccessError ? err.status : err instanceof ZernioApiException ? err.envelope.status : 400;
+    return NextResponse.json({ error: message }, { status });
   }
 }

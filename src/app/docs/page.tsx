@@ -36,6 +36,15 @@ import {
 } from 'lucide-react';
 import TryItLiveConsole from '@/components/docs/TryItLiveConsole';
 
+const UNAVAILABLE_DOC_SECTIONS = new Set([
+  'ep_profiles', 'ep_connect', 'ep_connect_select', 'ep_account_groups', 'ep_queue_preview',
+  'ep_messages_search', 'ep_inbox_reviews', 'ep_inbox_mentions', 'ep_sequences', 'ep_workflows', 'ep_inbox',
+  'ep_numbers_porting', 'ep_sms_otp', 'ep_sms_registration', 'ep_voice_token', 'ep_telephony',
+  'ep_verify_otp', 'ep_verify_check', 'ep_branded_calling', 'ep_rcs_agents', 'ep_rcs_messages',
+  'ep_wa_link', 'ep_wa_verify', 'ep_business_agent', 'ep_analytics_best_times', 'ep_analytics_decay',
+  'ep_webhooks', 'ep_admin_reset',
+]);
+
 export type CodeLang = 'nodejs' | 'python' | 'curl';
 
 export type DocSectionId =
@@ -61,6 +70,7 @@ export type DocSectionId =
   | 'ep_media_presign'
   | 'ep_validate_post'
   | 'ep_validate_media'
+  | 'ep_instagram_limit'
   // Family 3: Unified Inbox & CRM
   | 'ep_messages_conversations'
   | 'ep_messages_create'
@@ -173,18 +183,18 @@ export const RESOURCE_GROUPS: Array<{
     groupTitleAr: '1. الأساسيات وربط القنوات الاجتماعية (Core & Connect)',
     cards: [
       {
-        title: 'Workspace, Quotas & Wallet (/me)',
-        titleAr: 'فحص مساحة العمل والحصص والمحفظة (/me)',
+        title: 'Workspace and configured limits (/me)',
+        titleAr: 'مساحة العمل وحدودها المحددة (/me)',
         count: 'GET /api/v1/me',
-        desc: 'Inspect active workspace identity, plan quotas, rate limits, and Telecom Credit Wallet balance.',
-        descAr: 'استعراض بيانات مساحة العمل، حدود الباقة، ورصيد محفظة الاتصالات.',
+        desc: 'Read the verified workspace and configured limits. This is not a wallet balance; monthly publishing/account billing enforcement is coming soon.',
+        descAr: 'عرض مساحة العمل الموثّقة وحدودها المحددة دون رصيد محفظة. تطبيق حدود فوترة النشر والحسابات الشهرية قريباً.',
         targetSection: 'ep_me',
       },
       {
         title: 'Platform Connection Health Probes',
         titleAr: 'فحص صحة اتصال القنوات والتوكنات',
         count: 'GET /api/v1/accounts/health',
-        desc: 'Live diagnostic probes across connected Facebook, Instagram, LinkedIn, and WhatsApp channels.',
+        desc: 'Fresh provider account inventory and health; missing observations are unknown.',
         descAr: 'فحص فوري لصلاحية التوكنات وحالة التنبيهات لجميع القنوات المربوطة.',
         targetSection: 'ep_accounts_health',
       },
@@ -192,16 +202,16 @@ export const RESOURCE_GROUPS: Array<{
         title: 'Profiles & Brand Groups',
         titleAr: 'الملفات والمجموعات (Profiles)',
         count: 'POST /api/v1/profiles',
-        desc: 'Manage profiles to group social accounts, queue slots, and campaigns per brand or client.',
-        descAr: 'إدارة ملفات الحسابات لتجميع قنوات كل علامة تجارية أو عميل في مساحة عمل مستقلة.',
+        desc: 'Use the authenticated workspace to manage the verified account mapping. Public profile creation is unavailable.',
+        descAr: 'تُدار الحسابات الموثّقة من مساحة العمل. إنشاء ملفات المزود عبر هذه الواجهة غير متاح.',
         targetSection: 'ep_profiles',
       },
       {
         title: 'Headless OAuth & Entity Selector',
         titleAr: 'الربط الفوري واختيار الصفحات (Headless OAuth)',
         count: 'POST /api/v1/connect/{platform}',
-        desc: 'Generate white-label OAuth authorization URLs or select specific Facebook pages / IG accounts.',
-        descAr: 'توليد روابط تفويض للعميل واختيار الصفحات وحسابات إنستغرام بضغطة زر واحدة.',
+        desc: 'Start reviewed OAuth and account selection in the authenticated dashboard. This headless catalog alias is unavailable.',
+        descAr: 'ابدأ التفويض واختيار الحساب من لوحة التحكم الموثّقة. مسار الربط الكتالوجي دون واجهة غير متاح.',
         targetSection: 'ep_connect',
       },
     ],
@@ -211,56 +221,56 @@ export const RESOURCE_GROUPS: Array<{
     groupTitleAr: '2. النشر الموحد، الجدولة الذكية، والفحص المسبق',
     cards: [
       {
-        title: 'Multi-Platform Posts & 24h Duplicate Guard',
+        title: 'Facebook drafts, posts and scheduling',
         titleAr: 'نشر وجدولة المنشورات مع منع التكرار',
         count: 'POST /api/v1/posts',
-        desc: 'Publish or schedule posts across 26 platforms with Idempotency-Key and 24-hour content-hash protection.',
-        descAr: 'نشر فوري أو مجدول عبر 26 منصة مع حماية من تكرار المنشور خلال 24 ساعة.',
+        desc: 'Create Facebook drafts or posts with stable provider idempotency. Inspect target results and partial success.',
+        descAr: 'مسودات ومنشورات فيسبوك مع مفاتيح طلبات ثابتة ومراجعة النتائج الجزئية.',
         targetSection: 'ep_posts',
       },
       {
         title: 'Weekly Queue Slots Schedule',
         titleAr: 'خانات النشر الأسبوعية الذكية (Queue Slots)',
-        count: 'GET /api/v1/queue/slots',
-        desc: 'Define recurring weekly posting windows per profile and inspect optimal publishing slots.',
-        descAr: 'ضبط أوقات النشر الدورية لكل بروفايل واستعراض الخانات القادمة.',
+        count: 'POST /api/v1/queue/slots',
+        desc: 'Create a provider queue with weekly slots. Queue reads and preview return 501.',
+        descAr: 'إنشاء قائمة بمواعيد أسبوعية. القراءة والمعاينة تعيدان 501.',
         targetSection: 'ep_queue_slots',
       },
       {
         title: 'Calendar Queue Preview Forecast',
         titleAr: 'معاينة تقويم النشر الحقيقي (Queue Preview)',
         count: 'GET /api/v1/queue/preview',
-        desc: 'Retrieve calendar forecast without synthetic posts or phantom entries.',
-        descAr: 'استعراض تقويم الجدولة الفعلي بدون منشورات وهمية.',
+        desc: 'Not implemented in this phase; returns 501.',
+        descAr: 'غير منفذ في هذه المرحلة؛ يعيد 501.',
         targetSection: 'ep_queue_preview',
       },
       {
         title: 'Pre-Flight Character & Media Validators',
         titleAr: 'الفحص المسبق للحدود والوسائط (Pre-Flight)',
         count: 'POST /api/v1/validate/post',
-        desc: 'Validate character limits, hashtags, and media aspect ratios before dispatching to networks.',
-        descAr: 'فحص عدد الحروف وأبعاد الصور والفيديو قبل إرسال المنشور للمنصات.',
+        desc: 'Validate owned Facebook/Instagram content and inspect public media accessibility, MIME and size. Final platform publication still depends on provider results.',
+        descAr: 'فحص محتوى Facebook وInstagram وروابط الوسائط العامة ونوعها وحجمها. الفحص لا يضمن النشر النهائي.',
         targetSection: 'ep_validate_post',
       },
     ],
   },
   {
-    groupTitle: '3. Unified Inbox, Social CRM & Visual Workflows',
-    groupTitleAr: '3. صندوق الوارد الموحد، إدارة العملاء، والأتمتة البصرية',
+    groupTitle: '3. Manual Inbox, CRM and Campaigns',
+    groupTitleAr: '3. المحادثات والعملاء والحملات اليدوية',
     cards: [
       {
         title: 'Omnichannel Conversations & Live Messages',
         titleAr: 'المحادثات الموحدة والرسائل الفورية',
         count: 'GET /api/v1/inbox/conversations',
-        desc: 'Unified two-way messaging across WhatsApp, Instagram DM, Facebook Messenger, and Telegram.',
-        descAr: 'إدارة محادثات العملاء عبر جميع القنوات في صندوق وارد موحد لحظي.',
+        desc: 'Manual WhatsApp, Instagram and Facebook Messenger conversations for eligible owned accounts. Other channels are unavailable.',
+        descAr: 'محادثات يدوية على WhatsApp وInstagram وMessenger للحسابات المملوكة المؤهلة. القنوات الأخرى غير متاحة.',
         targetSection: 'ep_messages_conversations',
       },
       {
         title: 'Public Comments Moderation & Replies',
         titleAr: 'إدارة التعليقات والردود العامة (Comments)',
-        count: 'POST /api/v1/inbox/comments',
-        desc: 'Fetch top-level comments, post public replies, like, hide, or delete comments programmatically.',
+        count: 'GET /api/v1/inbox/comments',
+        desc: 'Read owned Facebook/Instagram posts and native comments; send reviewed public/private replies, hide/unhide or delete. Likes and top-level creation are unavailable.',
         descAr: 'قراءة التعليقات والرد عليها وإخفائها أو حذفها برمجياً عبر الـ API.',
         targetSection: 'ep_inbox_comments',
       },
@@ -268,61 +278,61 @@ export const RESOURCE_GROUPS: Array<{
         title: 'Customer Star Reviews & Mentions',
         titleAr: 'تقييمات النجوم وإشارات العلامة التجارية',
         count: 'GET /api/v1/inbox/reviews',
-        desc: 'Monitor Google Business & Facebook reviews, post merchant responses, and track brand mentions.',
-        descAr: 'متابعة تقييمات العملاء والرد عليها ورصد الإشارات (Mentions) فور حدوثها.',
+        desc: 'Reviews and brand-mention monitoring are unavailable in this launch. This entry is a future catalog resource.',
+        descAr: 'متابعة التقييمات والإشارات غير متاحة في هذا الإطلاق؛ هذا مورد كتالوج مستقبلي.',
         targetSection: 'ep_inbox_reviews',
       },
       {
-        title: 'CRM Contacts, Broadcasts & Branching Workflows',
-        titleAr: 'جهات الاتصال، الحملات الجماعية، وسير العمل التفرعي',
+        title: 'Manual Contacts and Reviewed Campaigns',
+        titleAr: 'العملاء والحملات المراجعة يدوياً',
         count: 'POST /api/v1/workflows',
-        desc: 'Manage CRM contacts, send bulk broadcasts, trigger drip sequences, and execute ManyChat-style visual workflows.',
-        descAr: 'إدارة جهات الاتصال وإرسال حملات البث وتشغيل أتمتة الرسائل وسلاسل المتابعة.',
+        desc: 'Manual CRM and reviewed WhatsApp campaigns are available in the workspace. Branching workflows and automatic follow-up are coming soon.',
+        descAr: 'العملاء وحملات واتساب المراجعة متاحة في مساحة العمل. سير العمل التفرعي والمتابعة التلقائية قريباً.',
         targetSection: 'ep_workflows',
       },
     ],
   },
   {
-    groupTitle: '4. Cloud Telephony, Virtual Numbers & Voice AI',
-    groupTitleAr: '4. الاتصالات السحابية، الأرقام الافتراضية، وذكاء الصوت',
+    groupTitle: '4. Provider Numbers and Manual Communication',
+    groupTitleAr: '4. أرقام المزود والاتصالات اليدوية',
     cards: [
       {
-        title: 'Virtual Numbers in 55+ Countries',
-        titleAr: 'أرقام افتراضية في أكثر من 55 دولة',
+        title: 'Provider Number Inventory',
+        titleAr: 'أرقام المزود المتاحة',
         count: 'GET /api/v1/phone-numbers/available',
-        desc: 'Search, buy, and instantly provision virtual mobile and toll-free numbers supporting WhatsApp, SMS & Voice.',
-        descAr: 'البحث عن أرقام افتراضية وشرائها فوراً مع دعم واتساب والرسائل والمكالمات.',
+        desc: 'Review actual inventory, capabilities and prices. Purchase, verification and WhatsApp connection are separate steps requiring provider approval and spending allocation.',
+        descAr: 'راجع مخزون المزود وقدرات الرقم والسعر الفعلي. الشراء والتحقق والربط خطوات منفصلة تحتاج موافقة ومخصص إنفاق.',
         targetSection: 'ep_numbers_search',
       },
       {
         title: 'Turnkey SMS / Voice OTP Verification',
         titleAr: 'نظام التحقق الفوري عبر OTP (SMS & Voice)',
         count: 'POST /api/v1/verify',
-        desc: 'Send and verify 6-digit OTP codes with automatic rate limiting and fallback.',
-        descAr: 'إرسال وتأكيد أكواد التحقق للمستخدمين برمجياً بحماية عالية.',
+        desc: 'Verification unavailable (HTTP 501); no provider verification flow.',
+        descAr: 'التحقق غير متاح حالياً (501)؛ لم يُنفذ مسار التحقق لدى المزوّد.',
         targetSection: 'ep_verify_otp',
       },
       {
-        title: 'WebRTC Browser Softphone & Voice Calls',
-        titleAr: 'هاتف الويب الافتراضي (WebRTC) والمكالمات الصوتية',
+        title: 'Browser Softphone — Unavailable',
+        titleAr: 'هاتف المتصفح — غير متاح',
         count: 'POST /api/v1/voice/browser-token',
-        desc: 'Mint client calling tokens for browser softphones and trigger AI voice receptionist calls.',
-        descAr: 'توليد توكنات الاتصال الصوتي عبر المتصفح وتشغيل موظف الاستقبال الذكي.',
+        desc: 'Browser softphones, SIP setup and AI receptionists are unavailable. Supported provider calls use the reviewed Phone workspace.',
+        descAr: 'هاتف المتصفح وإعداد SIP ووكلاء الاستقبال غير متاحة. المكالمات المدعومة تُراجع في مساحة الأرقام.',
         targetSection: 'ep_voice_token',
       },
       {
         title: 'WhatsApp Cloud API, Templates & Flows',
         titleAr: 'واتساب الرسمي، القوالب، واستمارات Flows',
         count: 'POST /api/v1/whatsapp/templates',
-        desc: 'Manage official Meta HSM templates, interactive WhatsApp Flows forms, and business AI agents.',
-        descAr: 'إدارة قوالب واتساب المعتمدة من ميتا واستمارات Flows التفاعلية.',
+        desc: 'Review actual Meta template status and supported manual navigation Flows. Approval is provider-controlled; endpoint-driven Flows and AI agents are unavailable.',
+        descAr: 'راجع حالة قوالب Meta واستمارات التنقل اليدوية المدعومة. الموافقة من المزود؛ استمارات تبادل البيانات ووكلاء AI غير متاحة.',
         targetSection: 'ep_wa_templates',
       },
     ],
   },
   {
-    groupTitle: '5. Advertising & Lead Generation (8 Networks)',
-    groupTitleAr: '5. الإعلانات المدفوعة وتوليد العملاء المحتملين (8 شبكات)',
+    groupTitle: '5. Advertising — Coming Soon Catalog',
+    groupTitleAr: '5. الإعلانات — كتالوج قريباً',
     cards: [
       {
         title: 'Click-to-WhatsApp (CTWA) & Call Ads',
@@ -359,8 +369,8 @@ export const RESOURCE_GROUPS: Array<{
     ],
   },
   {
-    groupTitle: '6. Platform APIs: Blogs & Unified Commerce',
-    groupTitleAr: '6. واجهات المنصات: التدوين والتجارة الإلكترونية',
+    groupTitle: '6. Blogs and Commerce — Coming Soon Catalog',
+    groupTitleAr: '6. التدوين والتجارة — كتالوج قريباً',
     cards: [
       {
         title: 'Multi-Platform Blog Articles (WordPress & Shopify)',
@@ -404,8 +414,8 @@ export const RESOURCE_GROUPS: Array<{
         title: 'Cross-Network Unified Performance Analytics',
         titleAr: 'تحليلات الأداء الشامل عبر المنصات',
         count: 'GET /api/v1/analytics',
-        desc: 'Aggregated impressions, engagement rates, and follower growth across all social channels.',
-        descAr: 'رصد المشاهدات ومعدلات التفاعل ونمو المتابعين لجميع القنوات مجتمعة.',
+        desc: 'Read available provider metrics for eligible connected accounts and the selected period. Missing values stay unavailable.',
+        descAr: 'عرض بيانات المزود المتاحة للحسابات المؤهلة والفترة المحددة. البيانات المفقودة تبقى غير متاحة.',
         targetSection: 'ep_analytics',
       },
       {
@@ -428,8 +438,8 @@ export const RESOURCE_GROUPS: Array<{
         title: 'Unified Inbox SLAs & Response Time Heatmap',
         titleAr: 'مؤشرات استجابة الرسائل ومعدلات الخدمة (Inbox SLAs)',
         count: 'GET /api/v1/inbox-analytics',
-        desc: 'Hourly message volume, first-response time averages, resolution rates, and agent SLA compliance.',
-        descAr: 'معدلات سرعة الرد على العملاء، أوقات الذروة، ونسب إنجاز تذاكر الدعم.',
+        desc: 'Read available messaging evidence and timing data. Missing delivery, response and resolution measurements are not inferred.',
+        descAr: 'عرض بيانات المراسلة وتوقيتها المتاحة دون استنتاج قياسات تسليم أو استجابة أو حل مفقودة.',
         targetSection: 'ep_inbox_analytics',
       },
     ],
@@ -450,7 +460,7 @@ export const RESOURCE_GROUPS: Array<{
         title: 'OpenAPI 3.1 & Postman 2.1 Export Specifications',
         titleAr: 'مواصفات OpenAPI 3.1 ومجموعة Postman الكاملة',
         count: 'GET /api/v1/openapi.json',
-        desc: '110 paths and 100 operations ready for direct import into Postman, Insomnia, or AI coding agents.',
+        desc: 'Import the resource catalog and selected runnable examples; availability and validation vary by phase.',
         descAr: 'مواصفات كاملة جاهزة للاستيراد الفوري في Postman و Cursor و Insomnia.',
         targetSection: 'ep_openapi_spec',
       },
@@ -471,96 +481,25 @@ export const ENDPOINT_SPECS: Record<string, EndpointSpec> = {
   // FAMILY 1: CORE WORKSPACE & SOCIAL CONNECT
   // ==========================================
   ep_me: {
-    id: 'ep_me',
-    method: 'GET',
-    path: '/v1/me',
-    liveApiPath: '/api/v1/me',
-    requiredScope: 'full_access / any active key',
-    titleEn: 'Inspect Workspace, Plan Quotas & Telecom Wallet',
-    titleAr: 'فحص الحساب، حدود الباقة، ورصيد محفظة الاتصالات (/me)',
-    descEn:
-      'Returns the authenticated organization, active API key scopes, real-time quota usage (connected accounts, monthly posts, virtual phone numbers), and Telecom Credit Wallet balance.',
-    descAr:
-      'يعيد تفاصيل مساحة العمل، صلاحيات مفتاح الـ API الحالي، استهلاك الحصص الفعلي، ورصيد محفظة الاتصالات بالدولار.',
-    subService: 'core_connect',
-    action: 'inspect_me',
-    params: [],
-    samplePayload: {},
-    response: {
-      success: true,
-      data: {
-        workspace: { organizationId: 'org_acme', organizationName: 'Acme Corp', planKey: 'growth' },
-        auth: { keyName: 'Default Workspace Key', scopes: ['full_access'] },
-        quotas: {
-          connectedAccounts: { used: 3, max: 25 },
-          monthlyPosts: { used: 14, max: 500 },
-          phoneNumbers: { used: 1, max: 5 },
-          apiRequestsPerMinute: 120,
-        },
-        wallet: { balanceUsd: 50.0, monthlySpentUsd: 3.0, currency: 'USD' },
-      },
-    },
+    id:'ep_me',method:'GET',path:'/v1/me',liveApiPath:'/api/v1/me',requiredScope:'read',
+    titleEn:'Workspace and configured plan',titleAr:'مساحة العمل وإعدادات الباقة',
+    descEn:'Returns the verified workspace and configured limits. Payment collection and monthly post/account billing enforcement are coming soon. This response has no wallet balance or invented usage counters. New API keys use explicit read/write scopes and the issuer’s current workspace role.',
+    descAr:'يعرض مساحة العمل وحدود الباقة المحددة. تحصيل المدفوعات وتطبيق حدود فوترة المنشورات والحسابات الشهرية قريباً. لا يعرض رصيداً أو أرقام استخدام غير متاحة. تتبع المفاتيح الجديدة صلاحيات القراءة والتعديل والدور الحالي للمستخدم.',
+    subService:'core_connect',action:'inspect_me',params:[],samplePayload:{},
+    response:{success:true,data:{workspace:{organizationId:'owned_workspace',organizationName:'My business',planKey:'starter'},customerPayments:'coming_soon',limits:{configured:{},monthlyPostEnforcement:'coming_soon',connectedAccountEnforcement:'coming_soon'}}},
   },
   ep_accounts_health: {
-    id: 'ep_accounts_health',
-    method: 'GET',
-    path: '/v1/accounts/health',
-    liveApiPath: '/api/v1/accounts/health',
-    requiredScope: 'accounts:read',
-    titleEn: 'Cross-Platform Connected Channel Health Probes',
-    titleAr: 'فحص صحة اتصال القنوات والتوكنات المربوطة',
-    descEn:
-      'Runs live health diagnostics across all connected social channels in the workspace, checking token expiration, permissions, and webhook delivery status.',
-    descAr:
-      'يجري فحصاً تشخيصياً لحالة الاتصال وصلاحية التوكنات لجميع القنوات والحسابات المربوطة في مساحة العمل.',
-    subService: 'core_connect',
-    action: 'probe_health',
-    params: [],
-    samplePayload: {},
-    response: {
-      success: true,
-      data: {
-        summary: { total: 3, healthy: 3, degraded: 0, expired: 0 },
-        accounts: [
-          { id: 'acc_fb_01', platform: 'facebook', name: 'Acme Official', status: 'healthy', tokenExpiresAt: '2027-01-01' },
-          { id: 'acc_ig_01', platform: 'instagram', name: '@acme_store', status: 'healthy', tokenExpiresAt: '2027-01-01' },
-        ],
-      },
-    },
+    id:'ep_accounts_health',method:'GET',path:'/v1/accounts/health',liveApiPath:'/api/v1/accounts/health',requiredScope:'read',titleEn:'Fresh provider account health',titleAr:'حالة الحسابات من المزود',descEn:'Fresh tenant-scoped provider inventory and health. Missing health is unknown; outages return errors. Rows expose id/accountId/_id, status, isActive, needsReconnection, needsReconnect and checkedAt; optional diagnostics come from the provider. DELETE /accounts/{accountId} requires accounts:write and confirms remote absence before local removal. Unconfirmed disconnect returns 503; refresh inventory before retrying. Selected Meta greeting/menu/ice-breakers use canonical /accounts/{accountId}/{setting} paths; other nested settings return 501.',descAr:'حالة جديدة من المزود للحسابات المملوكة. الحالة الناقصة غير معروفة، والانقطاع يعيد خطأ. الفصل يتطلب صلاحية الإدارة وتأكيد غياب الحساب من المزود. إعدادات Meta المحددة متاحة عبر المسارات الرسمية، والبقية تعيد 501.',subService:'core_connect',action:'health',params:[],samplePayload:{},response:{success:true,simulated:false,summary:{total:1,unknown:1},accounts:[{id:'owned_account',accountId:'owned_account',platform:'facebook',status:'unknown',isActive:true,needsReconnection:false}]},
   },
   ep_account_health_id: {
-    id: 'ep_account_health_id',
-    method: 'GET',
-    path: '/v1/accounts/{id}/health',
-    liveApiPath: '/api/v1/accounts/acc_facebook_demo/health',
-    requiredScope: 'accounts:read',
-    titleEn: 'Single Account Diagnostic Probe',
-    titleAr: 'فحص تشخيصي لحساب محدد بالمعرف',
-    descEn: 'Executes a targeted diagnostic health probe on a specific social account by its unique identifier.',
-    descAr: 'ينفذ فحصاً تشخيصياً دقيقاً لقناة محددة للتحقق من صلاحية وصول الـ API وصحة الربط.',
-    subService: 'core_connect',
-    action: 'probe_single_account',
-    params: [
-      { name: 'id', type: 'string', required: true, in: 'path', descEn: 'Account unique identifier', descAr: 'معرف الحساب المربوط' },
-    ],
-    samplePayload: {},
-    response: {
-      success: true,
-      data: {
-        id: 'acc_facebook_demo',
-        platform: 'facebook',
-        status: 'healthy',
-        latencyMs: 42,
-        permissionsValid: true,
-      },
-    },
+    id:'ep_account_health_id',method:'GET',path:'/v1/accounts/{accountId}/health',liveApiPath:'/api/v1/accounts/owned_account/health',requiredScope:'read',titleEn:'Read owned account health',titleAr:'حالة حساب مملوك',descEn:'Find an owned account in fresh scoped provider inventory and health. Unknown is not a healthy verdict. Unknown account IDs return 404.',descAr:'حالة حساب مملوك من قائمة المزود؛ الحالة غير المعروفة لا تعني سلامة الحساب.',subService:'core_connect',action:'health',params:[],samplePayload:{},response:{success:true,data:{accountId:'owned_account',platform:'facebook',status:'unknown'}},
   },
   ep_profiles: {
     id: 'ep_profiles',
     method: 'POST',
     path: '/v1/profiles',
     liveApiPath: '/api/v1/profiles',
-    requiredScope: 'accounts:write',
+    requiredScope: 'write + owner/admin',
     titleEn: 'Create a Brand Profile',
     titleAr: 'إنشاء ملف حسابات لعلامة تجارية أو عميل (Create Profile)',
     descEn:
@@ -584,13 +523,13 @@ export const ENDPOINT_SPECS: Record<string, EndpointSpec> = {
     method: 'POST',
     path: '/v1/connect/{platform}',
     liveApiPath: '/api/v1/connect/facebook',
-    requiredScope: 'accounts:write',
-    titleEn: 'Connect Channel or Generate Headless OAuth URL',
-    titleAr: 'ربط حساب اجتماعي أو توليد رابط OAuth (18 منصة)',
+    requiredScope: 'write + owner/admin',
+    titleEn: 'Connect Accounts in the Dashboard',
+    titleAr: 'ربط الحسابات في لوحة التحكم',
     descEn:
-      'Generates a headless OAuth redirect URL for end-users (when mode="oauth_url") OR directly connects a channel using an access token/handle.',
+      'This placeholder API returns 501. Use the authenticated dashboard to start verified OAuth or supported credential onboarding.',
     descAr:
-      'يولّد رابط مصادقة OAuth لتوجيه عميلك للموافقة بضغطة واحدة، أو يربط القناة مباشرة باستخدام التوكن.',
+      'يعيد هذا المسار 501. استخدم لوحة التحكم بعد تسجيل الدخول لبدء التفويض الموثّق أو الربط ببيانات الاعتماد المدعومة.',
     subService: 'core_connect',
     action: 'start_oauth',
     params: [
@@ -600,9 +539,8 @@ export const ENDPOINT_SPECS: Record<string, EndpointSpec> = {
     ],
     samplePayload: { mode: 'direct', accountName: 'Asra3 Official', platformAccountId: 'act_100234' },
     response: {
-      success: true,
-      message: 'Account connected successfully.',
-      data: { id: 'acc_facebook_mve4p9p9', platform: 'facebook', name: 'Asra3 Official', status: 'connected' },
+      success: false,
+      error: { code: 'interactive_onboarding_required', message: 'Connect accounts from the authenticated dashboard.' },
     },
   },
   ep_connect_select: {
@@ -610,11 +548,11 @@ export const ENDPOINT_SPECS: Record<string, EndpointSpec> = {
     method: 'POST',
     path: '/v1/connect/{platform}/select',
     liveApiPath: '/api/v1/connect/facebook/select',
-    requiredScope: 'accounts:write',
-    titleEn: 'Headless OAuth Entity Selection',
-    titleAr: 'اختيار صفحات فيسبوك وحسابات إنستغرام برمجياً',
-    descEn: 'Selects and binds specific Facebook pages, Instagram professional accounts, or LinkedIn company pages discovered during OAuth.',
-    descAr: 'يختار ويربط الصفحات أو الحسابات المكتشفة بعد تفويض الـ OAuth تلقائياً.',
+    requiredScope: 'write + owner/admin',
+    titleEn: 'Select Accounts in the Dashboard',
+    titleAr: 'اختيار الحسابات في لوحة التحكم',
+    descEn: 'This placeholder API returns 501. The authenticated dashboard picker uses the saved authorization session and verifies the selected provider account.',
+    descAr: 'يعيد هذا المسار 501. يستخدم اختيار الحساب في لوحة التحكم جلسة التفويض المحفوظة ويتحقق من حساب المزوّد المختار.',
     subService: 'core_connect',
     action: 'select_oauth_entity',
     params: [
@@ -623,38 +561,19 @@ export const ENDPOINT_SPECS: Record<string, EndpointSpec> = {
     ],
     samplePayload: { selectedEntityId: 'page_991823712', entityType: 'page' },
     response: {
-      success: true,
-      data: { connectedAccountId: 'acc_fb_99182', status: 'active', entityName: 'Acme Regional Store' },
+      success: false,
+      error: { code: 'interactive_onboarding_required', message: 'Use the dashboard account picker.' },
     },
   },
   ep_accounts: {
-    id: 'ep_accounts',
-    method: 'GET',
-    path: '/v1/accounts',
-    liveApiPath: '/api/v1/accounts',
-    requiredScope: 'accounts:read',
-    titleEn: 'List Connected Social Channel Accounts',
-    titleAr: 'استعراض الحسابات والقنوات المربوطة',
-    descEn: 'Lists all connected social accounts across Facebook, Instagram, LinkedIn, TikTok, X, WhatsApp, and Google Business.',
-    descAr: 'يعيد قائمة بكافة القنوات والحسابات المربوطة مع حالتها وتاريخ آخر نشاط.',
-    subService: 'core_connect',
-    action: 'list_accounts',
-    params: [],
-    samplePayload: {},
-    response: {
-      success: true,
-      data: [
-        { id: 'acc_fb_01', platform: 'facebook', name: 'Acme Official', status: 'connected' },
-        { id: 'acc_ig_01', platform: 'instagram', name: '@acme_store', status: 'connected' },
-      ],
-    },
+    id:'ep_accounts',method:'GET',path:'/v1/accounts',liveApiPath:'/api/v1/accounts',requiredScope:'read',titleEn:'List owned provider accounts',titleAr:'الحسابات المملوكة لدى المزود',descEn:'Fresh provider accounts and health for the authenticated workspace. No local simulated fallback. Provider failures return an error; the dashboard may label previous results stale. Use authenticated dashboard OAuth for Facebook connect/reconnect; reconnect binds the original account and Page identity.',descAr:'حسابات مساحة العمل وحالتها من المزود دون نتائج تجريبية. استخدم ربط لوحة التحكم لإعادة ربط نفس صفحة فيسبوك.',subService:'core_connect',action:'accounts',params:[],samplePayload:{},response:{success:true,simulated:false,data:[{accountId:'owned_account',platform:'facebook',status:'unknown',isActive:true}]},
   },
   ep_account_groups: {
     id: 'ep_account_groups',
     method: 'GET',
     path: '/v1/account-groups',
     liveApiPath: '/api/v1/account-groups',
-    requiredScope: 'accounts:read',
+    requiredScope: 'read',
     titleEn: 'Cross-Posting Account Groups CRUD',
     titleAr: 'مجموعات الحسابات للنشر المتزامن (Account Groups)',
     descEn: 'Retrieve, create, or modify groups of social accounts to target with a single publishing or campaign request.',
@@ -675,28 +594,28 @@ export const ENDPOINT_SPECS: Record<string, EndpointSpec> = {
   ep_account_menus: {
     id: 'ep_account_menus',
     method: 'PUT',
-    path: '/v1/accounts/{id}/messenger-menu',
-    liveApiPath: '/api/v1/accounts/acc_facebook_demo/messenger-menu',
-    requiredScope: 'accounts:write',
-    titleEn: 'Configure Persistent Menu & Ice Breakers',
+    path: '/v1/accounts/{accountId}/messenger-menu',
+    liveApiPath: '/api/v1/accounts/owned_facebook_account/messenger-menu',
+    requiredScope: 'write + owner/admin',
+    titleEn: 'Read, replace or reset selected Meta messaging settings',
     titleAr: 'ضبط القائمة الدائمة وأسئلة الترحيب (Messenger Menu & Ice Breakers)',
-    descEn: 'Configures the Facebook Messenger persistent menu, greeting text, Instagram DM ice breakers, or Telegram bot commands.',
-    descAr: 'يضبط القوائم التفاعلية ورسائل الترحيب السريعة لمحادثات ماسنجر وإنستغرام وبوتات تليجرام.',
-    subService: 'core_connect',
-    action: 'update_menu',
+    descEn: 'GET/PUT/DELETE /accounts/{accountId}/{messenger-menu|messenger-greeting|messenger-ice-breakers|instagram-ice-breakers} read, replace or reset canonical provider settings. GET requires accounts:read; changes require accounts:write. Messenger settings require a Facebook Page account; Instagram ice breakers require an Instagram professional account. Messenger bodies are localized arrays with one default locale: greeting[{locale,text}] (160 characters), persistent_menu[{locale,composer_input_disabled,call_to_actions}] (3 top-level items, one nesting level with 5 items), or ice_breakers[{locale,call_to_actions:[{question,payload}]}]. Instagram PUT uses flat ice_breakers[{question,payload}]. Up to 4 questions, 80 characters each. Refresh after an uncertain provider result. Legacy /account-settings aliases and Telegram commands are outside this implementation.',
+    descAr: 'قراءة أو استبدال أو مسح إعدادات المزود للحساب المملوك. القراءة تتطلب accounts:read والتغيير accounts:write. إعدادات Messenger لصفحة فيسبوك، وأسئلة Instagram للحساب الاحترافي. استخدم لغة default دون تكرار؛ التحية 160 حرفاً، والأسئلة حتى 4 وكل سؤال 80 حرفاً. القائمة حتى 3 عناصر رئيسية ومستوى فرعي واحد حتى 5 عناصر. راجع الإعدادات بعد نتيجة غير مؤكدة.',
+    subService: 'inbox_crm',
+    action: 'save',
     params: [
-      { name: 'id', type: 'string', required: true, in: 'path', descEn: 'Connected account ID', descAr: 'معرف الحساب' },
-      { name: 'menuItems', type: 'array', required: true, in: 'body', descEn: 'Array of interactive menu buttons', descAr: 'أزرار القائمة الدائمة' },
+      { name: 'accountId', type: 'string', required: true, in: 'path', descEn: 'Owned connected Facebook Page account ID', descAr: 'معرف حساب صفحة فيسبوك المملوك' },
+      { name: 'persistent_menu', type: 'object[]', required: true, in: 'body', descEn: 'Localized menu with default locale and composer_input_disabled boolean', descAr: 'قائمة بلغات محددة تتضمن default' },
     ],
     samplePayload: {
-      menuItems: [
+      persistent_menu: [{ locale: 'default', composer_input_disabled: false, call_to_actions: [
         { type: 'web_url', title: 'Visit Website', url: 'https://asra3.com' },
         { type: 'postback', title: 'Contact Support', payload: 'MENU_SUPPORT' },
-      ],
+      ] }],
     },
     response: {
       success: true,
-      message: 'Persistent menu configured successfully.',
+      httpStatus: 200,
     },
   },
 
@@ -704,340 +623,79 @@ export const ENDPOINT_SPECS: Record<string, EndpointSpec> = {
   // FAMILY 2: PUBLISHING & QUEUE SCHEDULING
   // ==========================================
   ep_posts: {
-    id: 'ep_posts',
-    method: 'POST',
-    path: '/v1/posts',
-    liveApiPath: '/api/v1/posts',
-    requiredScope: 'posts:write',
-    titleEn: 'Create Post with 24h Duplicate Guard & Idempotency-Key',
-    titleAr: 'نشر وجدولة المنشورات مع منع التكرار ومفتاح التطابق',
-    descEn:
-      'Creates and publishes or schedules posts across 26 platforms. Features 24-hour content-hash duplicate prevention (returns 409) and Idempotency-Key header replay support.',
-    descAr:
-      'نشر فوري أو مجدول عبر 26 منصة. يدعم منع التكرار خلال 24 ساعة ومفتاح Idempotency-Key لتفادي تكرار الطلبات.',
-    subService: 'publishing',
-    action: 'create_post',
-    params: [
-      { name: 'content', type: 'string', required: true, in: 'body', descEn: 'Post caption or message body', descAr: 'نص المنشور' },
-      { name: 'platforms', type: 'string[]', required: true, in: 'body', descEn: 'Target platforms (facebook, instagram, x, linkedin, etc.)', descAr: 'المنصات المستهدفة' },
-      { name: 'publishNow', type: 'boolean', required: false, in: 'body', descEn: 'Publish immediately (true) or schedule (false)', descAr: 'نشر فوري أم جدولة' },
-      { name: 'scheduledFor', type: 'ISO8601 string', required: false, in: 'body', descEn: 'Target UTC datetime if scheduling', descAr: 'تاريخ وتوقيت النشر المجدول' },
-      { name: 'mediaUrls', type: 'string[]', required: false, in: 'body', descEn: 'Array of image/video CDN URLs', descAr: 'روابط الصور أو الفيديو المرفقة' },
-    ],
-    samplePayload: {
-      content: 'Launching our updated API v1 documentation and interactive console! 🚀',
-      platforms: ['facebook', 'instagram', 'linkedin'],
-      publishNow: true,
-    },
-    response: {
-      success: true,
-      message: 'Post published successfully across 3 channels.',
-      data: {
-        id: 'post_1729257600_ab',
-        status: 'published',
-        publishedAt: '2026-10-18T18:00:00Z',
-        platforms: ['facebook', 'instagram', 'linkedin'],
-      },
-    },
+    id: 'ep_posts', method: 'POST', path: '/v1/posts', liveApiPath: '/api/v1/posts', requiredScope: 'write + editor/admin/owner',
+    titleEn: 'Create an owned Facebook or Instagram draft/post', titleAr: 'إنشاء مسودة أو منشور فيسبوك أو Instagram',
+    descEn: 'Use owned platforms[{platform:facebook|instagram,accountId}] and public HTTPS mediaItems. Instagram requires media: one image is feed, 2–20 images/videos form a carousel, one video is a Reel; platformSpecificData.contentType=story selects exactly one image/video Story. Omit contentType for feed/carousel/Reel. Captions are at most 2,200 characters; Stories do not display captions. Reel shareToFeed is optional. Provider preflight checks content and media URL/MIME/size; dimensions, aspect ratio and video duration remain unchecked, and unknown size is not certified. Direct Instagram Login supports baseline publishing; API catalog audio/paid-partnership fields require verified Facebook Login. Preserve a stable Idempotency-Key (or JSON idempotencyKey), 1–255 characters. Choose isDraft, publishNow, future scheduledFor with offset and IANA timezone, or useProfileQueue; omitting all publishing mode flags saves a draft. Current returned Instagram quota blocks immediate/retry rather than drafts or future schedules. HTTP 207 with a persisted post may contain a top-level error: inspect post/platformResults, retain its ID and reconcile before retry. GET/PUT/PATCH/DELETE /posts/{postId} and POST /posts/{postId}/retry use owned canonical records. DELETE removes the provider record and does not guarantee platform unpublishing.',
+    descAr: 'حدد حساب فيسبوك أو Instagram المملوك ومفتاح طلب ثابت. Instagram يتطلب وسائط: صورة للمنشور، 2–20 عنصراً للألبوم، فيديو واحد لـ Reel، أو contentType=story لصورة أو فيديو واحد. النص حتى 2200 حرف ولا يظهر في القصة. فحص المزود يشمل الرابط ونوع الملف والحجم؛ الأبعاد والمدة غير مفحوصة. اختر مسودة أو نشراً فورياً أو جدولة مستقبلية أو قائمة نشر. الحصة الحالية تمنع النشر الفوري وإعادة المحاولة ولا تمنع المسودات. عند 207 احتفظ بمعرف المنشور وراجع نتائج الحسابات. الحذف لا يضمن حذف المحتوى من المنصة.',
+    subService: 'publishing', action: 'create', params: [
+      { name: 'platforms', type: 'object[]', required: true, in: 'body', descEn: 'Owned Facebook/Instagram targets; optional customContent/customMedia/platformSpecificData', descAr: 'حسابات فيسبوك وInstagram المملوكة' },
+      { name: 'content', type: 'string', required: false, in: 'body', descEn: 'Caption; content or media required', descAr: 'نص المنشور' },
+      { name: 'mediaItems', type: 'object[]', required: false, in: 'body', descEn: 'Public HTTPS media {url,type}', descAr: 'وسائط عامة عبر HTTPS' },
+      { name: 'isDraft', type: 'boolean', required: false, in: 'body', descEn: 'Explicit draft intent', descAr: 'حفظ مسودة' },
+      { name: 'idempotencyKey', type: 'string', required: true, in: 'body', descEn: 'Stable intent key, or use Idempotency-Key header', descAr: 'مفتاح طلب ثابت أو ترويسة Idempotency-Key' },
+    ], samplePayload: { content: 'Our latest update', mediaItems:[{type:'image',url:'https://your-public-media.example/photo.jpg'}], platforms: [{platform:'instagram',accountId:'owned_instagram_account'}], isDraft:true, idempotencyKey:'new-draft-intent' }, response: { simulated:false, post:{_id:'provider_post_id',status:'draft',platforms:[{platform:'instagram',accountId:'owned_instagram_account',status:'pending'}]}, httpStatus:201 },
   },
   ep_posts_list: {
-    id: 'ep_posts_list',
-    method: 'GET',
-    path: '/v1/posts',
-    liveApiPath: '/api/v1/posts',
-    requiredScope: 'posts:read',
-    titleEn: 'List Published & Scheduled Posts',
-    titleAr: 'استعراض المنشورات المنشورة والمجدولة',
-    descEn: 'Retrieves published, scheduled, or queued posts filtered by status, platform, or date range.',
-    descAr: 'يعيد قائمة بالمنشورات المنشورة والمجدولة مع إمكانية التصفية حسب الحالة والمنصة.',
-    subService: 'publishing',
-    action: 'list_posts',
-    params: [
-      { name: 'status', type: 'string', required: false, in: 'query', descEn: 'Filter: published | scheduled | draft', descAr: 'تصفية حسب الحالة' },
-      { name: 'limit', type: 'number', required: false, in: 'query', descEn: 'Items per page (max 100)', descAr: 'عدد العناصر في الصفحة' },
-    ],
-    samplePayload: {},
-    response: {
-      success: true,
-      data: [
-        { id: 'post_01', content: 'Hello World', status: 'published', platforms: ['facebook'] },
-      ],
-    },
+    id:'ep_posts_list',method:'GET',path:'/v1/posts',liveApiPath:'/api/v1/posts',requiredScope:'read',titleEn:'List provider posts',titleAr:'استعراض منشورات المزود',descEn:'Workspace-owned posts[] and canonical provider pagination. Optional page, limit, status and accountId. Read one post at GET /posts/{postId}.',descAr:'منشورات مملوكة لمساحة العمل مع ترقيم صفحات المزود.',subService:'publishing',action:'posts',params:[],samplePayload:{},response:{posts:[],pagination:{page:1,limit:20,total:0}},
   },
   ep_queue_slots: {
-    id: 'ep_queue_slots',
-    method: 'GET',
-    path: '/v1/queue/slots',
-    liveApiPath: '/api/v1/queue/slots',
-    requiredScope: 'posts:read',
-    titleEn: 'Recurring Weekly Posting Slots Schedule',
-    titleAr: 'جدول خانات النشر الأسبوعية الذكية',
-    descEn: 'Inspect or configure the recurring weekly publishing windows (e.g. Mon 09:00, Wed 14:00, Fri 18:00) per brand profile.',
-    descAr: 'استعراض وضبط أوقات وخانات النشر التلقائية لكل أسبوع.',
-    subService: 'publishing',
-    action: 'get_slots',
-    params: [
-      { name: 'profileId', type: 'string', required: false, in: 'query', descEn: 'Brand profile ID', descAr: 'معرف البروفايل' },
-    ],
-    samplePayload: {},
-    response: {
-      success: true,
-      data: {
-        slots: [
-          { day: 'monday', time: '09:00' },
-          { day: 'wednesday', time: '14:00' },
-          { day: 'friday', time: '18:00' },
-        ],
-        upcomingSlots: ['2026-10-19T09:00:00Z', '2026-10-21T14:00:00Z'],
-      },
-    },
+    id:'ep_queue_slots',method:'POST',path:'/v1/queue/slots',liveApiPath:'/api/v1/queue/slots',requiredScope:'write + editor/admin/owner',titleEn:'Create a provider queue',titleAr:'إنشاء قائمة نشر',descEn:'POST /queue or /queue/slots accepts name, IANA timezone and nonempty slots[{dayOfWeek:0..6,time:HH:mm}]. Workspace profile is server-resolved. GET and DELETE queue slots are not implemented (501).',descAr:'إنشاء قائمة باسم ومنطقة زمنية ومواعيد أسبوعية. القراءة والحذف غير منفذين ويعيدان 501.',subService:'publishing',action:'create_queue',params:[],samplePayload:{name:'Morning posts',timezone:'Africa/Cairo',slots:[{dayOfWeek:1,time:'09:00'}]},response:{queue:{_id:'provider_queue_id'}},
   },
   ep_queue_preview: {
-    id: 'ep_queue_preview',
-    method: 'GET',
-    path: '/v1/queue/preview',
-    liveApiPath: '/api/v1/queue/preview',
-    requiredScope: 'posts:read',
-    titleEn: 'Calendar Queue Preview Forecast',
-    titleAr: 'معاينة تقويم النشر الحقيقي بدون منشورات وهمية',
-    descEn: 'Returns a real calendar forecast of upcoming queued posts and open publishing slots without synthesizing fake posts.',
-    descAr: 'يعيد تقويم الجدولة الفعلي للمنشورات القادمة والخانات المفتوحة بدون أي منشورات وهمية.',
-    subService: 'publishing',
-    action: 'preview_queue',
-    params: [
-      { name: 'days', type: 'number', required: false, in: 'query', descEn: 'Number of days to forecast (default 7)', descAr: 'عدد أيام التوقع' },
-    ],
-    samplePayload: {},
-    response: {
-      success: true,
-      data: {
-        totalQueued: 2,
-        forecast: [
-          { slotTime: '2026-10-19T09:00:00Z', status: 'filled', postId: 'post_01' },
-          { slotTime: '2026-10-21T14:00:00Z', status: 'open' },
-        ],
-      },
-    },
+    id:'ep_queue_preview',method:'GET',path:'/v1/queue/preview',liveApiPath:'/api/v1/queue/preview',requiredScope:'read',titleEn:'Queue preview — not implemented',titleAr:'معاينة القائمة غير منفذة',descEn:'Returns HTTP 501 in this phase.',descAr:'تعيد 501 في هذه المرحلة.',subService:'publishing',action:'preview_queue',params:[],samplePayload:{},response:{success:false,error:{message:'Not implemented'}},
   },
   ep_media_presign: {
-    id: 'ep_media_presign',
-    method: 'POST',
-    path: '/v1/media/presign',
-    liveApiPath: '/api/v1/media/presign',
-    requiredScope: 'posts:write',
-    titleEn: 'Direct-to-Cloud Upload URL Presigning',
-    titleAr: 'توليد روابط رفع الوسائط المباشرة للسحابة (Presign)',
-    descEn: 'Mints secure, pre-signed S3/GCS upload URLs and public CDN URLs for images and videos before post creation.',
-    descAr: 'يولّد روابط رفع مشفرة وآمنة لرفع الصور والفيديوهات مباشرة للسحابة قبل النشر.',
-    subService: 'publishing',
-    action: 'presign_media',
-    params: [
-      { name: 'filename', type: 'string', required: true, in: 'body', descEn: 'Original filename with extension', descAr: 'اسم الملف وامتداده' },
-      { name: 'contentType', type: 'string', required: true, in: 'body', descEn: 'MIME type (image/png, video/mp4)', descAr: 'نوع الملف MIME' },
-    ],
-    samplePayload: { filename: 'product_launch.png', contentType: 'image/png' },
-    response: {
-      success: true,
-      data: {
-        uploadUrl: 'https://s3.eu-central-1.amazonaws.com/asra3-media-vault/presigned_xyz',
-        publicUrl: 'https://cdn.asra3.com/media/2026/product_launch.png',
-        expiresIn: 3600,
-      },
-    },
+    id:'ep_media_presign',method:'POST',path:'/v1/media/presign',liveApiPath:'/api/v1/media/presign',requiredScope:'write + editor/admin/owner',titleEn:'Upload media through HTTPS PUT',titleAr:'رفع الوسائط عبر HTTPS',descEn:'Supply filename, contentType and positive size in bytes. PUT file bytes to returned HTTPS uploadUrl; attach publicUrl in mediaItems. Upload alone does not publish content.',descAr:'أرسل اسم الملف ونوعه وحجمه. ارفع البيانات إلى uploadUrl وأرفق publicUrl في المنشور.',subService:'publishing',action:'presign',params:[],samplePayload:{filename:'photo.png',contentType:'image/png',size:1024},response:{uploadUrl:'https://provider.example/upload',publicUrl:'https://provider.example/photo.png',expiresIn:3600},
   },
   ep_validate_post: {
-    id: 'ep_validate_post',
-    method: 'POST',
-    path: '/v1/validate/post',
-    liveApiPath: '/api/v1/validate/post',
-    requiredScope: 'posts:read',
-    titleEn: 'Pre-Flight Character & Rule Validator',
-    titleAr: 'الفحص المسبق لقواعد وقيود المنصات (Pre-Flight Validator)',
-    descEn: 'Checks post length, hashtag rules, and platform constraints across all selected networks before posting.',
-    descAr: 'يفحص طول النص والوسوم وقيود المنصات لتجنب أخطاء النشر قبل إرسال المنشور.',
-    subService: 'publishing',
-    action: 'validate_post',
-    params: [
-      { name: 'content', type: 'string', required: true, in: 'body', descEn: 'Post content to test', descAr: 'نص المنشور للفحص' },
-      { name: 'platforms', type: 'string[]', required: true, in: 'body', descEn: 'Target networks', descAr: 'المنصات المختارة' },
-    ],
-    samplePayload: {
-      content: 'Special promo! #tech #startup',
-      platforms: ['x', 'instagram', 'linkedin'],
-    },
-    response: {
-      success: true,
-      data: {
-        valid: true,
-        networkChecks: {
-          x: { passed: true, characters: 30, limit: 280 },
-          instagram: { passed: true, characters: 30, limit: 2200 },
-          linkedin: { passed: true, characters: 30, limit: 3000 },
-        },
-      },
-    },
+    id:'ep_validate_post',method:'POST',path:'/v1/validate/post',liveApiPath:'/api/v1/validate/post',requiredScope:'write + editor/admin/owner',titleEn:'Validate owned post content before publishing',titleAr:'فحص محتوى المنشور قبل النشر',descEn:'Provide owned platforms[{platform:facebook|instagram,accountId}], optional content/mediaItems and target overrides. Local checks verify account/platform/plan; provider content validation returns valid/errors/warnings. It does not process media, reserve quota or guarantee publication. Check /validate/media separately. HTTP 200 with valid=false is a validation result; missing or malformed provider data remains an error.',descAr:'أرسل الحسابات المملوكة والنص والوسائط. فحص المزود يعيد valid/errors/warnings ولا ينشر المحتوى أو يحجز الحصة. افحص روابط الوسائط بشكل منفصل؛ valid=false نتيجة فحص وليست نجاح نشر.',subService:'publishing',action:'validate_post',params:[{name:'platforms',type:'object[]',required:true,in:'body',descEn:'Owned Facebook/Instagram targets',descAr:'حسابات النشر المملوكة'}],samplePayload:{content:'Our latest update',mediaItems:[{type:'image',url:'https://your-public-media.example/photo.jpg'}],platforms:[{platform:'instagram',accountId:'owned_instagram_account'}]},response:{valid:true,warnings:[],httpStatus:200},
   },
   ep_validate_media: {
-    id: 'ep_validate_media',
-    method: 'POST',
-    path: '/v1/validate/media',
-    liveApiPath: '/api/v1/validate/media',
-    requiredScope: 'posts:read',
-    titleEn: 'Pre-Flight Media Aspect Ratio & Format Validator',
-    titleAr: 'فحص أبعاد وصيغ الوسائط (Media Validator)',
-    descEn: 'Validates image/video dimensions, file size, and aspect ratios against platform specifications (e.g., 9:16 for Reels/TikTok).',
-    descAr: 'يتأكد من توافق أبعاد الفيديو أو الصور (مثل 9:16 للريلز وتيك توك) وحجم الملف مع متطلبات المنصات.',
-    subService: 'publishing',
-    action: 'validate_media',
-    params: [
-      { name: 'mediaUrl', type: 'string', required: true, in: 'body', descEn: 'Public URL of media file', descAr: 'رابط ملف الوسائط' },
-      { name: 'targetPlatform', type: 'string', required: true, in: 'body', descEn: 'Target network (tiktok, reels, etc.)', descAr: 'المنصة المستهدفة' },
-    ],
-    samplePayload: { mediaUrl: 'https://cdn.asra3.com/media/demo_reel.mp4', targetPlatform: 'tiktok' },
-    response: {
-      success: true,
-      data: { valid: true, dimensions: { width: 1080, height: 1920 }, aspectRatio: '9:16', durationSec: 15 },
-    },
+    id:'ep_validate_media',method:'POST',path:'/v1/validate/media',liveApiPath:'/api/v1/validate/media',requiredScope:'write + editor/admin/owner',titleEn:'Inspect public media accessibility, MIME and size',titleAr:'فحص الوصول ونوع الملف وحجم الوسائط',descEn:'Provide an owned publishing accountId and public HTTPS url without credentials/private hosts. Provider HEAD/GET returns valid, contentType, size, type and per-platform platformLimits when known. Unknown/null size and missing comparisons cannot certify limits. Dimensions, aspect ratio, codec and duration are not checked; no file is published.',descAr:'أرسل حساباً مملوكاً ورابط HTTPS عاماً. يعيد المزود نوع الملف وحجمه وحدود المنصة عند معرفتها. الحجم المجهول لا يؤكد مطابقة الحدود؛ الأبعاد والمدة غير مفحوصة ولا يُنشر الملف.',subService:'publishing',action:'validate_media',params:[{name:'accountId',type:'string',required:true,in:'body',descEn:'Owned publishing account',descAr:'حساب النشر المملوك'},{name:'url',type:'string',required:true,in:'body',descEn:'Public HTTPS media URL',descAr:'رابط وسائط HTTPS عام'}],samplePayload:{accountId:'owned_instagram_account',url:'https://your-public-media.example/photo.jpg'},response:{valid:true,url:'https://your-public-media.example/photo.jpg',contentType:'image/jpeg',size:1024,type:'image',platformLimits:{instagram:{withinLimit:true}},httpStatus:200},
+  },
+  ep_instagram_limit: {
+    id:'ep_instagram_limit',method:'GET',path:'/v1/accounts/{accountId}/instagram/publishing-limit',liveApiPath:'/api/v1/accounts/owned_instagram_account/instagram/publishing-limit',requiredScope:'read',titleEn:'Read the current Instagram publishing quota',titleAr:'قراءة حصة نشر Instagram الحالية',descEn:'Owned Instagram account only. Compare quotaUsage with returned quotaTotal and quotaDurationSeconds; the live API value is authoritative rather than a hardcoded cap. Current exhaustion blocks immediate publishing/retry; drafts and future schedules remain available. This observation does not reserve future capacity.',descAr:'للحساب المملوك فقط. قارن quotaUsage بالحصة quotaTotal ومدة النافذة المعادة من المزود دون رقم ثابت. نفاد الحصة يمنع النشر الفوري وإعادة المحاولة؛ تظل المسودات والجدولة المستقبلية متاحة.',subService:'publishing',action:'instagram_limit',params:[{name:'accountId',type:'string',required:true,in:'path',descEn:'Owned Instagram professional account',descAr:'حساب Instagram الاحترافي المملوك'}],samplePayload:{},response:{quotaUsage:0,quotaTotal:100,quotaDurationSeconds:86400,httpStatus:200},
   },
 
   // ==========================================
   // FAMILY 3: UNIFIED INBOX & SOCIAL CRM
   // ==========================================
   ep_messages_conversations: {
-    id: 'ep_messages_conversations',
-    method: 'GET',
-    path: '/v1/inbox/conversations',
-    liveApiPath: '/api/v1/inbox/conversations',
-    requiredScope: 'messages:read',
-    titleEn: 'List Omnichannel Conversations',
-    titleAr: 'جلب المحادثات الموحدة عبر القنوات (/conversations)',
-    descEn:
-      'Fetches active and archived two-way customer conversations across WhatsApp, Instagram DM, Facebook Messenger, and Telegram.',
-    descAr:
-      'استعراض المحادثات النشطة مع العملاء من مختلف القنوات في واجهة واحدة.',
-    subService: 'inbox_crm',
-    action: 'list_conversations',
-    params: [
-      { name: 'status', type: 'string', required: false, in: 'query', descEn: 'Filter: "open" | "closed"', descAr: 'تصفية حسب الحالة' },
-      { name: 'limit', type: 'number', required: false, in: 'query', descEn: 'Default: 20', descAr: 'عدد النتائج' },
-    ],
-    samplePayload: {},
-    response: {
-      success: true,
-      data: [
-        { id: 'conv_demo_01', platform: 'whatsapp', contact: { name: 'Sarah Ahmed', phone: '+966501234567' }, unreadCount: 1 },
-      ],
-    },
+    id: 'ep_messages_conversations', method: 'GET', path: '/v1/inbox/conversations', liveApiPath: '/api/v1/inbox/conversations',
+    requiredScope: 'read', titleEn: 'List WhatsApp, Messenger and Instagram conversations', titleAr: 'عرض محادثات واتساب وMessenger وInstagram',
+    descEn: 'List conversations for an owned accountId. Messenger uses the connected Facebook Page account. Optional cursor/limit; Meta folder=requests returns pending requests where supported. Provider response uses data[], pagination and meta.failedAccounts. Instagram Login may not expose requests; use the regular inbox when the provider reports PLATFORM_LIMITATION.', descAr: 'واتساب للحساب المملوك؛ الحالات والإيصالات من المزود. العمليات غير المنفذة تعيد 501.',
+    subService: 'telephony', action: 'ep_messages_conversations', params: [{ name: 'accountId', type: 'string', required: true, in: 'query', descEn: 'Connected WhatsApp account owned by workspace', descAr: 'حساب واتساب المملوك' }], samplePayload: {}, response: {data:[{id:'provider_conversation_id',accountId:'owned_whatsapp_account',platform:'whatsapp',participantName:'Customer',participantId:'966501234567'}],pagination:{nextCursor:null}},
   },
   ep_messages_create: {
-    id: 'ep_messages_create',
-    method: 'POST',
-    path: '/v1/inbox/conversations',
-    liveApiPath: '/api/v1/inbox/conversations',
-    requiredScope: 'messages:write',
-    titleEn: 'Initiate Direct Conversation or Outreach',
-    titleAr: 'بدء محادثة جديدة أو إرسال قالب رسمي',
-    descEn: 'Initiates a new customer conversation or opens a template window on WhatsApp Cloud or Instagram.',
-    descAr: 'بدء محادثة جديدة مع عميل أو إرسال قالب تسويقي معتمد.',
-    subService: 'inbox_crm',
-    action: 'start_conversation',
-    params: [
-      { name: 'platform', type: 'string', required: true, in: 'body', descEn: 'Target channel', descAr: 'القناة المستهدفة' },
-      { name: 'recipientId', type: 'string', required: true, in: 'body', descEn: 'Customer phone or handle', descAr: 'رقم هاتف أو معرف العميل' },
-      { name: 'initialMessage', type: 'string', required: true, in: 'body', descEn: 'Message text or template ID', descAr: 'الرسالة الافتتاحية' },
-    ],
-    samplePayload: { platform: 'whatsapp', recipientId: '+966501234567', initialMessage: 'Welcome to Asra3 VIP!' },
-    response: {
-      success: true,
-      data: { conversationId: 'conv_new_881', status: 'initiated', timestamp: '2026-10-18T18:00:00Z' },
-    },
+    id: 'ep_messages_create', method: 'POST', path: '/v1/inbox/conversations', liveApiPath: '/api/v1/inbox/conversations',
+    requiredScope: 'write + editor/admin/owner', titleEn: 'Send provider WhatsApp message', titleAr: 'واجهة واتساب',
+    descEn: 'Send provider WhatsApp message. Requires owned accountId and stable Idempotency-Key header (or idempotencyKey in the JSON body). Use a new key for a new intent and preserve it for retries. Provide conversationId XOR recipient; URL thread routes supply conversationId. Text/media require the 24-hour window. Send text and/or one attachments[{url:public HTTPS,type:image|video|audio|file,name?}], or template{name,language,parameters:string[],components?} separately. New recipients may use headerMedia. HTTP 200/201 acknowledges acceptance; delivery/read depend on receipts. Validation/ownership/provider errors return 400/403/404/409/429/502/503/504. Non-WhatsApp returns 501.', descAr: 'واتساب للحساب المملوك؛ الحالات والإيصالات من المزود. العمليات غير المنفذة تعيد 501.',
+    subService: 'telephony', action: 'ep_messages_create', params: [{ name: 'accountId', type: 'string', required: true, in: 'body', descEn: 'Connected WhatsApp account owned by workspace', descAr: 'حساب واتساب المملوك' }], samplePayload: {idempotencyKey:'replace_with_unique_intent_key',accountId:'owned_whatsapp_account',recipient:'+966501234567',template:{name:'order_receipt_v1',language:'en_US',parameters:['Order 42']}}, response: {data:{messageId:'provider_message_id',conversationId:'provider_conversation_id'},httpStatus:201},
   },
   ep_messages_send: {
-    id: 'ep_messages_send',
-    method: 'POST',
-    path: '/v1/inbox/conversations/{id}/messages',
-    liveApiPath: '/api/v1/inbox/conversations/conv_demo_01/messages',
-    requiredScope: 'messages:write',
-    titleEn: 'Send Message into Conversation Thread',
-    titleAr: 'إرسال رسالة داخل محادثة قائمة',
-    descEn: 'Dispatches a text, image, document, or audio note into an existing conversation thread.',
-    descAr: 'إرسال رد نصي أو ملف أو صورة داخل محادثة العميل.',
-    subService: 'inbox_crm',
-    action: 'send_thread_message',
-    params: [
-      { name: 'id', type: 'string', required: true, in: 'path', descEn: 'Conversation ID', descAr: 'معرف المحادثة' },
-      { name: 'text', type: 'string', required: true, in: 'body', descEn: 'Message text', descAr: 'نص الرسالة' },
-    ],
-    samplePayload: { text: 'Thank you for reaching out! How can our concierge assist you today?' },
-    response: {
-      success: true,
-      data: { messageId: 'msg_88129', status: 'sent', sentAt: '2026-10-18T18:01:00Z' },
-    },
+    id: 'ep_messages_send', method: 'POST', path: '/v1/inbox/conversations/provider_conversation_id/messages', liveApiPath: '/api/v1/inbox/conversations/provider_conversation_id/messages',
+    requiredScope: 'write + editor/admin/owner', titleEn: 'Reply to a WhatsApp, Messenger or Instagram conversation', titleAr: 'الرد على محادثة العميل',
+    descEn: 'Supply an owned accountId, text and/or one HTTPS attachment and a stable Idempotency-Key. Meta replies require an existing customer conversation and eligibility in the 24-hour window; the provider checks permissions. Templates are WhatsApp-only. HTTP 200 can contain data.partialFailure when an attachment succeeded but its text failed. Do not resend the successful attachment. A timeout or 5xx can follow platform acceptance; review history before another send, even with the same key. Empty history is inconclusive. POST /inbox/conversations/{id}/accept sends a reviewed first text reply to accept a Meta request. Returned internal conversationId can differ from the platform thread ID; retain the original thread ID.',
+    descAr: 'اختر حساباً مملوكاً ومحادثة بدأها العميل. راجع الرد قبل الإرسال. قد ينجح الملف ويفشل النص؛ لا تعِد إرسال الملف. عند انقطاع الاتصال راجع المحادثة قبل محاولة جديدة، فقد تكون الرسالة وصلت.',
+    subService: 'inbox_crm', action: 'ep_messages_send', params: [{ name: 'accountId', type: 'string', required: true, in: 'body', descEn: 'Connected account owned by workspace', descAr: 'الحساب المتصل المملوك' }], samplePayload: {idempotencyKey:'replace_with_unique_intent_key',accountId:'owned_facebook_account',text:'Hello'}, response: {success:true,data:{messageId:'provider_message_id'},httpStatus:200},
   },
   ep_messages_search: {
-    id: 'ep_messages_search',
-    method: 'GET',
-    path: '/v1/inbox/conversations/search',
-    liveApiPath: '/api/v1/inbox/conversations/search',
-    requiredScope: 'messages:read',
-    titleEn: 'Two-Way Full-Text Message Search',
-    titleAr: 'البحث الشامل في الرسائل والمحادثات',
-    descEn: 'Performs two-way full-text searching across all historical customer messages and agent replies.',
-    descAr: 'بحث نصي فوري في كافة رسائل العملاء والردود السابقة.',
-    subService: 'inbox_crm',
-    action: 'search_messages',
-    params: [
-      { name: 'q', type: 'string', required: true, in: 'query', descEn: 'Search query string', descAr: 'كلمة البحث' },
-    ],
-    samplePayload: {},
-    response: {
-      success: true,
-      data: { totalMatches: 1, results: [{ conversationId: 'conv_demo_01', snippet: 'assist you today?' }] },
-    },
+    id: 'ep_messages_search', method: 'GET', path: '/v1/inbox/conversations/search', liveApiPath: '/api/v1/inbox/conversations/search',
+    requiredScope: 'read', titleEn: 'Unavailable in this phase', titleAr: 'واجهة واتساب',
+    descEn: 'Unavailable in this phase. HTTP 501: no implemented provider flow.', descAr: 'واتساب للحساب المملوك؛ الحالات والإيصالات من المزود. العمليات غير المنفذة تعيد 501.',
+    subService: 'telephony', action: 'ep_messages_search', params: [], samplePayload: {}, response: {success:false,error:{code:'unavailable',message:'This operation has no implemented provider flow.'}},
   },
   ep_messages_actions: {
-    id: 'ep_messages_actions',
-    method: 'POST',
-    path: '/v1/inbox/conversations/{id}/handover',
-    liveApiPath: '/api/v1/inbox/conversations/conv_demo_01/handover',
-    requiredScope: 'messages:write',
-    titleEn: 'Bot-to-Human Handover & Agent Assignment',
-    titleAr: 'تحويل المحادثة لموظف بشري (Bot Handover)',
-    descEn: 'Transfers control of a conversation between automated bot flows and human agents.',
-    descAr: 'تحويل المحادثة من الرد الآلي إلى موظف خدمة العملاء البشري بسلاسة.',
-    subService: 'inbox_crm',
-    action: 'handover_conversation',
-    params: [
-      { name: 'id', type: 'string', required: true, in: 'path', descEn: 'Conversation ID', descAr: 'معرف المحادثة' },
-      { name: 'target', type: '"human" | "bot"', required: true, in: 'body', descEn: 'Target recipient', descAr: 'جهة التحويل' },
-    ],
-    samplePayload: { target: 'human', agentId: 'agent_nour_01' },
-    response: {
-      success: true,
-      message: 'Conversation handed over to human agent successfully.',
-    },
+    id: 'ep_messages_actions', method: 'POST', path: '/v1/inbox/conversations/provider_conversation_id/thread-control', liveApiPath: '/api/v1/inbox/conversations/provider_conversation_id/thread-control',
+    requiredScope: 'write + editor/admin/owner', titleEn: 'Request provider Meta thread control', titleAr: 'طلب التحكم بمحادثة Meta',
+    descEn: 'Use pass, take, request or release for an owned Meta conversation. pass requires the receiving targetAppId. Instagram take/request require Facebook Login and a linked Page; primary-receiver permissions remain provider-controlled. request remains pending. confirmed=true requires the provider control result to agree with the refreshed canonical conversation. Acknowledgment alone cannot switch the UI owner. Reconcile uncertain results before repeating. /handover is an alias with the same action body.', descAr: 'طلب نقل أو استلام أو تحرير التحكم بالمحادثة المملوكة. النقل يتطلب targetAppId. الاستلام والطلب في Instagram يتطلبان الربط عبر فيسبوك. الطلب يبقى معلقاً حتى تأكيد المزود؛ راجع المحادثة عند نتيجة غير مؤكدة.',
+    subService: 'inbox_crm', action: 'thread_control', params: [{ name: 'accountId', type: 'string', required: true, in: 'body', descEn: 'Owned Facebook or Instagram account', descAr: 'الحساب المملوك' }, { name: 'action', type: 'string', required: true, in: 'body', descEn: 'pass, take, request or release', descAr: 'pass أو take أو request أو release' }], samplePayload: { accountId: 'owned_facebook_account', action: 'request' }, response: {success:true,confirmed:false,pending:true,conversation:{threadControl:'other'},httpStatus:200},
   },
   ep_inbox_comments: {
-    id: 'ep_inbox_comments',
-    method: 'POST',
-    path: '/v1/inbox/comments',
-    liveApiPath: '/api/v1/inbox/comments',
-    requiredScope: 'messages:write',
-    titleEn: 'Public Comments Moderation & Top-Level Posting',
-    titleAr: 'إدارة التعليقات ونشر تعليق جديد',
-    descEn: 'Fetches comments on social posts, posts public comments or replies, and manages comment visibility.',
-    descAr: 'قراءة التعليقات على المنشورات وإرسال ردود عامة أو إخفاء التعليقات غير اللائقة.',
-    subService: 'inbox_crm',
-    action: 'create_comment',
-    params: [
-      { name: 'postId', type: 'string', required: true, in: 'body', descEn: 'Post ID', descAr: 'معرف المنشور' },
-      { name: 'text', type: 'string', required: true, in: 'body', descEn: 'Comment text', descAr: 'نص التعليق' },
-    ],
-    samplePayload: { postId: 'post_demo_01', text: 'Great insights! Thanks for sharing.' },
-    response: {
-      success: true,
-      data: { commentId: 'comm_99182', status: 'posted' },
-    },
+    id: 'ep_inbox_comments', method: 'GET', path: '/v1/inbox/comments', liveApiPath: '/api/v1/inbox/comments',
+    requiredScope: 'accounts:read OR inbox:write', titleEn: 'Owned Facebook/Instagram comments and moderation', titleAr: 'تعليقات فيسبوك وInstagram للحساب المملوك',
+    descEn: 'GET with accountId lists owned organic posts and native post IDs; cursor/limit (1–100), since and minComments are optional. GET /inbox/comments/{postId}?accountId=... reads comments; commentId selects parent replies. Retain pagination and failedAccounts/accountsSkipped metadata. Mutations require inbox:write and verified account/post/comment ownership; the 25-page verification bound fails closed when incomplete. POST /{postId} with accountId, commentId and message replies publicly; DELETE /{postId}?accountId=...&commentId=... deletes. POST/DELETE /{postId}/{commentId}/hide hides/unhides. POST /{postId}/{commentId}/private-reply sends a separately reviewed plain-text private reply. Public/private replies require a stable Idempotency-Key (or JSON idempotencyKey), up to 200 characters. Private replies are one per comment within 7 days; consumed or unknown outcomes block automatic retry. Reconcile provider history first. Likes, legacy comment-only aliases, top-level creation and paid/dark ad posts are outside this phase.', descAr: 'عرض المنشورات العضوية وتعليقاتها بمعرفات المنصة والحساب المملوك. الرد العام والحذف والإخفاء وإلغاء الإخفاء تتطلب inbox:write والتحقق من الملكية. الرد الخاص إجراء منفصل يُراجع قبل الإرسال، مرة واحدة خلال 7 أيام؛ لا تعِد المحاولة تلقائياً عند استهلاك الرد أو عدم تأكيد النتيجة. الإعجاب وإنشاء تعليق رئيسي غير متاحين.',
+    subService: 'inbox_crm', action: 'posts', params: [{ name: 'accountId', type: 'string', required: true, in: 'query', descEn: 'Owned connected Facebook/Instagram account', descAr: 'معرف حساب فيسبوك أو Instagram المملوك' }, { name: 'cursor', type: 'string', required: false, in: 'query', descEn: 'Provider pagination cursor', descAr: 'مؤشر صفحات المزود' }, { name: 'limit', type: 'integer', required: false, in: 'query', descEn: '1–100 posts', descAr: 'من 1 إلى 100 منشور' }], samplePayload: {}, response: {data:[],pagination:{hasMore:false},meta:{failedAccounts:[]},httpStatus:200},
   },
   ep_inbox_reviews: {
     id: 'ep_inbox_reviews',
@@ -1130,27 +788,10 @@ export const ENDPOINT_SPECS: Record<string, EndpointSpec> = {
     },
   },
   ep_broadcasts: {
-    id: 'ep_broadcasts',
-    method: 'POST',
-    path: '/v1/broadcasts',
-    liveApiPath: '/api/v1/broadcasts',
-    requiredScope: 'messages:write',
-    titleEn: 'Bulk Broadcast Marketing Campaigns',
-    titleAr: 'حملات البث الجماعي للعملاء (Broadcasts)',
-    descEn: 'Creates and immediately dispatches bulk targeted broadcast messages across WhatsApp or SMS channels.',
-    descAr: 'إنشاء وإرسال حملات الرسائل الجماعية لشرائح العملاء.',
-    subService: 'inbox_crm',
-    action: 'create_broadcast',
-    params: [
-      { name: 'title', type: 'string', required: true, in: 'body', descEn: 'Broadcast campaign title', descAr: 'عنوان الحملة' },
-      { name: 'channel', type: 'string', required: true, in: 'body', descEn: 'whatsapp | sms', descAr: 'القناة' },
-      { name: 'content', type: 'string', required: true, in: 'body', descEn: 'Message body or template', descAr: 'نص الرسالة' },
-    ],
-    samplePayload: { title: 'Ramadan Special Offer', channel: 'whatsapp', content: 'Special 30% savings code: RAMADAN30' },
-    response: {
-      success: true,
-      data: { broadcastId: 'bc_99812', status: 'queued', recipientCount: 150 },
-    },
+    id: 'ep_broadcasts', method: 'POST', path: '/v1/broadcasts', liveApiPath: '/api/v1/broadcasts',
+    requiredScope: 'write + editor/admin/owner', titleEn: 'Create WhatsApp draft only', titleAr: 'واجهة واتساب',
+    descEn: 'Create WhatsApp draft only. HTTP 200/201; requires owned accountId,name,approved template{name,language,variableMapping?} and stable Idempotency-Key header (or idempotencyKey in the JSON body). Use a new key for a new intent and preserve it for retries. Then POST /broadcasts/{id}/recipients with {accountId,phones:[international numbers]}; then POST /broadcasts/{id}/send with {accountId}. GET list/detail exposes provider status/counts. Add and send accept optional retry keys and derive stable keys otherwise. Keep the draft ID after failures. Delete, schedule and non-WhatsApp return 501.', descAr: 'واتساب للحساب المملوك؛ الحالات والإيصالات من المزود. العمليات غير المنفذة تعيد 501.',
+    subService: 'telephony', action: 'ep_broadcasts', params: [{ name: 'accountId', type: 'string', required: true, in: 'body', descEn: 'Connected WhatsApp account owned by workspace', descAr: 'حساب واتساب المملوك' }], samplePayload: {idempotencyKey:'replace_with_unique_intent_key',accountId:'owned_whatsapp_account',name:'Order updates',template:{name:'order_receipt_v1',language:'en_US'}}, response: {broadcast:{id:'provider_broadcast_id',accountId:'owned_whatsapp_account',platform:'whatsapp',status:'draft'},httpStatus:201},
   },
   ep_sequences: {
     id: 'ep_sequences',
@@ -1242,15 +883,15 @@ export const ENDPOINT_SPECS: Record<string, EndpointSpec> = {
     path: '/v1/phone-numbers/available',
     liveApiPath: '/api/v1/phone-numbers/available',
     requiredScope: 'telephony:read',
-    titleEn: 'Search Virtual Numbers Catalog (55+ Countries)',
-    titleAr: 'البحث عن أرقام افتراضية في أكثر من 55 دولة',
+    titleEn: 'Search Provider Number Inventory',
+    titleAr: 'البحث في أرقام المزوّد المتاحة',
     descEn: 'Searches inventory of virtual mobile, local, and toll-free numbers supporting WhatsApp, SMS, Voice, and OTP.',
     descAr: 'البحث في كتالوج الأرقام الافتراضية الدولية مع تصفية حسب الدولة والمزايا.',
     subService: 'telephony',
     action: 'search_numbers',
     params: [
       { name: 'country', type: 'string', required: false, in: 'query', descEn: 'ISO 2-letter country code (US, GB, SA, AE, EG)', descAr: 'رمز الدولة' },
-      { name: 'type', type: 'string', required: false, in: 'query', descEn: 'mobile | local | toll_free', descAr: 'نوع الرقم' },
+      { name: 'type', type: 'string', required: false, in: 'query', descEn: 'mobile | local | toll_free | national', descAr: 'نوع الرقم' },
     ],
     samplePayload: {},
     response: {
@@ -1267,19 +908,24 @@ export const ENDPOINT_SPECS: Record<string, EndpointSpec> = {
     liveApiPath: '/api/v1/phone-numbers/buy',
     requiredScope: 'telephony:write',
     titleEn: 'Purchase & Provision Virtual Number',
-    titleAr: 'شراء وتفعيل رقم افتراضي فوري',
-    descEn: 'Instantly purchases and provisions a virtual number with charges deducted from your Telecom Credit Wallet balance.',
-    descAr: 'شراء وتفعيل رقم افتراضي فوراً مع خصم التكلفة من محفظة الاتصالات.',
+    titleAr: 'شراء رقم هاتف',
+    descEn: 'Zernio bills and allocates the number. Keep the same purchaseIntentId and selection when retrying after a timeout, payment setup (402), or identity verification (202). A pending response may have no number ID. WhatsApp connects separately through Meta in the dashboard.',
+    descAr: 'يتولى Zernio الفوترة وتخصيص الرقم. احتفظ بنفس معرّف الطلب والاختيار عند إعادة المحاولة بعد انقطاع الاتصال أو تحديث الدفع (402) أو التحقق من الهوية (202). قد لا يحتوي الطلب المعلّق على معرّف رقم. يتم ربط واتساب لاحقًا عبر Meta في لوحة التحكم.',
     subService: 'telephony',
     action: 'buy_number',
     params: [
-      { name: 'phoneNumber', type: 'string', required: true, in: 'body', descEn: 'Target phone number in E.164 format', descAr: 'الرقم المراد شراؤه بصيغة E.164' },
+      { name: 'country', type: 'string', required: true, in: 'body', descEn: 'Country from the provider catalog', descAr: 'الدولة من كتالوج المزوّد' },
+      { name: 'numberType', type: 'string', required: true, in: 'body', descEn: 'local | mobile | toll_free | national', descAr: 'نوع الرقم' },
+      { name: 'purchaseIntentId', type: 'string', required: true, in: 'body', descEn: 'Unique purchase intent, reused for every retry of this selection', descAr: 'معرّف طلب فريد يُستخدم دون تغيير في كل إعادة محاولة' },
+      { name: 'phoneNumber', type: 'string', required: false, in: 'body', descEn: 'Exact E.164 number for instant inventory only; omit for regulated countries', descAr: 'رقم متاح فوري بصيغة E.164؛ يُترك فارغًا للدول التي تتطلب التحقق' },
     ],
-    samplePayload: { phoneNumber: '+12025550192' },
+    samplePayload: { country: 'US', numberType: 'local', phoneNumber: '+12025550192', purchaseIntentId: 'replace-with-a-new-uuid-for-your-purchase' },
     response: {
       success: true,
-      message: 'Phone number provisioned successfully.',
-      data: { id: 'pn_10023', phoneNumber: '+12025550192', status: 'active', monthlyFeeUsd: 2.0 },
+      status: 'kyc_required',
+      message: 'Identity verification is required before allocation.',
+      data: null,
+      kycUrl: 'https://provider.example/identity-verification',
     },
   },
   ep_numbers_list: {
@@ -1328,23 +974,23 @@ export const ENDPOINT_SPECS: Record<string, EndpointSpec> = {
   ep_sms_send: {
     id: 'ep_sms_send',
     method: 'POST',
-    path: '/v1/sms/messages',
-    liveApiPath: '/api/v1/sms/messages',
+    path: '/v1/sms/send',
+    liveApiPath: '/api/v1/sms/send',
     requiredScope: 'telephony:write',
-    titleEn: 'Send Programmable 2-Way SMS / MMS',
+    titleEn: 'Send a Reviewed Plain-Text SMS',
     titleAr: 'إرسال رسائل SMS برمجية',
-    descEn: 'Dispatches programmable SMS or MMS text messages with delivery status tracking.',
-    descAr: 'إرسال رسائل نصية قصيرة SMS برمجياً مع تتبع حالة التسليم.',
+    descEn: 'Use the reviewed Phone workspace for SMS, or provide an owned numberId, destination, text, consentReviewed=true and a stable intent key. Provider registration/capability, CRM suppression and spending allocation apply. MMS, scheduled SMS and OTP verification are unavailable. Acceptance is not a delivery receipt.',
+    descAr: 'راجع SMS في مساحة الأرقام أو أرسل numberId المملوك والوجهة والنص وconsentReviewed=true ومفتاح طلب ثابت. يلزم تسجيل المزود وقدرات الرقم والموافقة ومخصص الإنفاق. MMS والجدولة والتحقق عبر OTP غير متاحة؛ القبول ليس إيصال تسليم.',
     subService: 'telephony',
     action: 'send_sms',
     params: [
       { name: 'to', type: 'string', required: true, in: 'body', descEn: 'Recipient phone number', descAr: 'رقم المستلم' },
       { name: 'text', type: 'string', required: true, in: 'body', descEn: 'Message content', descAr: 'نص الرسالة' },
     ],
-    samplePayload: { to: '+966501234567', text: 'Your verification security code is 882190.' },
+    samplePayload: { numberId: 'owned_number_id', to: '+12025550123', text: 'Reviewed customer message', consentReviewed: true, intent: 'replace_with_unique_intent_key' },
     response: {
       success: true,
-      data: { messageId: 'sms_99182', status: 'sent', costUsd: 0.015 },
+      data: { id: 'provider_message_id', status: 'sent' },
     },
   },
   ep_sms_otp: {
@@ -1394,19 +1040,19 @@ export const ENDPOINT_SPECS: Record<string, EndpointSpec> = {
     path: '/v1/voice/calls',
     liveApiPath: '/api/v1/voice/calls',
     requiredScope: 'telephony:write',
-    titleEn: 'Initiate Outbound Voice / AI Call',
-    titleAr: 'إجراء مكالمة صوتية أو تشغيل موظف ذكاء اصطناعي',
-    descEn: 'Triggers outbound SIP voice calls or binds a real-time conversational AI voice agent to the caller.',
-    descAr: 'إجراء مكالمة هاتفية صادرة أو ربط المتصل بوكيل ذكاء اصطناعي صوتي فوري.',
+    titleEn: 'Start a Reviewed Provider Call',
+    titleAr: 'بدء مكالمة يدوية مراجعة عبر المزود',
+    descEn: 'Use the Phone workspace to review owned number/account eligibility, destination consent, actual provider permission and the maximum call estimate before starting. A stable intent and approved spending allocation are required. Browser softphones, SIP setup and AI calling agents are unavailable; dialing is not a completed call.',
+    descAr: 'راجع أهلية الرقم والحساب والموافقة وصلاحية المزود وتقدير أقصى تكلفة في مساحة الأرقام قبل بدء المكالمة. يلزم مفتاح طلب ثابت ومخصص إنفاق. هاتف المتصفح وSIP ووكلاء AI غير متاحة؛ الاتصال الجاري لا يثبت اكتمال المكالمة.',
     subService: 'telephony',
     action: 'initiate_call',
     params: [
       { name: 'to', type: 'string', required: true, in: 'body', descEn: 'Destination phone number', descAr: 'رقم الهاتف المطلوب' },
     ],
-    samplePayload: { to: '+966501234567' },
+    samplePayload: { channel: 'pstn', numberId: 'owned_number_id', to: '+12025550123', consentReviewed: true, expectedAmountMinor: 'review_actual_estimate_first', intent: 'replace_with_unique_intent_key' },
     response: {
       success: true,
-      data: { callId: 'call_99182', status: 'initiated', timestamp: '2026-10-18T18:03:00Z' },
+      data: { callId: 'provider_call_id', status: 'dialing' },
     },
   },
   ep_voice_token: {
@@ -1451,48 +1097,16 @@ export const ENDPOINT_SPECS: Record<string, EndpointSpec> = {
     },
   },
   ep_verify_otp: {
-    id: 'ep_verify_otp',
-    method: 'POST',
-    path: '/v1/verify',
-    liveApiPath: '/api/v1/verify',
-    requiredScope: 'telephony:write',
-    titleEn: 'Turnkey Phone Verification OTP Dispatch',
-    titleAr: 'إرسال كود تحقق للمستخدم برمجياً (Verify OTP)',
-    descEn: 'Dispatches a 6-digit authentication OTP via SMS or Voice call with fraud detection and rate limiting.',
-    descAr: 'إرسال كود تحقق مكون من 6 أرقام عبر SMS أو مكالمة صوتية للمستخدم.',
-    subService: 'telephony',
-    action: 'send_verify_otp',
-    params: [
-      { name: 'phoneNumber', type: 'string', required: true, in: 'body', descEn: 'E.164 phone number', descAr: 'رقم هاتف المستخدم' },
-      { name: 'channel', type: 'string', required: false, in: 'body', descEn: 'sms | voice', descAr: 'القناة' },
-    ],
-    samplePayload: { phoneNumber: '+966501234567', channel: 'sms' },
-    response: {
-      success: true,
-      data: { verificationId: 'ver_99182', status: 'pending', expiresAt: '2026-10-18T18:15:00Z' },
-    },
+    id: 'ep_verify_otp', method: 'POST', path: '/v1/verify', liveApiPath: '/api/v1/verify',
+    requiredScope: 'telephony:write', titleEn: 'Unavailable in this phase', titleAr: 'واجهة واتساب',
+    descEn: 'Unavailable in this phase. HTTP 501: no implemented provider flow.', descAr: 'واتساب للحساب المملوك؛ الحالات والإيصالات من المزود. العمليات غير المنفذة تعيد 501.',
+    subService: 'telephony', action: 'ep_verify_otp', params: [], samplePayload: {}, response: {success:false,error:{code:'verification_unavailable',message:'Provider verification is not implemented. For WhatsApp number connection, use authenticated Meta onboarding.'}},
   },
   ep_verify_check: {
-    id: 'ep_verify_check',
-    method: 'POST',
-    path: '/v1/verify/check',
-    liveApiPath: '/api/v1/verify/check',
-    requiredScope: 'telephony:write',
-    titleEn: 'Validate 6-Digit OTP Verification Code',
-    titleAr: 'التحقق من صحة كود الـ OTP المدخل',
-    descEn: 'Validates customer entered 6-digit verification code against dispatched session.',
-    descAr: 'فحص كود التحقق المدخل من قبل العميل وتأكيد صحته.',
-    subService: 'telephony',
-    action: 'check_verify_otp',
-    params: [
-      { name: 'phoneNumber', type: 'string', required: true, in: 'body', descEn: 'Phone number', descAr: 'رقم الهاتف' },
-      { name: 'code', type: 'string', required: true, in: 'body', descEn: '6-digit OTP code', descAr: 'كود الـ OTP' },
-    ],
-    samplePayload: { phoneNumber: '+966501234567', code: '123456' },
-    response: {
-      success: true,
-      data: { verified: true, verifiedAt: '2026-10-18T18:04:00Z' },
-    },
+    id: 'ep_verify_check', method: 'POST', path: '/v1/verify/check', liveApiPath: '/api/v1/verify/check',
+    requiredScope: 'telephony:write', titleEn: 'Unavailable in this phase', titleAr: 'واجهة واتساب',
+    descEn: 'Unavailable in this phase. HTTP 501: no implemented provider flow.', descAr: 'واتساب للحساب المملوك؛ الحالات والإيصالات من المزود. العمليات غير المنفذة تعيد 501.',
+    subService: 'telephony', action: 'ep_verify_check', params: [], samplePayload: {}, response: {success:false,error:{code:'verification_unavailable',message:'Provider verification is not implemented. For WhatsApp number connection, use authenticated Meta onboarding.'}},
   },
   ep_branded_calling: {
     id: 'ep_branded_calling',
@@ -1568,10 +1182,10 @@ export const ENDPOINT_SPECS: Record<string, EndpointSpec> = {
     path: '/v1/whatsapp/link',
     liveApiPath: '/api/v1/whatsapp/link',
     requiredScope: 'telephony:write',
-    titleEn: 'Link WhatsApp Cloud API (Send 6-Digit OTP)',
-    titleAr: 'طلب ربط الرقم بـ WhatsApp Cloud API الرسمي',
-    descEn: 'Requests a 6-digit verification code from Meta to register your virtual number with the official WhatsApp Cloud API.',
-    descAr: 'طلب كود التحقق من ميتا لربط رقمك الافتراضي بواتساب للأعمال السحابي.',
+    titleEn: 'Legacy WhatsApp Link (Retired)',
+    titleAr: 'ربط واتساب القديم (متوقف)',
+    descEn: 'Returns 410. Open WhatsApp setup in the dashboard and continue with Meta to connect an existing or purchased number.',
+    descAr: 'يعيد 410. افتح إعداد واتساب في لوحة التحكم وتابع مع Meta لربط رقم موجود أو مُشترى.',
     subService: 'telephony',
     action: 'request_wa_link',
     params: [
@@ -1579,8 +1193,8 @@ export const ENDPOINT_SPECS: Record<string, EndpointSpec> = {
     ],
     samplePayload: { phoneNumber: '+12025550192' },
     response: {
-      success: true,
-      data: { status: 'code_sent', nextAction: 'verify_otp' },
+      success: false,
+      error: { code: 'hosted_onboarding_required', message: 'Continue with Meta in the dashboard.' },
     },
   },
   ep_wa_verify: {
@@ -1589,10 +1203,10 @@ export const ENDPOINT_SPECS: Record<string, EndpointSpec> = {
     path: '/v1/whatsapp/verify-otp',
     liveApiPath: '/api/v1/whatsapp/verify-otp',
     requiredScope: 'telephony:write',
-    titleEn: 'Confirm WhatsApp OTP Code & Activate',
-    titleAr: 'تأكيد كود واتساب وتفعيل القناة',
-    descEn: 'Submits the 6-digit Meta verification code to complete WhatsApp Cloud API registration.',
-    descAr: 'إدخال كود التحقق لتفعيل اتصال واتساب الرسمي بنجاح.',
+    titleEn: 'Legacy WhatsApp OTP (Retired)',
+    titleAr: 'تأكيد واتساب القديم (متوقف)',
+    descEn: 'Returns 410. Verification takes place in the authenticated Meta onboarding flow.',
+    descAr: 'يعيد 410. يتم التحقق داخل مسار الربط الموثّق في Meta.',
     subService: 'telephony',
     action: 'verify_wa_otp',
     params: [
@@ -1601,73 +1215,28 @@ export const ENDPOINT_SPECS: Record<string, EndpointSpec> = {
     ],
     samplePayload: { phoneNumber: '+12025550192', code: '882190' },
     response: {
-      success: true,
-      data: { status: 'active', wabaId: 'waba_99182' },
+      success: false,
+      error: { code: 'hosted_onboarding_required', message: 'Local OTP verification is no longer supported.' },
     },
   },
   ep_wa_send: {
-    id: 'ep_wa_send',
-    method: 'POST',
-    path: '/v1/whatsapp/messages',
-    liveApiPath: '/api/v1/whatsapp/messages',
-    requiredScope: 'messages:write',
-    titleEn: 'Send WhatsApp Cloud API Message or Template',
-    titleAr: 'إرسال رسالة أو قالب واتساب رسمي',
-    descEn: 'Sends session text, media, or pre-approved HSM templates via the official Meta WhatsApp Cloud API.',
-    descAr: 'إرسال رسائل أو قوالب معتمدة عبر واتساب للأعمال الرسمي.',
-    subService: 'telephony',
-    action: 'send_wa_message',
-    params: [
-      { name: 'to', type: 'string', required: true, in: 'body', descEn: 'Recipient phone number', descAr: 'رقم المستلم' },
-      { name: 'type', type: 'string', required: true, in: 'body', descEn: 'text | template', descAr: 'نوع الرسالة' },
-    ],
-    samplePayload: { to: '+966501234567', type: 'text', text: 'Hello from Asra3 API v1!' },
-    response: {
-      success: true,
-      data: { messageId: 'wamid.HBgL...', status: 'sent' },
-    },
+    id: 'ep_wa_send', method: 'POST', path: '/v1/whatsapp/messages', liveApiPath: '/api/v1/whatsapp/messages',
+    requiredScope: 'write + editor/admin/owner', titleEn: 'Send provider WhatsApp message', titleAr: 'واجهة واتساب',
+    descEn: 'Send provider WhatsApp message. Requires owned accountId and stable Idempotency-Key header (or idempotencyKey in the JSON body). Use a new key for a new intent and preserve it for retries. Provide conversationId XOR recipient; URL thread routes supply conversationId. Text/media require the 24-hour window. Send text and/or one attachments[{url:public HTTPS,type:image|video|audio|file,name?}], or template{name,language,parameters:string[],components?} separately. New recipients may use headerMedia. HTTP 200/201 acknowledges acceptance; delivery/read depend on receipts. Validation/ownership/provider errors return 400/403/404/409/429/502/503/504. Non-WhatsApp returns 501.', descAr: 'واتساب للحساب المملوك؛ الحالات والإيصالات من المزود. العمليات غير المنفذة تعيد 501.',
+    subService: 'telephony', action: 'ep_wa_send', params: [{ name: 'accountId', type: 'string', required: true, in: 'body', descEn: 'Connected WhatsApp account owned by workspace', descAr: 'حساب واتساب المملوك' }], samplePayload: {idempotencyKey:'replace_with_unique_intent_key',accountId:'owned_whatsapp_account',recipient:'+966501234567',template:{name:'order_receipt_v1',language:'en_US',parameters:['Order 42']}}, response: {data:{messageId:'provider_message_id',conversationId:'provider_conversation_id'},httpStatus:201},
   },
   ep_wa_templates: {
-    id: 'ep_wa_templates',
-    method: 'GET',
-    path: '/v1/whatsapp/templates',
-    liveApiPath: '/api/v1/whatsapp/templates',
-    requiredScope: 'messages:read',
-    titleEn: 'Manage Meta WhatsApp Business Templates',
-    titleAr: 'إدارة قوالب واتساب الرسمية (HSM Templates)',
-    descEn: 'Inspects and submits official WhatsApp HSM templates for utility, marketing, and authentication.',
-    descAr: 'استعراض وتقديم قوالب واتساب التسويقية والخدمية للاعتماد من ميتا.',
-    subService: 'telephony',
-    action: 'list_templates',
-    params: [],
-    samplePayload: {},
-    response: {
-      success: true,
-      data: [
-        { name: 'order_receipt_v1', category: 'UTILITY', status: 'APPROVED', language: 'en_US' },
-      ],
-    },
+    id: 'ep_wa_templates', method: 'GET', path: '/v1/whatsapp/templates', liveApiPath: '/api/v1/whatsapp/templates',
+    requiredScope: 'read', titleEn: 'List Meta template state', titleAr: 'واجهة واتساب',
+    descEn: 'List Meta template state. Requires owned accountId query. Returns templates[] with actual PENDING/APPROVED/REJECTED status. POST requires accountId,name,language,category,components and returns provider 200/201 acknowledgment; submission does not approve a template. DELETE returns 501.', descAr: 'واتساب للحساب المملوك؛ الحالات والإيصالات من المزود. العمليات غير المنفذة تعيد 501.',
+    subService: 'telephony', action: 'ep_wa_templates', params: [{ name: 'accountId', type: 'string', required: true, in: 'query', descEn: 'Connected WhatsApp account owned by workspace', descAr: 'حساب واتساب المملوك' }], samplePayload: {}, response: {templates:[{name:'order_receipt_v1',category:'UTILITY',status:'PENDING',language:'en_US'}]},
   },
   ep_wa_flows: {
-    id: 'ep_wa_flows',
-    method: 'POST',
-    path: '/v1/whatsapp/flows',
-    liveApiPath: '/api/v1/whatsapp/flows',
-    requiredScope: 'messages:write',
-    titleEn: 'Register WhatsApp Flows Interactive Forms',
-    titleAr: 'إنشاء استمارات واتساب التفاعلية (WhatsApp Flows)',
-    descEn: 'Builds and deploys native interactive multi-step JSON forms inside WhatsApp chat windows.',
-    descAr: 'إنشاء استمارات تفاعلية متعددة الخطوات داخل محادثة واتساب بدون الخروج من التطبيق.',
-    subService: 'telephony',
-    action: 'create_flow',
-    params: [
-      { name: 'name', type: 'string', required: true, in: 'body', descEn: 'Flow name', descAr: 'اسم الاستمارة' },
-    ],
-    samplePayload: { name: 'VIP Appointment Booking', categories: ['APPOINTMENT_BOOKING'] },
-    response: {
-      success: true,
-      data: { flowId: 'flow_99182', status: 'DRAFT' },
-    },
+    id: 'ep_wa_flows', method: 'GET', path: '/v1/whatsapp/flows', liveApiPath: '/api/v1/whatsapp/flows',
+    requiredScope: 'read + current workspace membership', titleEn: 'List WhatsApp Flows for an owned account', titleAr: 'عرض نماذج واتساب لحساب مملوك',
+    descEn: 'Read provider Flows for an owned WhatsApp account using accountId. This example does not create, publish or send a form. The manual workspace supports reviewed navigation forms; endpoint-backed forms and cloning remain unavailable. Provider approval and account permissions apply.',
+    descAr: 'اعرض نماذج المزود لحساب واتساب مملوك باستخدام accountId. هذا المثال لا ينشئ نموذجاً ولا ينشره ولا يرسله. تدعم مساحة العمل نماذج التنقل اليدوية بعد المراجعة؛ النماذج المرتبطة بخادم خارجي والاستنساخ غير متاحة. تسري موافقة المزود وصلاحيات الحساب.',
+    subService: 'telephony', action: 'ep_wa_flows', params: [{ name: 'accountId', type: 'string', required: true, in: 'query', descEn: 'Owned WhatsApp account ID', descAr: 'معرّف حساب واتساب المملوك' }], samplePayload: {}, response: {success:true,flows:[]},
   },
   ep_business_agent: {
     id: 'ep_business_agent',
@@ -1873,7 +1442,7 @@ export const ENDPOINT_SPECS: Record<string, EndpointSpec> = {
     method: 'POST',
     path: '/v1/blogs',
     liveApiPath: '/api/v1/blogs',
-    requiredScope: 'posts:write',
+    requiredScope: 'write + editor/admin/owner',
     titleEn: 'Multi-Platform Blog Articles (WordPress & Shopify)',
     titleAr: 'نشر مقالات المدونة (ووردبريس وشوبيفاي)',
     descEn: 'Creates and publishes SEO-optimized rich blog articles across WordPress and Shopify stores.',
@@ -1896,7 +1465,7 @@ export const ENDPOINT_SPECS: Record<string, EndpointSpec> = {
     method: 'POST',
     path: '/v1/google-business/services',
     liveApiPath: '/api/v1/google-business/services',
-    requiredScope: 'accounts:write',
+    requiredScope: 'write + owner/admin',
     titleEn: 'Google Business Profile Local SEO Services',
     titleAr: 'خدمات الملف التجاري من جوجل (Google Business Services)',
     descEn: 'Adds and synchronizes local service offerings, descriptions, and pricing on Google Maps and Local Search.',
@@ -2009,8 +1578,8 @@ export const ENDPOINT_SPECS: Record<string, EndpointSpec> = {
     requiredScope: 'analytics:read',
     titleEn: 'Cross-Network Performance Analytics',
     titleAr: 'التحليلات الشاملة لجميع القنوات (Analytics)',
-    descEn: 'Returns aggregated post impressions, engagement rates, and follower growth across all social channels.',
-    descAr: 'يعيد إحصائيات المشاهدات والتفاعل ونمو المتابعين المجمعة لكافة القنوات.',
+    descEn: 'Returns available provider metrics for eligible connected accounts and a selected date range. Missing values and timestamps stay unavailable. Revenue and attribution are not inferred.',
+    descAr: 'يعرض بيانات المزود المتاحة للحسابات المؤهلة والفترة المحددة. القيم والتوقيتات المفقودة غير متاحة؛ لا تُستنتج الإيرادات أو الإسناد.',
     subService: 'analytics',
     action: 'get_analytics',
     params: [],
@@ -2018,9 +1587,9 @@ export const ENDPOINT_SPECS: Record<string, EndpointSpec> = {
     response: {
       success: true,
       data: {
-        totalImpressions: 125000,
-        engagementRate: '4.8%',
-        followerGrowth: '+12.4%',
+        totals: { impressions: null, reach: null, engagement: null },
+        dataAsOf: null,
+        unavailable: true,
       },
     },
   },
@@ -2081,8 +1650,8 @@ export const ENDPOINT_SPECS: Record<string, EndpointSpec> = {
     requiredScope: 'analytics:read',
     titleEn: 'Unified Inbox SLAs & Response Time Heatmap',
     titleAr: 'مؤشرات استجابة الرسائل ومعدلات الخدمة (Inbox SLAs)',
-    descEn: 'Measures hourly message incoming volume, first-response times, and agent resolution SLAs.',
-    descAr: 'قياس سرعة الرد على العملاء ومعدلات التزام فريق الدعم بالـ SLAs.',
+    descEn: 'Returns available provider messaging evidence for owned accounts. Missing delivery and timing observations remain unavailable; this does not certify a support SLA.',
+    descAr: 'يعرض بيانات المراسلة المتاحة للحسابات المملوكة. ملاحظات التسليم والتوقيت المفقودة غير متاحة؛ لا يثبت ذلك اتفاقية مستوى خدمة.',
     subService: 'analytics',
     action: 'get_inbox_analytics',
     params: [],
@@ -2090,9 +1659,9 @@ export const ENDPOINT_SPECS: Record<string, EndpointSpec> = {
     response: {
       success: true,
       data: {
-        avgFirstResponseTimeSeconds: 45,
-        resolutionRate: '98.2%',
-        hourlyPeak: '15:00 UTC',
+        avgFirstResponseTimeSeconds: null,
+        resolutionRate: null,
+        dataAsOf: null,
       },
     },
   },
@@ -2229,7 +1798,7 @@ export default function ApiDocumentationPage() {
           },
           {
             id: 'platforms' as DocSectionId,
-            label: isAr ? 'المنصات المدعومة (26 قناة)' : 'Supported Platforms (26)',
+            label: isAr ? 'دليل المنصات حسب المرحلة' : 'Platform catalog — availability varies',
             icon: Globe,
           },
           {
@@ -2255,10 +1824,12 @@ export default function ApiDocumentationPage() {
         items: [
           { id: 'ep_posts' as DocSectionId, label: isAr ? 'نشر وجدولة (Posts)' : 'Publish / Schedule Post', badge: 'POST' },
           { id: 'ep_posts_list' as DocSectionId, label: isAr ? 'استعراض المنشورات' : 'List Posts', badge: 'GET' },
-          { id: 'ep_queue_slots' as DocSectionId, label: isAr ? 'خانات النشر الأسبوعية' : 'Queue Slots Schedule', badge: 'GET' },
+          { id: 'ep_queue_slots' as DocSectionId, label: isAr ? 'خانات النشر الأسبوعية' : 'Create Queue', badge: 'POST' },
           { id: 'ep_queue_preview' as DocSectionId, label: isAr ? 'معاينة تقويم النشر' : 'Calendar Queue Preview', badge: 'GET' },
           { id: 'ep_media_presign' as DocSectionId, label: isAr ? 'رفع الوسائط السحابي' : 'Presign Media Upload', badge: 'POST' },
           { id: 'ep_validate_post' as DocSectionId, label: isAr ? 'فحص القيود والحدود' : 'Pre-Flight Validator', badge: 'POST' },
+          { id: 'ep_validate_media' as DocSectionId, label: isAr ? 'فحص رابط الوسائط' : 'Media URL Check', badge: 'POST' },
+          { id: 'ep_instagram_limit' as DocSectionId, label: isAr ? 'حصة نشر Instagram' : 'Instagram Publishing Quota', badge: 'GET' },
         ],
       },
       {
@@ -2266,8 +1837,8 @@ export default function ApiDocumentationPage() {
         items: [
           { id: 'ep_messages_conversations' as DocSectionId, label: isAr ? 'المحادثات الموحدة' : 'List Conversations', badge: 'GET' },
           { id: 'ep_messages_send' as DocSectionId, label: isAr ? 'إرسال رسالة في محادثة' : 'Send Thread Message', badge: 'POST' },
-          { id: 'ep_messages_actions' as DocSectionId, label: isAr ? 'تحويل للموظف البشري' : 'Bot Handover', badge: 'POST' },
-          { id: 'ep_inbox_comments' as DocSectionId, label: isAr ? 'إدارة التعليقات العامة' : 'Comments Moderation', badge: 'POST' },
+          { id: 'ep_messages_actions' as DocSectionId, label: isAr ? 'التحكم بمحادثة Meta' : 'Meta Thread Control', badge: 'POST' },
+          { id: 'ep_inbox_comments' as DocSectionId, label: isAr ? 'إدارة التعليقات العامة' : 'Comments Moderation', badge: 'GET' },
           { id: 'ep_inbox_reviews' as DocSectionId, label: isAr ? 'تقييمات النجوم والردود' : 'Customer Star Reviews', badge: 'GET' },
           { id: 'ep_contacts' as DocSectionId, label: isAr ? 'دليل جهات الاتصال' : 'CRM Contacts Directory', badge: 'POST' },
           { id: 'ep_broadcasts' as DocSectionId, label: isAr ? 'حملات البث الجماعي' : 'Bulk Broadcasts', badge: 'POST' },
@@ -2277,7 +1848,7 @@ export default function ApiDocumentationPage() {
       {
         group: isAr ? '4. الاتصالات السحابية والأرقام (Telephony & Voice)' : '4. Cloud Telephony & Voice',
         items: [
-          { id: 'ep_numbers_search' as DocSectionId, label: isAr ? 'البحث عن أرقام (55+ دولة)' : 'Search Virtual Numbers', badge: 'GET' },
+          { id: 'ep_numbers_search' as DocSectionId, label: isAr ? 'البحث في أرقام المزود' : 'Search Provider Numbers', badge: 'GET' },
           { id: 'ep_numbers_buy' as DocSectionId, label: isAr ? 'شراء وتفعيل رقم' : 'Buy Virtual Number', badge: 'POST' },
           { id: 'ep_sms_send' as DocSectionId, label: isAr ? 'إرسال رسائل SMS' : 'Send Programmable SMS', badge: 'POST' },
           { id: 'ep_sms_otp' as DocSectionId, label: isAr ? 'قراءة أحدث كود OTP' : 'Fetch Inbound OTP', badge: 'GET' },
@@ -2292,7 +1863,7 @@ export default function ApiDocumentationPage() {
         ],
       },
       {
-        group: isAr ? '5. الإعلانات والعملاء المحتملين (Advertising)' : '5. Advertising (8 Networks)',
+        group: isAr ? '5. الإعلانات — قريباً' : '5. Advertising — Coming soon',
         items: [
           { id: 'ep_ads_ctwa' as DocSectionId, label: isAr ? 'إعلانات النقرة للواتساب' : 'Click-to-WhatsApp (CTWA)', badge: 'POST' },
           { id: 'ep_ads_call' as DocSectionId, label: isAr ? 'إعلانات الاتصال الهاتفي' : 'Click-to-Call Ads', badge: 'POST' },
@@ -2346,25 +1917,36 @@ export default function ApiDocumentationPage() {
       .filter((grp) => grp.items.length > 0);
   }, [sidebarItems, searchQuery]);
 
-  const activeEndpoint = ENDPOINT_SPECS[activeSection] || null;
+  const selectedEndpoint = ENDPOINT_SPECS[activeSection] || null;
+  const catalogOnly = selectedEndpoint && (UNAVAILABLE_DOC_SECTIONS.has(activeSection) || ['ads', 'commerce_local', 'support_ai'].includes(selectedEndpoint.subService));
+  const activeEndpoint = selectedEndpoint && catalogOnly ? {
+    ...selectedEndpoint,
+    titleEn: `${selectedEndpoint.titleEn} — Unavailable`,
+    titleAr: `${selectedEndpoint.titleAr} — غير متاح`,
+    descEn: 'This is a future or retired catalog resource, not an implemented launch operation. Its examples do not establish availability. Use the supported manual workspace tools; no message, purchase, webhook subscription or automation is performed here.',
+    descAr: 'هذا مورد مستقبلي أو متوقف في الكتالوج، وليس عملية مفعّلة في الإطلاق. أمثلته لا تثبت الإتاحة. استخدم الأدوات اليدوية المدعومة؛ لا ينفذ هذا المورد إرسالاً أو شراءً أو اشتراك Webhook أو أتمتة.',
+    samplePayload: {},
+    response: { success: false, error: { code: 'unavailable', message: 'This catalog operation is unavailable.' } },
+  } : selectedEndpoint;
 
   return (
     <div className="py-2 sm:py-4">
+      <p role="note" className="mb-6 rounded-xl border border-[var(--border-subtle)] p-4 text-sm">{isAr ? 'بيانات العملاء الدائمة تستخدم /api/crm بجلسة مساحة العمل. معرفات العملاء المحلية لا تُستخدم كمعرفات المزود. قوائم الجمهور تتحول لأرقام مؤهلة بعد مراجعة الموافقات؛ لا تتم مزامنة جهات الاتصال تلقائياً.' : 'Durable manual contacts use /api/crm with a verified workspace session. Local contact UUIDs are never provider contact IDs. Audiences resolve to reviewed eligible phone snapshots; provider contacts are not automatically synchronized.'}</p>
       {/* TOP DEVELOPER HERO & SPECS ACTIONS */}
       <header className="mb-8 border-b border-[var(--border-subtle)] pb-8">
         <div className="flex flex-col gap-6 md:flex-row md:items-center md:justify-between">
           <div className="space-y-2">
             <div className="inline-flex items-center gap-2 rounded-full border border-emerald-500/30 bg-emerald-500/10 px-3 py-1 text-xs font-bold text-emerald-500">
               <span className="flex h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
-              <span>{isAr ? 'واجهة برمجة التطبيقات v1 — التكافؤ الكامل للعائلات الـ 8' : 'API v1 Gateway — Full 8-Family Parity'}</span>
+              <span>{isAr ? 'دليل الموارد — الإتاحة حسب مرحلة الإطلاق' : 'Resource catalog — launch availability varies'}</span>
             </div>
             <h1 className="text-3xl font-extrabold tracking-tight sm:text-4xl text-[var(--text-primary)]">
               {isAr ? 'دليل ومواصفات المطورين ومنصة التجربة الحية' : 'Developer API Documentation & Interactive Console'}
             </h1>
             <p className="max-w-3xl text-sm sm:text-base text-[var(--text-secondary)] leading-relaxed">
               {isAr
-                ? 'واجهة REST متكاملة تغطي كافة عائلات الموارد: الحسابات، النشر الموحد، المحادثات وCRM، الاتصالات السحابية والأرقام، الإعلانات، التجارة، التحليلات، وإشعارات Webhook الموقعة بتشفير HMAC-SHA256.'
-                : 'Enterprise REST API spanning all 8 core resource families: Core Accounts, Publishing & Queue, Unified Inbox & CRM, Cloud Telephony & Voice, Advertising (8 Networks), Platform APIs, Advanced Analytics, and Outbound HMAC Webhooks.'}
+                ? 'الإطلاق اليدوي الحالي يشمل Facebook وInstagram وWhatsApp والعملاء والتقارير والاتصالات المراجعة. الإعلانات والتجارة والأتمتة وجمع المدفوعات قريباً. الكتالوج التالي لا يعني تفعيل كل مساراته.'
+                : 'Current manual launch: Facebook, Instagram, WhatsApp, durable CRM, activity reports and reviewed phone operations. Advertising, commerce, customer automation and payment collection are Coming soon. Advanced entries below are a resource catalog, not a promise that every endpoint is enabled.'}
             </p>
           </div>
 
@@ -2476,39 +2058,33 @@ export default function ApiDocumentationPage() {
 
               <p className="text-sm text-[var(--text-secondary)] leading-relaxed">
                 {isAr
-                  ? 'تم تصميم منصة Asra3 السحابية لتمكينك من دمج 26 منصة نشر وتواصل، وأرقام هواتف افتراضية في 55+ دولة، ورسائل واتساب الرسمية، وإعلانات CAPI، والمتاجر في طلب برمجي واحد.'
-                  : 'Asra3 unified API v1 gives your application instant programmatic access to 26 social networks, virtual numbers in 55+ countries, official WhatsApp Cloud API, AI voice receptionist, and omnichannel CRM.'}
+                  ? 'ابدأ بفحص مساحة العمل وحساباتها الموثّقة دون إرسال أو نشر. العمليات اليدوية تحتاج حساباً مؤهلاً وصلاحيات المنصة؛ الرسائل والأرقام المدفوعة تحتاج موافقة ومخصص إنفاق.'
+                  : 'Start by reading your verified workspace and accounts without sending or publishing. Manual operations require eligible accounts and platform permissions; paid messaging and number operations also require spending approval.'}
               </p>
 
               <div className="space-y-3">
                 <h3 className="text-sm font-bold uppercase tracking-wider text-[var(--text-muted)]">
-                  {isAr ? 'الخطوة 1: فحص مساحة العمل والرصيد الحقيقي' : 'Step 1: Inspect Workspace & Telecom Wallet'}
+                  {isAr ? 'الخطوة 1: فحص مساحة العمل وحدودها المحددة' : 'Step 1: Read Workspace and Configured Limits'}
                 </h3>
                 <pre
                   dir="ltr"
                   className="overflow-x-auto rounded-2xl bg-slate-950 p-4 font-mono text-xs leading-relaxed text-slate-100"
                 >
 {`curl -X GET "https://asra3.com/api/v1/me" \\
-  -H "Authorization: Bearer tk_live_org_workspace_9f8e7d6c5b4a3"`}
+  -H "Authorization: Bearer asra3_YOUR_CURRENT_WORKSPACE_KEY"`}
                 </pre>
               </div>
 
               <div className="space-y-3">
                 <h3 className="text-sm font-bold uppercase tracking-wider text-[var(--text-muted)]">
-                  {isAr ? 'الخطوة 2: نشر أول منشور موحد عبر المنصات' : 'Step 2: Dispatch First Cross-Platform Post'}
+                  {isAr ? 'الخطوة 2: عرض الحسابات المملوكة وحالتها' : 'Step 2: Read Owned Accounts and Their Status'}
                 </h3>
                 <pre
                   dir="ltr"
                   className="overflow-x-auto rounded-2xl bg-slate-950 p-4 font-mono text-xs leading-relaxed text-slate-100"
                 >
-{`curl -X POST "https://asra3.com/api/v1/posts" \\
-  -H "Authorization: Bearer tk_live_org_workspace_9f8e7d6c5b4a3" \\
-  -H "Content-Type: application/json" \\
-  -d '{
-    "content": "Hello World from Asra3 Unified API v1! 🚀",
-    "platforms": ["facebook", "instagram", "linkedin"],
-    "publishNow": true
-  }'`}
+{`curl -X GET "https://asra3.com/api/v1/accounts/health" \\
+  -H "Authorization: Bearer asra3_YOUR_CURRENT_WORKSPACE_KEY"`}
                 </pre>
               </div>
             </div>
@@ -2524,7 +2100,7 @@ export default function ApiDocumentationPage() {
                     {isAr ? 'دليل عائلات الموارد الـ 8 الكاملة' : 'Complete 8 Resource Families Directory'}
                   </h2>
                   <p className="mt-1 text-xs text-[var(--text-secondary)]">
-                    {isAr ? 'تغطية برمجية شاملة لـ 110 مسار و 100 عملية معتمدة' : '110 paths and 100 operations documented across 8 families'}
+                    {isAr ? 'دليل موارد من 8 عائلات؛ الإتاحة والتحقق حسب المرحلة' : 'Resource catalog across 8 families; availability and validation vary by phase'}
                   </p>
                 </div>
               </div>
@@ -2550,7 +2126,9 @@ export default function ApiDocumentationPage() {
                             <ChevronRight className="h-3.5 w-3.5 text-[var(--text-muted)] group-hover:text-[var(--accent-primary)] transition-transform group-hover:translate-x-0.5" />
                           </div>
                           <p className="mt-1.5 text-[11px] text-[var(--text-secondary)] leading-relaxed">
-                            {isAr ? card.descAr : card.desc}
+                            {UNAVAILABLE_DOC_SECTIONS.has(card.targetSection) || ['ep_ads_ctwa', 'ep_lead_gen', 'ep_ads_library', 'ep_ads', 'ep_blogs', 'ep_google_services', 'ep_commerce_products', 'ep_commerce_orders'].includes(card.targetSection)
+                              ? (isAr ? 'غير متاح في الإطلاق؛ هذا مورد كتالوج مستقبلي أو متوقف.' : 'Unavailable in this launch; this is a future or retired catalog resource.')
+                              : (isAr ? card.descAr : card.desc)}
                           </p>
                         </div>
                         <div className="mt-3 font-mono text-[10px] font-bold text-[var(--accent-primary)] bg-[var(--accent-primary)]/10 rounded-md px-2 py-0.5 w-fit">
@@ -2570,13 +2148,13 @@ export default function ApiDocumentationPage() {
               <div className="flex items-center gap-3 border-b border-[var(--border-subtle)] pb-4">
                 <Globe className="h-6 w-6 text-[var(--accent-primary)]" />
                 <h2 className="text-2xl font-extrabold">
-                  {isAr ? 'المنصات المدعومة (26 قناة وخدمة)' : 'Supported Platforms Directory (26)'}
+                  {isAr ? 'دليل المنصات حسب المرحلة' : 'Platform catalog — availability varies'}
                 </h2>
               </div>
               <p className="text-sm text-[var(--text-secondary)] leading-relaxed">
                 {isAr
-                  ? 'يتيح لك المحرك نشر المحتوى وإدارة الرسائل والتعليقات والتحليلات عبر 26 منصة عالمية.'
-                  : 'Manage cross-posting, omnichannel conversations, and performance metrics across 26 platforms.'}
+                  ? 'دليل موارد المنصات؛ لا يعني ظهور المورد أن جميع عملياته متاحة. راجع وصف الواجهة حسب المرحلة.'
+                  : 'Manual Facebook, Instagram and WhatsApp tools are supported for eligible connected accounts. Other entries below are catalog resources; their presence does not establish availability.'}
               </p>
 
               <div className="grid gap-3 sm:grid-cols-3">
@@ -2597,8 +2175,8 @@ export default function ApiDocumentationPage() {
                   { name: 'Meta Ads & CAPI', cat: 'Paid Advertising' },
                   { name: 'TikTok Ads', cat: 'Paid Advertising' },
                   { name: 'Google Ads', cat: 'Paid Advertising' },
-                  { name: 'VoIP Virtual Numbers', cat: '55+ Countries' },
-                  { name: 'WebRTC Softphone', cat: 'In-Browser Calling' },
+                  { name: 'Provider Numbers', cat: 'Availability and approval required' },
+                  { name: 'WebRTC Softphone', cat: 'Unavailable' },
                 ].map((item, idx) => (
                   <div key={idx} className="rounded-xl border border-[var(--border-subtle)] bg-[var(--bg-subtle)]/40 p-3">
                     <div className="font-bold text-xs text-[var(--text-primary)]">{item.name}</div>
@@ -2631,8 +2209,8 @@ export default function ApiDocumentationPage() {
                     </div>
                     <p className="text-[var(--text-secondary)] leading-relaxed">
                       {isAr
-                        ? 'تُرسل الترويسة Authorization: Bearer tk_live_... مع كل طلب. مناسب لتطبيقات الـ Backend والـ CLI والأتمتة.'
-                        : 'Pass Authorization: Bearer tk_live_... header. Recommended for backend services, scripts, and server-side automation.'}
+                        ? 'تُرسل الترويسة Authorization: Bearer asra3_... مع كل طلب. مناسب لتطبيقات الـ Backend والـ CLI والأتمتة.'
+                        : 'Pass Authorization: Bearer asra3_... header. Recommended for backend services, scripts, and server-side automation.'}
                     </p>
                   </div>
                   <div className="rounded-xl border border-[var(--border-subtle)] bg-[var(--bg-surface)] p-4 space-y-2">
@@ -2651,21 +2229,16 @@ export default function ApiDocumentationPage() {
 
               <div className="space-y-3 pt-4">
                 <h3 className="text-base font-bold">
-                  {isAr ? '2. التحقق من توقيع الـ Webhooks (HMAC-SHA256)' : '2. Verifying Outbound Webhooks (HMAC-SHA256)'}
+                  {isAr ? '2. Webhooks الواردة من المزود' : '2. Incoming Provider Webhooks'}
                 </h3>
                 <pre
                   dir="ltr"
                   className="overflow-x-auto rounded-2xl bg-slate-950 p-4 font-mono text-xs text-slate-100"
                 >
-{`import crypto from 'crypto';
-
-export function verifyAsra3Webhook(rawBody: string, signatureHeader: string, secret: string) {
-  const expected = 'sha256=' + crypto
-    .createHmac('sha256', secret)
-    .update(rawBody)
-    .digest('hex');
-  return crypto.timingSafeEqual(Buffer.from(signatureHeader), Buffer.from(expected));
-}`}
+{`Incoming provider endpoint: https://asra3.com/api/webhooks/zernio
+The server verifies the provider signature before accepting events.
+Customer-defined outgoing webhook subscriptions are coming soon.
+Use the provider's documented signature contract for your integration.`}
                 </pre>
               </div>
             </div>
@@ -2707,7 +2280,7 @@ export function verifyAsra3Webhook(rawBody: string, signatureHeader: string, sec
               </div>
 
               {/* INTERACTIVE TRY IT LIVE CONSOLE */}
-              <TryItLiveConsole spec={activeEndpoint} isAr={isAr} />
+              {catalogOnly ? <p className="rounded-xl border border-[var(--border-subtle)] p-4">{isAr ? 'غير متاح — هذا وصف كتالوج فقط. التنفيذ الحي غير متاح في هذا الإطلاق.' : 'Unavailable — this is a catalog description. Live execution is not available in this launch.'}</p> : <TryItLiveConsole spec={activeEndpoint} isAr={isAr} />}
 
               {/* Parameters & Request Schema Table */}
               {activeEndpoint.params && activeEndpoint.params.length > 0 && (
@@ -2765,7 +2338,7 @@ export function verifyAsra3Webhook(rawBody: string, signatureHeader: string, sec
                     onClick={() => setActiveSection('ep_me')}
                     className="hover:text-[var(--accent-primary)] text-start cursor-pointer transition-colors"
                   >
-                    • {isAr ? '1. فحص الحساب والرصيد (/v1/me)' : '1. Workspace & Wallet (/v1/me)'}
+                    • {isAr ? '1. مساحة العمل وحدودها (/v1/me)' : '1. Workspace and Limits (/v1/me)'}
                   </button>
                 </li>
                 <li>
@@ -2792,7 +2365,7 @@ export function verifyAsra3Webhook(rawBody: string, signatureHeader: string, sec
                     onClick={() => setActiveSection('ep_numbers_search')}
                     className="hover:text-[var(--accent-primary)] text-start cursor-pointer transition-colors"
                   >
-                    • {isAr ? '4. أرقام 55+ دولة (/v1/phone-numbers)' : '4. Virtual Numbers (55+ Countries)'}
+                    • {isAr ? '4. مخزون أرقام المزود' : '4. Provider Number Inventory'}
                   </button>
                 </li>
                 <li>

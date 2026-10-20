@@ -1,30 +1,11 @@
 import type { MetadataRoute } from 'next';
+import { SITE_URL } from '@/lib/seo/site';
 
 export default function robots(): MetadataRoute.Robots {
-  const baseUrl = (process.env.NEXT_PUBLIC_APP_URL || 'https://asra3.com').replace(/\/$/, '');
   return {
-    rules: [
-      {
-        userAgent: '*',
-        allow: ['/', '/docs', '/login', '/signup', '/llms.txt'],
-        disallow: ['/api/admin'],
-      },
-      {
-        userAgent: [
-          'GPTBot',
-          'OAI-SearchBot',
-          'ChatGPT-User',
-          'PerplexityBot',
-          'ClaudeBot',
-          'anthropic-ai',
-          'Google-Extended',
-          'Applebot-Extended',
-        ],
-        allow: ['/', '/docs', '/llms.txt'],
-      },
-    ],
-    sitemap: `${baseUrl}/sitemap.xml`,
-    host: baseUrl,
+    // UI routes remain crawlable so crawlers can see their noindex tags.
+    // Authentication, not robots.txt, protects customer data.
+    rules: { userAgent: '*', allow: '/', disallow: ['/api/'] },
+    sitemap: `${SITE_URL}/sitemap.xml`,
   };
 }
-

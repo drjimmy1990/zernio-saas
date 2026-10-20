@@ -1,4 +1,5 @@
 'use client';
+import { launchCopy } from './launch-copy';
 
 import React, { useState } from 'react';
 import Link from 'next/link';
@@ -81,8 +82,15 @@ const COUNTRY_OPTIONS: CountryNumberOption[] = [
 ];
 
 export default function TelephonyBentoShowcase() {
-  const { t, locale } = useThemeAndLocale();
-  const copy = getLandingCopy(locale).telephonyShowcase;
+  const { t: dictionary, locale } = useThemeAndLocale();
+  const t = launchCopy(dictionary, locale === 'ar');
+  const originalCopy = getLandingCopy(locale).telephonyShowcase;
+  const ar = locale === 'ar';
+  const copy = {...originalCopy,
+    bento2:{...originalCopy.bento2,badge:ar?'الذكاء الاصطناعي — قريباً':'AI agents — Coming soon',title:ar?'وكلاء الصوت قريباً':'Voice agents are coming soon',desc:ar?'هذا مثال مستقبلي فقط. الاتصالات الحالية تتم يدوياً بعد المراجعة.':'This is a future illustration. Current calls are reviewed manual operations.',latencyBadge:ar?'مثال توضيحي':'Illustrative example'},
+    bento3:{...originalCopy.bento3,badge:ar?'معاينة مكالمة يدوية':'Manual call preview',protocolBadge:ar?'الإتاحة حسب صلاحيات المزود':'Provider permissions required',title:ar?'راجع المكالمة قبل تنفيذها':'Review a call before placing it',desc:ar?'المكالمات المدعومة عبر المزود تحتاج رقماً مؤهلاً وموافقة وتقدير تكلفة ومخصص إنفاق. هذه لوحة توضيحية؛ هاتف المتصفح وSIP غير متاحين.':'Supported provider calls require an eligible number, consent, a cost estimate and spending allocation. This is an illustration; browser softphone and SIP setup are unavailable.',callActiveBtn:ar?'إنهاء المعاينة فقط':'End preview only',callStartBtn:ar?'معاينة فقط — لا تُجرى مكالمة':'Preview only — no call is placed'},
+    bento4:{...originalCopy.bento4,badge:ar?'رسائل SMS يدوية':'Manual SMS',routingBadge:ar?'حسب تسجيل الرقم وقدراته':'Number registration and capability required',title:ar?'راجع الرسائل والنتائج الواردة':'Review messages and incoming evidence',desc:ar?'إرسال SMS يحتاج رقماً مؤهلاً وموافقة ومراجعة ومخصص إنفاق. تظهر الرسائل والإيصالات التي يوفرها المزود؛ MMS والإرسال التلقائي والتحقق عبر OTP غير متاحة.':'SMS sending requires an eligible number, consent, review and spending allocation. Only provider messages and receipts establish outcomes; MMS, automatic sending and OTP verification are unavailable.',otpHeader:ar?'مثال رسالة واردة':'Illustrative incoming message',otpBodyPrefix:ar?'مرجع الطلب في هذا المثال: ':'Example order reference: ',otpBodySuffix:ar?' — ليس رمز تحقق فعلياً.':' — this is not a verification code.',receivedOn:ar?'رقم توضيحي:':'Illustrative number:',outboundSms:ar?'نص رسالة يراجعها الفريق قبل الإرسال. هذا المثال لا يرسل أي رسالة.':'A message your team reviews before sending. This example does not send a message.',delivered:ar?'معاينة؛ ليست إيصال تسليم':'Preview; not a delivery receipt',openDashboardLink:ar?'فتح الأرقام والرسائل في مساحة العمل':'Open numbers and messages in the workspace'},
+  };
 
   const [selectedCountry, setSelectedCountry] =
     useState<CountryNumberOption['countryCode']>('SA');
@@ -109,11 +117,12 @@ export default function TelephonyBentoShowcase() {
 
   return (
     <section id="telephony" className="scroll-mt-24 space-y-10 py-8">
+      <p className="text-center text-sm font-semibold">{locale==='ar'?'نماذج توضيحية فقط. الأرقام والرسائل والمكالمات تُراجع يدوياً داخل مساحة العمل؛ وكلاء الذكاء الاصطناعي والردود التلقائية قريباً.':'Illustrative examples only. Numbers, messages and calls are reviewed manually in the workspace; AI agents and automatic replies are coming soon.'}</p>
       {/* Section Header */}
       <div className="mx-auto max-w-3xl text-center space-y-3">
         <div className="inline-flex items-center gap-1.5 rounded-full border border-[var(--brand-coral)]/30 bg-[var(--brand-coral-soft)] px-3.5 py-1 text-xs font-bold text-[var(--brand-coral)]">
           <Phone className="h-3.5 w-3.5" />
-          <span>{t.telephony.eyebrow}</span>
+          <span>{ar ? 'أرقام المزود والاتصالات اليدوية' : 'Provider numbers and manual communication'}</span>
         </div>
         <h2 className="text-3xl font-extrabold tracking-tight text-[var(--text-primary)] sm:text-4xl">
           {t.telephony.title}

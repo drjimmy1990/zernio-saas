@@ -24,6 +24,7 @@ import { useThemeAndLocale } from '@/i18n/ThemeAndLocaleProvider';
 import { getLocalizedText } from '@/i18n/dictionaries';
 import { WebPhoneDialerAndCallConsole } from '../WebPhoneDialerAndCallConsole';
 import { PhoneMarketplaceAndWhatsAppLinking } from '../PhoneMarketplaceAndWhatsAppLinking';
+import { ProviderWhatsAppInbox } from '../ProviderWhatsAppInbox';
 
 interface TelephonyWhatsAppVoiceHubProps {
   workspace: any;
@@ -41,150 +42,12 @@ export function TelephonyWhatsAppVoiceHub({
   const loc = (ar: string, en: string) => getLocalizedText(locale, { ar, en });
 
   const [activeSubTab, setActiveSubTab] = useState<
-    'softphone' | 'templates_flows' | 'business_agent' | 'branded_calling' | 'regulatory'
-  >('softphone');
+    'numbers' | 'softphone' | 'whatsapp_inbox' | 'templates_flows' | 'business_agent' | 'branded_calling' | 'regulatory'
+  >('numbers');
 
   // 1. WebRTC Softphone Session State
   const [webrtcToken, setWebrtcToken] = useState<string | null>(null);
   const [mintingToken, setMintingToken] = useState<boolean>(false);
-
-  // 2. WhatsApp Templates & Flows
-  const [templates, setTemplates] = useState<any[]>([]);
-  const [flows, setFlows] = useState<any[]>([]);
-
-  // New Template Form State
-  const [showNewTemplate, setShowNewTemplate] = useState<boolean>(false);
-  const [newTmplName, setNewTmplName] = useState<string>('');
-  const [newTmplCategory, setNewTmplCategory] = useState<string>('MARKETING');
-  const [newTmplLang, setNewTmplLang] = useState<string>('ar');
-  const [newTmplBody, setNewTmplBody] = useState<string>('');
-  const [creatingTemplate, setCreatingTemplate] = useState<boolean>(false);
-  const [templateError, setTemplateError] = useState<string | null>(null);
-
-  // New Flow Studio Form State
-  const [showNewFlow, setShowNewFlow] = useState<boolean>(false);
-  const [newFlowName, setNewFlowName] = useState<string>('');
-  const [newFlowCategory, setNewFlowCategory] = useState<string>('BOOKING');
-  const [newFlowScreens, setNewFlowScreens] = useState<number>(3);
-  const [newFlowFields, setNewFlowFields] = useState<string>('Full Name, Phone Number, Appointment Date & Time');
-  const [creatingFlow, setCreatingFlow] = useState<boolean>(false);
-  const [flowError, setFlowError] = useState<string | null>(null);
-
-  useEffect(() => {
-    let isMounted = true;
-    const fetchTemplatesAndFlows = async () => {
-      try {
-        const [tRes, fRes] = await Promise.all([
-          fetch('/api/v1/whatsapp/templates').catch(() => null),
-          fetch('/api/v1/whatsapp/flows').catch(() => null),
-        ]);
-        if (tRes && tRes.ok) {
-          const tData = await tRes.json().catch(() => ({}));
-          const list = tData.templates || tData.data;
-          if (isMounted && Array.isArray(list)) {
-            setTemplates(list);
-          }
-        }
-        if (fRes && fRes.ok) {
-          const fData = await fRes.json().catch(() => ({}));
-          const list = fData.flows || fData.data;
-          if (isMounted && Array.isArray(list)) {
-            setFlows(list);
-          }
-        }
-      } catch {
-        // keep clean empty state
-      }
-    };
-    void fetchTemplatesAndFlows();
-    return () => {
-      isMounted = false;
-    };
-  }, []);
-
-  const handleCreateTemplate = async () => {
-    if (!newTmplName.trim() || !newTmplBody.trim()) {
-      setTemplateError(loc('يرجى إدخال اسم القالب ونص الرسالة.', 'Please enter template name and message body.'));
-      return;
-    }
-    setCreatingTemplate(true);
-    setTemplateError(null);
-    try {
-      const formattedName = newTmplName.trim().toLowerCase().replace(/[^a-z0-9_]/g, '_');
-      const res = await fetch('/api/v1/whatsapp/templates', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          name: formattedName,
-          category: newTmplCategory,
-          language: newTmplLang,
-          components: [{ type: 'BODY', text: newTmplBody.trim() }],
-        }),
-      });
-      const data = await res.json().catch(() => ({}));
-      if (!res.ok || data.error) {
-        throw new Error(data.message || data.error?.message || data.error || 'Failed to create template');
-      }
-      const created = data.template || data.data || {
-        id: `tmpl_${Date.now()}`,
-        name: formattedName,
-        category: newTmplCategory,
-        language: newTmplLang,
-        status: 'APPROVED',
-        body: newTmplBody.trim(),
-      };
-      setTemplates((prev) => [created, ...prev]);
-      setShowNewTemplate(false);
-      setNewTmplName('');
-      setNewTmplBody('');
-      onRefreshWorkspace?.();
-    } catch (err: any) {
-      setTemplateError(err?.message || 'Failed to create WhatsApp template');
-    } finally {
-      setCreatingTemplate(false);
-    }
-  };
-
-  const handleCreateFlow = async () => {
-    if (!newFlowName.trim()) {
-      setFlowError(loc('يرجى إدخال اسم التدفق التفاعلي.', 'Please enter a name for the WhatsApp Flow.'));
-      return;
-    }
-    setCreatingFlow(true);
-    setFlowError(null);
-    try {
-      const res = await fetch('/api/v1/whatsapp/flows', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          name: newFlowName.trim(),
-          category: newFlowCategory,
-          screensCount: Number(newFlowScreens) || 3,
-          fields: newFlowFields.split(',').map((s) => s.trim()).filter(Boolean),
-          status: 'PUBLISHED',
-        }),
-      });
-      const data = await res.json().catch(() => ({}));
-      if (!res.ok || data.error) {
-        throw new Error(data.message || data.error?.message || data.error || 'Failed to create flow');
-      }
-      const created = data.flow || data.data || {
-        id: `flow_${Date.now()}`,
-        name: newFlowName.trim(),
-        category: newFlowCategory,
-        screensCount: Number(newFlowScreens) || 3,
-        status: 'PUBLISHED',
-      };
-      setFlows((prev) => [created, ...prev]);
-      setShowNewFlow(false);
-      setNewFlowName('');
-      onRefreshWorkspace?.();
-    } catch (err: any) {
-      setFlowError(err?.message || 'Failed to create WhatsApp Flow');
-    } finally {
-      setCreatingFlow(false);
-    }
-  };
 
   // 3. Meta Business Agent State
   const [agentEnabled, setAgentEnabled] = useState<boolean>(true);
@@ -364,7 +227,9 @@ export function TelephonyWhatsAppVoiceHub({
       {/* Sub-Tabs Navigation */}
       <div className="flex flex-wrap items-center gap-2 border-b border-[var(--border-subtle)] pb-3">
         {[
+          { id: 'numbers', label: loc('الأرقام وربط واتساب', 'Numbers & WhatsApp setup'), icon: Phone },
           { id: 'softphone', label: loc('الهاتف السحابي والاتصال (WebRTC Softphone)', 'WebRTC Softphone'), icon: PhoneCall },
+          { id: 'whatsapp_inbox', label: loc('صندوق واتساب', 'WhatsApp Inbox'), icon: MessageSquare },
           { id: 'templates_flows', label: loc('استوديو قوالب وتدفقات واتساب (Flows)', 'WhatsApp Templates & Flows'), icon: MessageSquare },
           { id: 'business_agent', label: loc('وكيل Meta Business Agent الذكي', 'Meta Business Agent'), icon: Bot },
           { id: 'branded_calling', label: loc('هوية الاتصال المعتمدة (Branded Calling)', 'Branded Calling ID'), icon: Volume2 },
@@ -388,6 +253,14 @@ export function TelephonyWhatsAppVoiceHub({
           );
         })}
       </div>
+
+      {activeSubTab === 'numbers' && (
+        <PhoneMarketplaceAndWhatsAppLinking
+          organizationId={policy.organizationId}
+          ownedNumbers={workspace?.subServicesData?.telephony?.numbers || []}
+          onNumbersUpdated={() => onRefreshWorkspace?.()}
+        />
+      )}
 
       {/* SUB-PANEL 1: WebRTC Softphone */}
       {activeSubTab === 'softphone' && (
@@ -428,333 +301,17 @@ export function TelephonyWhatsAppVoiceHub({
         </div>
       )}
 
+      {activeSubTab === 'whatsapp_inbox' && <ProviderWhatsAppInbox />}
+
       {/* SUB-PANEL 2: WhatsApp Templates & Flows Studio */}
       {activeSubTab === 'templates_flows' && (
         <div className="space-y-6">
-          {/* Templates */}
-          <div className="rounded-3xl border border-[var(--border-subtle)] bg-[var(--bg-card)] p-6 space-y-4 shadow-2xs">
-            <div className="flex items-center justify-between">
-              <div>
-                <h3 className="text-sm font-bold text-[var(--text-primary)]">
-                  {loc('قوالب رسائل واتساب المعتمدة من Meta Cloud API', 'Official Meta Cloud WABA Templates')}
-                </h3>
-                <p className="text-xs text-[var(--text-secondary)]">
-                  {loc('قوالب التسويق والتنبيهات المعتمدة للإرسال خارج نافذة الـ 24 ساعة', 'Approved templates for outbound messaging beyond the 24-hour service window')}
-                </p>
-              </div>
-              <button
-                type="button"
-                onClick={() => setShowNewTemplate(true)}
-                className="inline-flex items-center gap-1.5 rounded-xl bg-[var(--accent-primary)] px-3.5 py-1.5 text-xs font-bold text-white hover:bg-[var(--accent-hover)] transition cursor-pointer"
-              >
-                <Plus className="h-3.5 w-3.5" />
-                <span>{loc('قالب جديد', 'New Template')}</span>
-              </button>
-            </div>
+          <ProviderWhatsAppInbox initialTab="templates" />
 
-            {/* New Template Form Drawer */}
-            {showNewTemplate && (
-              <div className="rounded-2xl border border-[var(--border-subtle)] bg-[var(--bg-subtle)]/60 p-4 space-y-3 animate-in fade-in">
-                <div className="flex items-center justify-between">
-                  <span className="text-xs font-extrabold text-[var(--text-primary)]">
-                    {loc('إنشاء قالب واتساب جديد (Meta WABA Template)', 'Create New WhatsApp Message Template')}
-                  </span>
-                  <button
-                    type="button"
-                    onClick={() => setShowNewTemplate(false)}
-                    className="text-xs text-[var(--text-muted)] hover:text-[var(--text-primary)] cursor-pointer"
-                  >
-                    ✕
-                  </button>
-                </div>
-
-                {templateError && (
-                  <div className="rounded-xl bg-rose-500/10 border border-rose-500/20 p-2.5 text-xs text-rose-600 font-semibold">
-                    ✗ {templateError}
-                  </div>
-                )}
-
-                <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
-                  <div>
-                    <label className="block text-[11px] font-bold text-[var(--text-secondary)] mb-1">
-                      {loc('اسم القالب (بدون مسافات)', 'Template Name (snake_case)')}
-                    </label>
-                    <input
-                      type="text"
-                      value={newTmplName}
-                      onChange={(e) => setNewTmplName(e.target.value)}
-                      placeholder="e.g. order_confirmation_v1"
-                      className="w-full rounded-xl border border-[var(--border-subtle)] bg-[var(--bg-card)] px-3 py-2 text-xs font-mono text-[var(--text-primary)]"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-[11px] font-bold text-[var(--text-secondary)] mb-1">
-                      {loc('التصنيف', 'Category')}
-                    </label>
-                    <select
-                      value={newTmplCategory}
-                      onChange={(e) => setNewTmplCategory(e.target.value)}
-                      className="w-full rounded-xl border border-[var(--border-subtle)] bg-[var(--bg-card)] px-3 py-2 text-xs text-[var(--text-primary)]"
-                    >
-                      <option value="MARKETING">MARKETING</option>
-                      <option value="UTILITY">UTILITY</option>
-                      <option value="AUTHENTICATION">AUTHENTICATION</option>
-                    </select>
-                  </div>
-                  <div>
-                    <label className="block text-[11px] font-bold text-[var(--text-secondary)] mb-1">
-                      {loc('اللغة', 'Language')}
-                    </label>
-                    <select
-                      value={newTmplLang}
-                      onChange={(e) => setNewTmplLang(e.target.value)}
-                      className="w-full rounded-xl border border-[var(--border-subtle)] bg-[var(--bg-card)] px-3 py-2 text-xs text-[var(--text-primary)]"
-                    >
-                      <option value="ar">Arabic (ar)</option>
-                      <option value="en_US">English (en_US)</option>
-                    </select>
-                  </div>
-                </div>
-
-                <div>
-                  <label className="block text-[11px] font-bold text-[var(--text-secondary)] mb-1">
-                    {loc('نص القالب (يدعم المتغيرات مثل {{1}})', 'Template Body Text (supports variables like {{1}})')}
-                  </label>
-                  <textarea
-                    rows={3}
-                    value={newTmplBody}
-                    onChange={(e) => setNewTmplBody(e.target.value)}
-                    placeholder={loc('مرحباً {{1}}، تم تأكيد طلبك رقم {{2}} بنجاح!', 'Hello {{1}}, your order {{2}} has been confirmed!')}
-                    className="w-full rounded-xl border border-[var(--border-subtle)] bg-[var(--bg-card)] p-3 text-xs text-[var(--text-primary)]"
-                  />
-                </div>
-
-                <div className="flex justify-end gap-2">
-                  <button
-                    type="button"
-                    onClick={() => setShowNewTemplate(false)}
-                    className="rounded-xl border border-[var(--border-subtle)] bg-[var(--bg-card)] px-4 py-1.5 text-xs font-bold text-[var(--text-muted)] cursor-pointer"
-                  >
-                    {loc('إلغاء', 'Cancel')}
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => void handleCreateTemplate()}
-                    disabled={creatingTemplate}
-                    className="inline-flex items-center gap-1.5 rounded-xl bg-[var(--accent-primary)] px-5 py-1.5 text-xs font-bold text-white hover:bg-[var(--accent-hover)] transition cursor-pointer disabled:opacity-50"
-                  >
-                    {creatingTemplate && <Loader2 className="h-3.5 w-3.5 animate-spin" />}
-                    <span>{loc('حفظ واعتماد القالب', 'Submit & Save Template')}</span>
-                  </button>
-                </div>
-              </div>
-            )}
-
-            {templates.length === 0 ? (
-              <div className="flex flex-col items-center justify-center rounded-2xl border border-dashed border-[var(--border-subtle)] bg-[var(--bg-subtle)]/30 p-8 text-center">
-                <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-[var(--accent-primary)]/10 text-[var(--accent-primary)] mb-3">
-                  <MessageSquare className="h-6 w-6" />
-                </div>
-                <h4 className="text-sm font-bold text-[var(--text-primary)]">
-                  {loc('لا توجد قوالب واتساب معتمدة بعد', 'No WhatsApp Templates Found')}
-                </h4>
-                <p className="mt-1 text-xs text-[var(--text-secondary)] max-w-sm">
-                  {loc('أنشئ قوالب رسائل معتمدة من Meta لإرسال حملات تسويقية وتنبيهات فورية لعملائك.', 'Create Meta-approved message templates for outbound marketing, alerts, and notifications.')}
-                </p>
-                <button
-                  type="button"
-                  onClick={() => setShowNewTemplate(true)}
-                  className="mt-4 inline-flex items-center gap-1.5 rounded-xl bg-[var(--accent-primary)] px-4 py-2 text-xs font-bold text-white hover:bg-[var(--accent-hover)] transition cursor-pointer shadow-sm"
-                >
-                  <Plus className="h-4 w-4" />
-                  <span>{loc('قالب جديد', '+ New Template')}</span>
-                </button>
-              </div>
-            ) : (
-              <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
-                {templates.map((tmpl, idx) => (
-                  <div key={tmpl.id || tmpl.name || idx} className="rounded-2xl border border-[var(--border-subtle)] bg-[var(--bg-subtle)]/40 p-4 space-y-2">
-                    <div className="flex items-center justify-between">
-                      <span className="font-mono text-xs font-bold text-[var(--text-primary)]">{tmpl.name}</span>
-                      <span className="rounded bg-emerald-500/15 px-2 py-0.5 text-[9px] font-bold text-emerald-600">
-                        {tmpl.status || 'APPROVED'}
-                      </span>
-                    </div>
-                    <div className="text-[11px] text-[var(--text-secondary)]">
-                      Category: <strong>{tmpl.category}</strong> · Lang: {tmpl.language}
-                    </div>
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
-
-          {/* Interactive Flows */}
-          <div className="rounded-3xl border border-[var(--border-subtle)] bg-[var(--bg-card)] p-6 space-y-4 shadow-2xs">
-            <div className="flex items-center justify-between">
-              <div>
-                <h3 className="text-sm font-bold text-[var(--text-primary)]">
-                  {loc('استوديو تدفقات ونماذج واتساب التفاعلية (WhatsApp Flows Studio)', 'WhatsApp Interactive Flows Studio')}
-                </h3>
-                <p className="text-xs text-[var(--text-secondary)]">
-                  {loc('نماذج حجز واستبيانات متعددة الصفحات تفتح داخل تطبيق واتساب مباشرة', 'In-app multi-screen forms and booking flows embedded in WhatsApp')}
-                </p>
-              </div>
-              <button
-                type="button"
-                onClick={() => setShowNewFlow(true)}
-                className="inline-flex items-center gap-1.5 rounded-xl bg-emerald-600 px-3.5 py-1.5 text-xs font-bold text-white hover:bg-emerald-700 transition cursor-pointer"
-              >
-                <Plus className="h-3.5 w-3.5" />
-                <span>{loc('إنشاء تدفق تفاعلي', 'Create Flow')}</span>
-              </button>
-            </div>
-
-            {/* New Interactive WhatsApp Flow Builder Drawer */}
-            {showNewFlow && (
-              <div className="rounded-2xl border border-emerald-500/30 bg-emerald-500/5 p-5 space-y-4 animate-in fade-in">
-                <div className="flex items-center justify-between">
-                  <span className="text-xs font-extrabold text-[var(--text-primary)]">
-                    {loc('تصميم تدفق واتساب تفاعلي جديد (WhatsApp Interactive Flow)', 'Design New Interactive WhatsApp Flow')}
-                  </span>
-                  <button
-                    type="button"
-                    onClick={() => setShowNewFlow(false)}
-                    className="text-xs text-[var(--text-muted)] hover:text-[var(--text-primary)] cursor-pointer"
-                  >
-                    ✕
-                  </button>
-                </div>
-
-                {flowError && (
-                  <div className="rounded-xl bg-rose-500/10 border border-rose-500/20 p-2.5 text-xs text-rose-600 font-semibold">
-                    ✗ {flowError}
-                  </div>
-                )}
-
-                <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
-                  <div>
-                    <label className="block text-[11px] font-bold text-[var(--text-secondary)] mb-1">
-                      {loc('اسم التدفق التفاعلي *', 'Flow Name *')}
-                    </label>
-                    <input
-                      type="text"
-                      value={newFlowName}
-                      onChange={(e) => setNewFlowName(e.target.value)}
-                      placeholder={loc('مثال: نموذج حجز موعد استشارة', 'e.g. Appointment Booking Flow')}
-                      className="w-full rounded-xl border border-[var(--border-subtle)] bg-[var(--bg-card)] px-3 py-2 text-xs text-[var(--text-primary)]"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-[11px] font-bold text-[var(--text-secondary)] mb-1">
-                      {loc('نوع التدفق (Category)', 'Flow Category')}
-                    </label>
-                    <select
-                      value={newFlowCategory}
-                      onChange={(e) => setNewFlowCategory(e.target.value)}
-                      className="w-full rounded-xl border border-[var(--border-subtle)] bg-[var(--bg-card)] px-3 py-2 text-xs text-[var(--text-primary)]"
-                    >
-                      <option value="BOOKING">Appointment / Booking</option>
-                      <option value="LEAD_GENERATION">Lead Generation Form</option>
-                      <option value="SURVEY">Customer Feedback Survey</option>
-                      <option value="CUSTOMER_SUPPORT">Support Ticket Intake</option>
-                    </select>
-                  </div>
-
-                  <div>
-                    <label className="block text-[11px] font-bold text-[var(--text-secondary)] mb-1">
-                      {loc('عدد الشاشات التفاعلية', 'Interactive Screens Count')}
-                    </label>
-                    <input
-                      type="number"
-                      min={1}
-                      max={10}
-                      value={newFlowScreens}
-                      onChange={(e) => setNewFlowScreens(Number(e.target.value))}
-                      className="w-full rounded-xl border border-[var(--border-subtle)] bg-[var(--bg-card)] px-3 py-2 text-xs font-mono text-[var(--text-primary)]"
-                    />
-                  </div>
-                </div>
-
-                <div>
-                  <label className="block text-[11px] font-bold text-[var(--text-secondary)] mb-1">
-                    {loc('الحقول المطلوبة من العميل داخل واتساب (مفصولة بفاصلة)', 'Form Input Fields (comma-separated)')}
-                  </label>
-                  <input
-                    type="text"
-                    value={newFlowFields}
-                    onChange={(e) => setNewFlowFields(e.target.value)}
-                    placeholder="Full Name, Phone Number, Preferred Branch, Date & Time"
-                    className="w-full rounded-xl border border-[var(--border-subtle)] bg-[var(--bg-card)] px-3 py-2 text-xs text-[var(--text-primary)]"
-                  />
-                </div>
-
-                <div className="flex justify-end gap-2">
-                  <button
-                    type="button"
-                    onClick={() => setShowNewFlow(false)}
-                    className="rounded-xl border border-[var(--border-subtle)] bg-[var(--bg-card)] px-4 py-1.5 text-xs font-bold text-[var(--text-muted)] cursor-pointer"
-                  >
-                    {loc('إلغاء', 'Cancel')}
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => void handleCreateFlow()}
-                    disabled={creatingFlow}
-                    className="inline-flex items-center gap-1.5 rounded-xl bg-emerald-600 px-5 py-1.5 text-xs font-bold text-white hover:bg-emerald-700 transition cursor-pointer disabled:opacity-50"
-                  >
-                    {creatingFlow && <Loader2 className="h-3.5 w-3.5 animate-spin" />}
-                    <span>{loc('نشر وحفظ التدفق التفاعلي', 'Publish WhatsApp Flow')}</span>
-                  </button>
-                </div>
-              </div>
-            )}
-
-            {flows.length === 0 ? (
-              <div className="flex flex-col items-center justify-center rounded-2xl border border-dashed border-[var(--border-subtle)] bg-[var(--bg-subtle)]/30 p-8 text-center">
-                <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-emerald-500/10 text-emerald-600 mb-3">
-                  <GitBranch className="h-6 w-6" />
-                </div>
-                <h4 className="text-sm font-bold text-[var(--text-primary)]">
-                  {loc('لا توجد تدفقات واتساب تفاعلية بعد', 'No Interactive WhatsApp Flows')}
-                </h4>
-                <p className="mt-1 text-xs text-[var(--text-secondary)] max-w-sm">
-                  {loc('صمم نماذج حجز، استبيانات، وكتالوجات تفاعلية تعمل داخل تطبيق واتساب مباشرة.', 'Design interactive multi-step booking forms, surveys, and menus embedded in WhatsApp.')}
-                </p>
-                <button
-                  type="button"
-                  onClick={() => setShowNewFlow(true)}
-                  className="mt-4 inline-flex items-center gap-1.5 rounded-xl bg-emerald-600 px-4 py-2 text-xs font-bold text-white hover:bg-emerald-700 transition cursor-pointer shadow-sm"
-                >
-                  <Plus className="h-4 w-4" />
-                  <span>{loc('إنشاء تدفق تفاعلي', '+ Create Flow')}</span>
-                </button>
-              </div>
-            ) : (
-              <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-                {flows.map((fl, idx) => (
-                  <div key={fl.id || idx} className="rounded-2xl border border-[var(--border-subtle)] bg-[var(--bg-subtle)]/40 p-4 flex items-center justify-between">
-                    <div>
-                      <h4 className="text-xs font-bold text-[var(--text-primary)]">{fl.name}</h4>
-                      <span className="text-[11px] text-[var(--text-muted)] mt-0.5 block">
-                        {fl.screensCount || 3} {loc('شاشات تفاعلية', 'interactive screens')} · {fl.category || 'BOOKING'}
-                      </span>
-                    </div>
-                    <span className={`rounded-full px-2.5 py-0.5 text-[10px] font-bold ${
-                      fl.status === 'PUBLISHED' ? 'bg-emerald-500/10 text-emerald-600' : 'bg-amber-500/10 text-amber-600'
-                    }`}>
-                      {fl.status || 'PUBLISHED'}
-                    </span>
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
+          <p className="rounded-xl border border-[var(--border-subtle)] p-4 text-xs text-[var(--text-secondary)]">{loc('إنشاء تدفقات واتساب غير متاح في هذه المرحلة.', 'WhatsApp Flow creation is unavailable in this phase.')}</p>
         </div>
       )}
 
-      {/* SUB-PANEL 3: Meta Business Agent Console */}
       {activeSubTab === 'business_agent' && (
         <div className="rounded-3xl border border-[var(--border-subtle)] bg-[var(--bg-card)] p-6 space-y-5 shadow-2xs">
           <div className="flex items-center justify-between border-b border-[var(--border-subtle)] pb-4">

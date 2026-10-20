@@ -1,0 +1,3763 @@
+{
+  "summary": {
+    "changed_count": 221,
+    "affected_count": 146,
+    "changed_files": 60,
+    "risk_level": "critical"
+  },
+  "changed_symbols": [
+    {
+      "id": "Section:AGENTS.md:L12:GitNexus — Code Intelligence",
+      "name": "GitNexus — Code Intelligence",
+      "type": "Section",
+      "filePath": "AGENTS.md",
+      "change_type": "touched"
+    },
+    {
+      "id": "Section:AGENTS.md:L34:Resources",
+      "name": "Resources",
+      "type": "Section",
+      "filePath": "AGENTS.md",
+      "change_type": "touched"
+    },
+    {
+      "id": "Section:CLAUDE.md:L2:GitNexus — Code Intelligence",
+      "name": "GitNexus — Code Intelligence",
+      "type": "Section",
+      "filePath": "CLAUDE.md",
+      "change_type": "touched"
+    },
+    {
+      "id": "Section:CLAUDE.md:L24:Resources",
+      "name": "Resources",
+      "type": "Section",
+      "filePath": "CLAUDE.md",
+      "change_type": "touched"
+    },
+    {
+      "id": "Section:DEPLOYMENT-VPS.md:L1:Owner deployment to Ubuntu/aaPanel — asra3.com",
+      "name": "Owner deployment to Ubuntu/aaPanel — asra3.com",
+      "type": "Section",
+      "filePath": "DEPLOYMENT-VPS.md",
+      "change_type": "touched"
+    },
+    {
+      "id": "Section:DEPLOYMENT-VPS.md:L5:Reviewed release and private configuration",
+      "name": "Reviewed release and private configuration",
+      "type": "Section",
+      "filePath": "DEPLOYMENT-VPS.md",
+      "change_type": "touched"
+    },
+    {
+      "id": "Section:DEPLOYMENT-VPS.md:L19:Back up existing .data privately before changing ownership.",
+      "name": "Back up existing .data privately before changing ownership.",
+      "type": "Section",
+      "filePath": "DEPLOYMENT-VPS.md",
+      "change_type": "touched"
+    },
+    {
+      "id": "Section:DEPLOYMENT-VPS.md:L26:Build, start and verify",
+      "name": "Build, start and verify",
+      "type": "Section",
+      "filePath": "DEPLOYMENT-VPS.md",
+      "change_type": "touched"
+    },
+    {
+      "id": "Section:DEPLOYMENT-VPS.md:L40:HTTPS proxy",
+      "name": "HTTPS proxy",
+      "type": "Section",
+      "filePath": "DEPLOYMENT-VPS.md",
+      "change_type": "touched"
+    },
+    {
+      "id": "Section:DEPLOYMENT-VPS.md:L55:Update and recover",
+      "name": "Update and recover",
+      "type": "Section",
+      "filePath": "DEPLOYMENT-VPS.md",
+      "change_type": "touched"
+    },
+    {
+      "id": "Const:next.config.ts:nextConfig",
+      "name": "nextConfig",
+      "type": "Const",
+      "filePath": "next.config.ts",
+      "change_type": "touched"
+    },
+    {
+      "id": "Method:next.config.ts:headers#0",
+      "name": "headers",
+      "type": "Method",
+      "filePath": "next.config.ts",
+      "change_type": "touched"
+    },
+    {
+      "id": "Interface:src/app/admin/page.tsx:AdminSnapshot",
+      "name": "AdminSnapshot",
+      "type": "Interface",
+      "filePath": "src/app/admin/page.tsx",
+      "change_type": "touched"
+    },
+    {
+      "id": "Function:src/app/admin/page.tsx:SuperAdminControlPlanePage",
+      "name": "SuperAdminControlPlanePage",
+      "type": "Function",
+      "filePath": "src/app/admin/page.tsx",
+      "change_type": "touched"
+    },
+    {
+      "id": "Function:src/app/admin/page.tsx:money",
+      "name": "money",
+      "type": "Function",
+      "filePath": "src/app/admin/page.tsx",
+      "change_type": "touched"
+    },
+    {
+      "id": "Function:src/app/admin/page.tsx:adminRequest",
+      "name": "adminRequest",
+      "type": "Function",
+      "filePath": "src/app/admin/page.tsx",
+      "change_type": "touched"
+    },
+    {
+      "id": "Function:src/app/admin/page.tsx:fetchSnapshot",
+      "name": "fetchSnapshot",
+      "type": "Function",
+      "filePath": "src/app/admin/page.tsx",
+      "change_type": "touched"
+    },
+    {
+      "id": "Function:src/app/admin/page.tsx:updateGlobalConfig",
+      "name": "updateGlobalConfig",
+      "type": "Function",
+      "filePath": "src/app/admin/page.tsx",
+      "change_type": "touched"
+    },
+    {
+      "id": "Function:src/app/admin/page.tsx:togglePlanSubService",
+      "name": "togglePlanSubService",
+      "type": "Function",
+      "filePath": "src/app/admin/page.tsx",
+      "change_type": "touched"
+    },
+    {
+      "id": "Function:src/app/admin/page.tsx:togglePlanScope",
+      "name": "togglePlanScope",
+      "type": "Function",
+      "filePath": "src/app/admin/page.tsx",
+      "change_type": "touched"
+    },
+    {
+      "id": "Function:src/app/admin/page.tsx:handleUpdateTenant",
+      "name": "handleUpdateTenant",
+      "type": "Function",
+      "filePath": "src/app/admin/page.tsx",
+      "change_type": "touched"
+    },
+    {
+      "id": "Function:src/app/admin/page.tsx:handleMintScopedKey",
+      "name": "handleMintScopedKey",
+      "type": "Function",
+      "filePath": "src/app/admin/page.tsx",
+      "change_type": "touched"
+    },
+    {
+      "id": "Function:src/app/admin/page.tsx:handleCreateTenantInAdmin",
+      "name": "handleCreateTenantInAdmin",
+      "type": "Function",
+      "filePath": "src/app/admin/page.tsx",
+      "change_type": "touched"
+    },
+    {
+      "id": "Function:src/app/admin/page.tsx:handleDeleteTenant",
+      "name": "handleDeleteTenant",
+      "type": "Function",
+      "filePath": "src/app/admin/page.tsx",
+      "change_type": "touched"
+    },
+    {
+      "id": "Function:src/app/api/admin/route.ts:GET",
+      "name": "GET",
+      "type": "Function",
+      "filePath": "src/app/api/admin/route.ts",
+      "change_type": "touched"
+    },
+    {
+      "id": "Function:src/app/api/admin/route.ts:POST",
+      "name": "POST",
+      "type": "Function",
+      "filePath": "src/app/api/admin/route.ts",
+      "change_type": "touched"
+    },
+    {
+      "id": "Function:src/app/api/auth/route.ts:originGuard",
+      "name": "originGuard",
+      "type": "Function",
+      "filePath": "src/app/api/auth/route.ts",
+      "change_type": "touched"
+    },
+    {
+      "id": "Function:src/app/api/auth/route.ts:GET",
+      "name": "GET",
+      "type": "Function",
+      "filePath": "src/app/api/auth/route.ts",
+      "change_type": "touched"
+    },
+    {
+      "id": "Const:src/app/api/auth/route.ts:status",
+      "name": "status",
+      "type": "Const",
+      "filePath": "src/app/api/auth/route.ts",
+      "change_type": "touched"
+    },
+    {
+      "id": "Function:src/app/api/auth/route.ts:POST",
+      "name": "POST",
+      "type": "Function",
+      "filePath": "src/app/api/auth/route.ts",
+      "change_type": "touched"
+    },
+    {
+      "id": "Const:src/app/api/auth/route.ts:action",
+      "name": "action",
+      "type": "Const",
+      "filePath": "src/app/api/auth/route.ts",
+      "change_type": "touched"
+    },
+    {
+      "id": "Const:src/app/api/auth/route.ts:session",
+      "name": "session",
+      "type": "Const",
+      "filePath": "src/app/api/auth/route.ts",
+      "change_type": "touched"
+    },
+    {
+      "id": "Const:src/app/api/auth/route.ts:email",
+      "name": "email",
+      "type": "Const",
+      "filePath": "src/app/api/auth/route.ts",
+      "change_type": "touched"
+    },
+    {
+      "id": "Const:src/app/api/auth/route.ts:password",
+      "name": "password",
+      "type": "Const",
+      "filePath": "src/app/api/auth/route.ts",
+      "change_type": "touched"
+    },
+    {
+      "id": "Const:src/app/api/auth/route.ts:fullName",
+      "name": "fullName",
+      "type": "Const",
+      "filePath": "src/app/api/auth/route.ts",
+      "change_type": "touched"
+    },
+    {
+      "id": "Const:src/app/api/auth/route.ts:companyName",
+      "name": "companyName",
+      "type": "Const",
+      "filePath": "src/app/api/auth/route.ts",
+      "change_type": "touched"
+    },
+    {
+      "id": "Function:src/app/api/connect/route.ts:POST",
+      "name": "POST",
+      "type": "Function",
+      "filePath": "src/app/api/connect/route.ts",
+      "change_type": "touched"
+    },
+    {
+      "id": "Const:src/app/api/connect/route.ts:organizationId",
+      "name": "organizationId",
+      "type": "Const",
+      "filePath": "src/app/api/connect/route.ts",
+      "change_type": "touched"
+    },
+    {
+      "id": "Const:src/app/api/connect/route.ts:content",
+      "name": "content",
+      "type": "Const",
+      "filePath": "src/app/api/connect/route.ts",
+      "change_type": "touched"
+    },
+    {
+      "id": "Const:src/app/api/connect/route.ts:post",
+      "name": "post",
+      "type": "Const",
+      "filePath": "src/app/api/connect/route.ts",
+      "change_type": "touched"
+    },
+    {
+      "id": "Const:src/app/api/connect/route.ts:status",
+      "name": "status",
+      "type": "Const",
+      "filePath": "src/app/api/connect/route.ts",
+      "change_type": "touched"
+    },
+    {
+      "id": "Function:src/app/api/services/route.ts:GET",
+      "name": "GET",
+      "type": "Function",
+      "filePath": "src/app/api/services/route.ts",
+      "change_type": "touched"
+    },
+    {
+      "id": "Const:src/app/api/services/route.ts:organizationId",
+      "name": "organizationId",
+      "type": "Const",
+      "filePath": "src/app/api/services/route.ts",
+      "change_type": "touched"
+    },
+    {
+      "id": "Const:src/app/api/services/route.ts:status",
+      "name": "status",
+      "type": "Const",
+      "filePath": "src/app/api/services/route.ts",
+      "change_type": "touched"
+    },
+    {
+      "id": "Function:src/app/api/services/route.ts:POST",
+      "name": "POST",
+      "type": "Function",
+      "filePath": "src/app/api/services/route.ts",
+      "change_type": "touched"
+    },
+    {
+      "id": "Const:src/app/api/services/route.ts:accountIds",
+      "name": "accountIds",
+      "type": "Const",
+      "filePath": "src/app/api/services/route.ts",
+      "change_type": "touched"
+    },
+    {
+      "id": "Const:src/app/api/services/route.ts:profileId",
+      "name": "profileId",
+      "type": "Const",
+      "filePath": "src/app/api/services/route.ts",
+      "change_type": "touched"
+    },
+    {
+      "id": "Function:src/app/api/v1/[...path]/route.ts:getRateLimitHeaders",
+      "name": "getRateLimitHeaders",
+      "type": "Function",
+      "filePath": "src/app/api/v1/[...path]/route.ts",
+      "change_type": "touched"
+    },
+    {
+      "id": "Function:src/app/api/v1/[...path]/route.ts:OPTIONS",
+      "name": "OPTIONS",
+      "type": "Function",
+      "filePath": "src/app/api/v1/[...path]/route.ts",
+      "change_type": "touched"
+    },
+    {
+      "id": "Function:src/app/api/v1/[...path]/route.ts:handleApiV1",
+      "name": "handleApiV1",
+      "type": "Function",
+      "filePath": "src/app/api/v1/[...path]/route.ts",
+      "change_type": "touched"
+    },
+    {
+      "id": "Const:src/app/api/v1/[...path]/route.ts:scopes",
+      "name": "scopes",
+      "type": "Const",
+      "filePath": "src/app/api/v1/[...path]/route.ts",
+      "change_type": "touched"
+    },
+    {
+      "id": "Const:src/app/api/v1/[...path]/route.ts:status",
+      "name": "status",
+      "type": "Const",
+      "filePath": "src/app/api/v1/[...path]/route.ts",
+      "change_type": "touched"
+    },
+    {
+      "id": "Function:src/app/api/v1/[...path]/route.ts:respond",
+      "name": "respond",
+      "type": "Function",
+      "filePath": "src/app/api/v1/[...path]/route.ts",
+      "change_type": "touched"
+    },
+    {
+      "id": "Interface:src/app/api/webhooks/zernio/route.ts:ZernioWebhookPayload",
+      "name": "ZernioWebhookPayload",
+      "type": "Interface",
+      "filePath": "src/app/api/webhooks/zernio/route.ts",
+      "change_type": "touched"
+    },
+    {
+      "id": "Function:src/app/api/webhooks/zernio/route.ts:POST",
+      "name": "POST",
+      "type": "Function",
+      "filePath": "src/app/api/webhooks/zernio/route.ts",
+      "change_type": "touched"
+    },
+    {
+      "id": "Function:src/app/api/webhooks/zernio/route.ts:isRecord",
+      "name": "isRecord",
+      "type": "Function",
+      "filePath": "src/app/api/webhooks/zernio/route.ts",
+      "change_type": "touched"
+    },
+    {
+      "id": "Function:src/app/api/webhooks/zernio/route.ts:isIdentifier",
+      "name": "isIdentifier",
+      "type": "Function",
+      "filePath": "src/app/api/webhooks/zernio/route.ts",
+      "change_type": "touched"
+    },
+    {
+      "id": "Const:src/app/api/webhooks/zernio/route.ts:event",
+      "name": "event",
+      "type": "Const",
+      "filePath": "src/app/api/webhooks/zernio/route.ts",
+      "change_type": "touched"
+    },
+    {
+      "id": "Const:src/app/api/webhooks/zernio/route.ts:control",
+      "name": "control",
+      "type": "Const",
+      "filePath": "src/app/api/webhooks/zernio/route.ts",
+      "change_type": "touched"
+    },
+    {
+      "id": "Const:src/app/api/webhooks/zernio/route.ts:message",
+      "name": "message",
+      "type": "Const",
+      "filePath": "src/app/api/webhooks/zernio/route.ts",
+      "change_type": "touched"
+    },
+    {
+      "id": "Const:src/app/api/webhooks/zernio/route.ts:number",
+      "name": "number",
+      "type": "Const",
+      "filePath": "src/app/api/webhooks/zernio/route.ts",
+      "change_type": "touched"
+    },
+    {
+      "id": "Function:src/app/dashboard/page.tsx:CustomerDashboardContent",
+      "name": "CustomerDashboardContent",
+      "type": "Function",
+      "filePath": "src/app/dashboard/page.tsx",
+      "change_type": "touched"
+    },
+    {
+      "id": "Function:src/app/dashboard/page.tsx:loadWorkspace",
+      "name": "loadWorkspace",
+      "type": "Function",
+      "filePath": "src/app/dashboard/page.tsx",
+      "change_type": "touched"
+    },
+    {
+      "id": "Const:src/app/docs/page.tsx:RESOURCE_GROUPS",
+      "name": "RESOURCE_GROUPS",
+      "type": "Const",
+      "filePath": "src/app/docs/page.tsx",
+      "change_type": "touched"
+    },
+    {
+      "id": "Const:src/app/docs/page.tsx:ENDPOINT_SPECS",
+      "name": "ENDPOINT_SPECS",
+      "type": "Const",
+      "filePath": "src/app/docs/page.tsx",
+      "change_type": "touched"
+    },
+    {
+      "id": "Function:src/app/docs/page.tsx:ApiDocumentationPage",
+      "name": "ApiDocumentationPage",
+      "type": "Function",
+      "filePath": "src/app/docs/page.tsx",
+      "change_type": "touched"
+    },
+    {
+      "id": "Function:src/app/docs/page.tsx:sidebarItems",
+      "name": "sidebarItems",
+      "type": "Function",
+      "filePath": "src/app/docs/page.tsx",
+      "change_type": "touched"
+    },
+    {
+      "id": "Const:src/app/layout.tsx:metadata",
+      "name": "metadata",
+      "type": "Const",
+      "filePath": "src/app/layout.tsx",
+      "change_type": "touched"
+    },
+    {
+      "id": "Function:src/app/llms.txt/route.ts:GET",
+      "name": "GET",
+      "type": "Function",
+      "filePath": "src/app/llms.txt/route.ts",
+      "change_type": "touched"
+    },
+    {
+      "id": "Function:src/app/login/page.tsx:LoginFormContent",
+      "name": "LoginFormContent",
+      "type": "Function",
+      "filePath": "src/app/login/page.tsx",
+      "change_type": "touched"
+    },
+    {
+      "id": "Function:src/app/login/page.tsx:handleLogin",
+      "name": "handleLogin",
+      "type": "Function",
+      "filePath": "src/app/login/page.tsx",
+      "change_type": "touched"
+    },
+    {
+      "id": "Function:src/app/login/page.tsx:handleGoogleOAuth",
+      "name": "handleGoogleOAuth",
+      "type": "Function",
+      "filePath": "src/app/login/page.tsx",
+      "change_type": "touched"
+    },
+    {
+      "id": "Function:src/app/robots.ts:robots",
+      "name": "robots",
+      "type": "Function",
+      "filePath": "src/app/robots.ts",
+      "change_type": "touched"
+    },
+    {
+      "id": "Function:src/app/signup/page.tsx:SignUpFormContent",
+      "name": "SignUpFormContent",
+      "type": "Function",
+      "filePath": "src/app/signup/page.tsx",
+      "change_type": "touched"
+    },
+    {
+      "id": "Function:src/app/signup/page.tsx:handleSubmit",
+      "name": "handleSubmit",
+      "type": "Function",
+      "filePath": "src/app/signup/page.tsx",
+      "change_type": "touched"
+    },
+    {
+      "id": "Const:src/app/sitemap.ts:LANGUAGE_ALTERNATES",
+      "name": "LANGUAGE_ALTERNATES",
+      "type": "Const",
+      "filePath": "src/app/sitemap.ts",
+      "change_type": "touched"
+    },
+    {
+      "id": "Function:src/components/Navbar.tsx:Navbar",
+      "name": "Navbar",
+      "type": "Function",
+      "filePath": "src/components/Navbar.tsx",
+      "change_type": "touched"
+    },
+    {
+      "id": "Interface:src/components/dashboard/ConnectionWizardModal.tsx:SelectableEntity",
+      "name": "SelectableEntity",
+      "type": "Interface",
+      "filePath": "src/components/dashboard/ConnectionWizardModal.tsx",
+      "change_type": "touched"
+    },
+    {
+      "id": "Interface:src/components/dashboard/ConnectionWizardModal.tsx:ConnectedAccountData",
+      "name": "ConnectedAccountData",
+      "type": "Interface",
+      "filePath": "src/components/dashboard/ConnectionWizardModal.tsx",
+      "change_type": "touched"
+    },
+    {
+      "id": "Interface:src/components/dashboard/ConnectionWizardModal.tsx:ConnectionWizardModalProps",
+      "name": "ConnectionWizardModalProps",
+      "type": "Interface",
+      "filePath": "src/components/dashboard/ConnectionWizardModal.tsx",
+      "change_type": "touched"
+    },
+    {
+      "id": "Function:src/components/dashboard/ConnectionWizardModal.tsx:ConnectionWizardModal",
+      "name": "ConnectionWizardModal",
+      "type": "Function",
+      "filePath": "src/components/dashboard/ConnectionWizardModal.tsx",
+      "change_type": "touched"
+    },
+    {
+      "id": "Function:src/components/dashboard/ConnectionWizardModal.tsx:fetchEntities",
+      "name": "fetchEntities",
+      "type": "Function",
+      "filePath": "src/components/dashboard/ConnectionWizardModal.tsx",
+      "change_type": "touched"
+    },
+    {
+      "id": "Function:src/components/dashboard/ConnectionWizardModal.tsx:handleSelectPlatform",
+      "name": "handleSelectPlatform",
+      "type": "Function",
+      "filePath": "src/components/dashboard/ConnectionWizardModal.tsx",
+      "change_type": "touched"
+    },
+    {
+      "id": "Function:src/components/dashboard/ConnectionWizardModal.tsx:handleProceedInSandboxMode",
+      "name": "handleProceedInSandboxMode",
+      "type": "Function",
+      "filePath": "src/components/dashboard/ConnectionWizardModal.tsx",
+      "change_type": "touched"
+    },
+    {
+      "id": "Function:src/components/dashboard/ConnectionWizardModal.tsx:handleAuthorizeOrSubmit",
+      "name": "handleAuthorizeOrSubmit",
+      "type": "Function",
+      "filePath": "src/components/dashboard/ConnectionWizardModal.tsx",
+      "change_type": "touched"
+    },
+    {
+      "id": "Function:src/components/dashboard/ConnectionWizardModal.tsx:handleConfirmEntity",
+      "name": "handleConfirmEntity",
+      "type": "Function",
+      "filePath": "src/components/dashboard/ConnectionWizardModal.tsx",
+      "change_type": "touched"
+    },
+    {
+      "id": "Function:src/components/dashboard/ConnectionWizardModal.tsx:handleReconnect",
+      "name": "handleReconnect",
+      "type": "Function",
+      "filePath": "src/components/dashboard/ConnectionWizardModal.tsx",
+      "change_type": "touched"
+    },
+    {
+      "id": "Function:src/components/dashboard/ConnectionWizardModal.tsx:handleDisconnect",
+      "name": "handleDisconnect",
+      "type": "Function",
+      "filePath": "src/components/dashboard/ConnectionWizardModal.tsx",
+      "change_type": "touched"
+    },
+    {
+      "id": "Function:src/components/dashboard/LiveSmsAndWhatsAppInbox.tsx:LiveSmsAndWhatsAppInbox",
+      "name": "LiveSmsAndWhatsAppInbox",
+      "type": "Function",
+      "filePath": "src/components/dashboard/LiveSmsAndWhatsAppInbox.tsx",
+      "change_type": "touched"
+    },
+    {
+      "id": "Function:src/components/dashboard/LiveSmsAndWhatsAppInbox.tsx:handleSendMessage",
+      "name": "handleSendMessage",
+      "type": "Function",
+      "filePath": "src/components/dashboard/LiveSmsAndWhatsAppInbox.tsx",
+      "change_type": "touched"
+    },
+    {
+      "id": "Function:src/components/dashboard/PhoneMarketplaceAndWhatsAppLinking.tsx:PhoneMarketplaceAndWhatsAppLinking",
+      "name": "PhoneMarketplaceAndWhatsAppLinking",
+      "type": "Function",
+      "filePath": "src/components/dashboard/PhoneMarketplaceAndWhatsAppLinking.tsx",
+      "change_type": "touched"
+    },
+    {
+      "id": "Function:src/components/dashboard/SimpleModeConsole.tsx:SimpleModeConsole",
+      "name": "SimpleModeConsole",
+      "type": "Function",
+      "filePath": "src/components/dashboard/SimpleModeConsole.tsx",
+      "change_type": "touched"
+    },
+    {
+      "id": "Interface:src/components/dashboard/hubs/ConnectAndAccountsHub.tsx:ConnectAndAccountsHubProps",
+      "name": "ConnectAndAccountsHubProps",
+      "type": "Interface",
+      "filePath": "src/components/dashboard/hubs/ConnectAndAccountsHub.tsx",
+      "change_type": "touched"
+    },
+    {
+      "id": "Function:src/components/dashboard/hubs/ConnectAndAccountsHub.tsx:ConnectAndAccountsHub",
+      "name": "ConnectAndAccountsHub",
+      "type": "Function",
+      "filePath": "src/components/dashboard/hubs/ConnectAndAccountsHub.tsx",
+      "change_type": "touched"
+    },
+    {
+      "id": "Function:src/components/dashboard/hubs/InboxCrmWorkflowsHub.tsx:InboxCrmWorkflowsHub",
+      "name": "InboxCrmWorkflowsHub",
+      "type": "Function",
+      "filePath": "src/components/dashboard/hubs/InboxCrmWorkflowsHub.tsx",
+      "change_type": "touched"
+    },
+    {
+      "id": "Function:src/components/dashboard/hubs/InboxCrmWorkflowsHub.tsx:loc",
+      "name": "loc",
+      "type": "Function",
+      "filePath": "src/components/dashboard/hubs/InboxCrmWorkflowsHub.tsx",
+      "change_type": "touched"
+    },
+    {
+      "id": "Function:src/components/dashboard/hubs/InboxCrmWorkflowsHub.tsx:fetchHubData",
+      "name": "fetchHubData",
+      "type": "Function",
+      "filePath": "src/components/dashboard/hubs/InboxCrmWorkflowsHub.tsx",
+      "change_type": "touched"
+    },
+    {
+      "id": "Interface:src/components/dashboard/hubs/PublishingAndQueueHub.tsx:PublishingAndQueueHubProps",
+      "name": "PublishingAndQueueHubProps",
+      "type": "Interface",
+      "filePath": "src/components/dashboard/hubs/PublishingAndQueueHub.tsx",
+      "change_type": "touched"
+    },
+    {
+      "id": "Function:src/components/dashboard/hubs/PublishingAndQueueHub.tsx:PublishingAndQueueHub",
+      "name": "PublishingAndQueueHub",
+      "type": "Function",
+      "filePath": "src/components/dashboard/hubs/PublishingAndQueueHub.tsx",
+      "change_type": "touched"
+    },
+    {
+      "id": "Function:src/components/dashboard/hubs/TelephonyWhatsAppVoiceHub.tsx:TelephonyWhatsAppVoiceHub",
+      "name": "TelephonyWhatsAppVoiceHub",
+      "type": "Function",
+      "filePath": "src/components/dashboard/hubs/TelephonyWhatsAppVoiceHub.tsx",
+      "change_type": "touched"
+    },
+    {
+      "id": "Interface:src/components/dashboard/wizards/BuyNumberWhatsAppWizard.tsx:BuyNumberWhatsAppWizardProps",
+      "name": "BuyNumberWhatsAppWizardProps",
+      "type": "Interface",
+      "filePath": "src/components/dashboard/wizards/BuyNumberWhatsAppWizard.tsx",
+      "change_type": "touched"
+    },
+    {
+      "id": "Function:src/components/dashboard/wizards/BuyNumberWhatsAppWizard.tsx:BuyNumberWhatsAppWizard",
+      "name": "BuyNumberWhatsAppWizard",
+      "type": "Function",
+      "filePath": "src/components/dashboard/wizards/BuyNumberWhatsAppWizard.tsx",
+      "change_type": "touched"
+    },
+    {
+      "id": "Function:src/components/dashboard/wizards/SimpleCtwaAdLauncherWizard.tsx:SimpleCtwaAdLauncherWizard",
+      "name": "SimpleCtwaAdLauncherWizard",
+      "type": "Function",
+      "filePath": "src/components/dashboard/wizards/SimpleCtwaAdLauncherWizard.tsx",
+      "change_type": "touched"
+    },
+    {
+      "id": "Interface:src/components/dashboard/wizards/SmartPostComposerWizard.tsx:SmartPostComposerWizardProps",
+      "name": "SmartPostComposerWizardProps",
+      "type": "Interface",
+      "filePath": "src/components/dashboard/wizards/SmartPostComposerWizard.tsx",
+      "change_type": "touched"
+    },
+    {
+      "id": "Function:src/components/dashboard/wizards/SmartPostComposerWizard.tsx:SmartPostComposerWizard",
+      "name": "SmartPostComposerWizard",
+      "type": "Function",
+      "filePath": "src/components/dashboard/wizards/SmartPostComposerWizard.tsx",
+      "change_type": "touched"
+    },
+    {
+      "id": "Const:src/components/dashboard/wizards/SmartPostComposerWizard.tsx:last",
+      "name": "last",
+      "type": "Const",
+      "filePath": "src/components/dashboard/wizards/SmartPostComposerWizard.tsx",
+      "change_type": "touched"
+    },
+    {
+      "id": "Function:src/components/dashboard/wizards/ThreeStepBroadcastWizard.tsx:api",
+      "name": "api",
+      "type": "Function",
+      "filePath": "src/components/dashboard/wizards/ThreeStepBroadcastWizard.tsx",
+      "change_type": "touched"
+    },
+    {
+      "id": "Function:src/components/dashboard/wizards/ThreeStepBroadcastWizard.tsx:ThreeStepBroadcastWizard",
+      "name": "ThreeStepBroadcastWizard",
+      "type": "Function",
+      "filePath": "src/components/dashboard/wizards/ThreeStepBroadcastWizard.tsx",
+      "change_type": "touched"
+    },
+    {
+      "id": "Function:src/components/dashboard/wizards/ThreeStepBroadcastWizard.tsx:loc",
+      "name": "loc",
+      "type": "Function",
+      "filePath": "src/components/dashboard/wizards/ThreeStepBroadcastWizard.tsx",
+      "change_type": "touched"
+    },
+    {
+      "id": "Function:src/components/dashboard/wizards/ThreeStepBroadcastWizard.tsx:create",
+      "name": "create",
+      "type": "Function",
+      "filePath": "src/components/dashboard/wizards/ThreeStepBroadcastWizard.tsx",
+      "change_type": "touched"
+    },
+    {
+      "id": "Const:src/components/dashboard/wizards/ThreeStepBroadcastWizard.tsx:signature",
+      "name": "signature",
+      "type": "Const",
+      "filePath": "src/components/dashboard/wizards/ThreeStepBroadcastWizard.tsx",
+      "change_type": "touched"
+    },
+    {
+      "id": "Function:src/components/dashboard/wizards/ThreeStepBroadcastWizard.tsx:addRecipients",
+      "name": "addRecipients",
+      "type": "Function",
+      "filePath": "src/components/dashboard/wizards/ThreeStepBroadcastWizard.tsx",
+      "change_type": "touched"
+    },
+    {
+      "id": "Function:src/components/dashboard/wizards/ThreeStepBroadcastWizard.tsx:dispatch",
+      "name": "dispatch",
+      "type": "Function",
+      "filePath": "src/components/dashboard/wizards/ThreeStepBroadcastWizard.tsx",
+      "change_type": "touched"
+    },
+    {
+      "id": "Function:src/components/dashboard/wizards/ThreeStepBroadcastWizard.tsx:refresh",
+      "name": "refresh",
+      "type": "Function",
+      "filePath": "src/components/dashboard/wizards/ThreeStepBroadcastWizard.tsx",
+      "change_type": "touched"
+    },
+    {
+      "id": "Function:src/components/docs/TryItLiveConsole.tsx:TryItLiveConsole",
+      "name": "TryItLiveConsole",
+      "type": "Function",
+      "filePath": "src/components/docs/TryItLiveConsole.tsx",
+      "change_type": "touched"
+    },
+    {
+      "id": "Function:src/components/docs/TryItLiveConsole.tsx:handleExecuteRequest",
+      "name": "handleExecuteRequest",
+      "type": "Function",
+      "filePath": "src/components/docs/TryItLiveConsole.tsx",
+      "change_type": "touched"
+    },
+    {
+      "id": "Function:src/components/docs/TryItLiveConsole.tsx:reactiveSnippets",
+      "name": "reactiveSnippets",
+      "type": "Function",
+      "filePath": "src/components/docs/TryItLiveConsole.tsx",
+      "change_type": "touched"
+    },
+    {
+      "id": "Function:src/components/landing/GiantBrandFooter.tsx:GiantBrandFooter",
+      "name": "GiantBrandFooter",
+      "type": "Function",
+      "filePath": "src/components/landing/GiantBrandFooter.tsx",
+      "change_type": "touched"
+    },
+    {
+      "id": "Function:src/components/landing/GiantBrandFooter.tsx:toggleFaq",
+      "name": "toggleFaq",
+      "type": "Function",
+      "filePath": "src/components/landing/GiantBrandFooter.tsx",
+      "change_type": "touched"
+    },
+    {
+      "id": "Function:src/components/landing/HeroStage.tsx:HeroStage",
+      "name": "HeroStage",
+      "type": "Function",
+      "filePath": "src/components/landing/HeroStage.tsx",
+      "change_type": "touched"
+    },
+    {
+      "id": "Function:src/components/landing/PlatformShowcase.tsx:PlatformShowcase",
+      "name": "PlatformShowcase",
+      "type": "Function",
+      "filePath": "src/components/landing/PlatformShowcase.tsx",
+      "change_type": "touched"
+    },
+    {
+      "id": "Function:src/components/landing/TelephonyBentoShowcase.tsx:TelephonyBentoShowcase",
+      "name": "TelephonyBentoShowcase",
+      "type": "Function",
+      "filePath": "src/components/landing/TelephonyBentoShowcase.tsx",
+      "change_type": "touched"
+    },
+    {
+      "id": "Function:src/i18n/ThemeAndLocaleProvider.tsx:ThemeAndLocaleProvider",
+      "name": "ThemeAndLocaleProvider",
+      "type": "Function",
+      "filePath": "src/i18n/ThemeAndLocaleProvider.tsx",
+      "change_type": "touched"
+    },
+    {
+      "id": "Interface:src/lib/auth/session.ts:AuthSession",
+      "name": "AuthSession",
+      "type": "Interface",
+      "filePath": "src/lib/auth/session.ts",
+      "change_type": "touched"
+    },
+    {
+      "id": "Const:src/lib/auth/session.ts:SESSION_SECRET",
+      "name": "SESSION_SECRET",
+      "type": "Const",
+      "filePath": "src/lib/auth/session.ts",
+      "change_type": "touched"
+    },
+    {
+      "id": "Function:src/lib/auth/session.ts:computeSignature",
+      "name": "computeSignature",
+      "type": "Function",
+      "filePath": "src/lib/auth/session.ts",
+      "change_type": "touched"
+    },
+    {
+      "id": "Function:src/lib/auth/session.ts:decodeSession",
+      "name": "decodeSession",
+      "type": "Function",
+      "filePath": "src/lib/auth/session.ts",
+      "change_type": "touched"
+    },
+    {
+      "id": "Class:src/lib/services/analytics.service.ts:AnalyticsService",
+      "name": "AnalyticsService",
+      "type": "Class",
+      "filePath": "src/lib/services/analytics.service.ts",
+      "change_type": "touched"
+    },
+    {
+      "id": "Method:src/lib/services/analytics.service.ts:AnalyticsService.getCustomerDashboard#1",
+      "name": "getCustomerDashboard",
+      "type": "Method",
+      "filePath": "src/lib/services/analytics.service.ts",
+      "change_type": "touched"
+    },
+    {
+      "id": "Method:src/lib/services/analytics.service.ts:AnalyticsService.syncAllTenantsWindow#2",
+      "name": "syncAllTenantsWindow",
+      "type": "Method",
+      "filePath": "src/lib/services/analytics.service.ts",
+      "change_type": "touched"
+    },
+    {
+      "id": "Class:src/lib/services/core-connect.service.ts:CoreConnectService",
+      "name": "CoreConnectService",
+      "type": "Class",
+      "filePath": "src/lib/services/core-connect.service.ts",
+      "change_type": "touched"
+    },
+    {
+      "id": "Method:src/lib/services/core-connect.service.ts:CoreConnectService.ensureTenantProfile#2",
+      "name": "ensureTenantProfile",
+      "type": "Method",
+      "filePath": "src/lib/services/core-connect.service.ts",
+      "change_type": "touched"
+    },
+    {
+      "id": "Method:src/lib/services/core-connect.service.ts:CoreConnectService.startHeadlessOAuth#1",
+      "name": "startHeadlessOAuth",
+      "type": "Method",
+      "filePath": "src/lib/services/core-connect.service.ts",
+      "change_type": "touched"
+    },
+    {
+      "id": "Method:src/lib/services/core-connect.service.ts:CoreConnectService.listHeadlessSelectableEntities#1",
+      "name": "listHeadlessSelectableEntities",
+      "type": "Method",
+      "filePath": "src/lib/services/core-connect.service.ts",
+      "change_type": "touched"
+    },
+    {
+      "id": "Method:src/lib/services/core-connect.service.ts:CoreConnectService.completeHeadlessSelection#1",
+      "name": "completeHeadlessSelection",
+      "type": "Method",
+      "filePath": "src/lib/services/core-connect.service.ts",
+      "change_type": "touched"
+    },
+    {
+      "id": "Method:src/lib/services/core-connect.service.ts:CoreConnectService.connectWithCredentials#1",
+      "name": "connectWithCredentials",
+      "type": "Method",
+      "filePath": "src/lib/services/core-connect.service.ts",
+      "change_type": "touched"
+    },
+    {
+      "id": "Const:src/lib/services/core-connect.service.ts:credentials",
+      "name": "credentials",
+      "type": "Const",
+      "filePath": "src/lib/services/core-connect.service.ts",
+      "change_type": "touched"
+    },
+    {
+      "id": "Method:src/lib/services/core-connect.service.ts:CoreConnectService.listTenantAccountsWithHealth#1",
+      "name": "listTenantAccountsWithHealth",
+      "type": "Method",
+      "filePath": "src/lib/services/core-connect.service.ts",
+      "change_type": "touched"
+    },
+    {
+      "id": "Const:src/lib/services/core-connect.service.ts:accounts",
+      "name": "accounts",
+      "type": "Const",
+      "filePath": "src/lib/services/core-connect.service.ts",
+      "change_type": "touched"
+    },
+    {
+      "id": "Const:src/lib/services/core-connect.service.ts:status",
+      "name": "status",
+      "type": "Const",
+      "filePath": "src/lib/services/core-connect.service.ts",
+      "change_type": "touched"
+    },
+    {
+      "id": "Class:src/lib/services/inbox-crm.service.ts:InboxCrmService",
+      "name": "InboxCrmService",
+      "type": "Class",
+      "filePath": "src/lib/services/inbox-crm.service.ts",
+      "change_type": "touched"
+    },
+    {
+      "id": "Method:src/lib/services/inbox-crm.service.ts:InboxCrmService.sendConversationReply#1",
+      "name": "sendConversationReply",
+      "type": "Method",
+      "filePath": "src/lib/services/inbox-crm.service.ts",
+      "change_type": "touched"
+    },
+    {
+      "id": "Method:src/lib/services/inbox-crm.service.ts:InboxCrmService.listConversations#1",
+      "name": "listConversations",
+      "type": "Method",
+      "filePath": "src/lib/services/inbox-crm.service.ts",
+      "change_type": "touched"
+    },
+    {
+      "id": "Method:src/lib/services/inbox-crm.service.ts:InboxCrmService.createGrowthAutomation#1",
+      "name": "createGrowthAutomation",
+      "type": "Method",
+      "filePath": "src/lib/services/inbox-crm.service.ts",
+      "change_type": "touched"
+    },
+    {
+      "id": "Interface:src/lib/services/publishing.service.ts:CreateTenantPostInput",
+      "name": "CreateTenantPostInput",
+      "type": "Interface",
+      "filePath": "src/lib/services/publishing.service.ts",
+      "change_type": "touched"
+    },
+    {
+      "id": "Const:src/lib/services/publishing.service.ts:statuses",
+      "name": "statuses",
+      "type": "Const",
+      "filePath": "src/lib/services/publishing.service.ts",
+      "change_type": "touched"
+    },
+    {
+      "id": "Function:src/lib/services/publishing.service.ts:malformed",
+      "name": "malformed",
+      "type": "Function",
+      "filePath": "src/lib/services/publishing.service.ts",
+      "change_type": "touched"
+    },
+    {
+      "id": "Function:src/lib/services/publishing.service.ts:bad",
+      "name": "bad",
+      "type": "Function",
+      "filePath": "src/lib/services/publishing.service.ts",
+      "change_type": "touched"
+    },
+    {
+      "id": "Function:src/lib/services/publishing.service.ts:configured",
+      "name": "configured",
+      "type": "Function",
+      "filePath": "src/lib/services/publishing.service.ts",
+      "change_type": "touched"
+    },
+    {
+      "id": "Function:src/lib/services/publishing.service.ts:key",
+      "name": "key",
+      "type": "Function",
+      "filePath": "src/lib/services/publishing.service.ts",
+      "change_type": "touched"
+    },
+    {
+      "id": "Function:src/lib/services/publishing.service.ts:id",
+      "name": "id",
+      "type": "Function",
+      "filePath": "src/lib/services/publishing.service.ts",
+      "change_type": "touched"
+    },
+    {
+      "id": "Function:src/lib/services/publishing.service.ts:reference",
+      "name": "reference",
+      "type": "Function",
+      "filePath": "src/lib/services/publishing.service.ts",
+      "change_type": "touched"
+    },
+    {
+      "id": "Function:src/lib/services/publishing.service.ts:https",
+      "name": "https",
+      "type": "Function",
+      "filePath": "src/lib/services/publishing.service.ts",
+      "change_type": "touched"
+    },
+    {
+      "id": "Function:src/lib/services/publishing.service.ts:media",
+      "name": "media",
+      "type": "Function",
+      "filePath": "src/lib/services/publishing.service.ts",
+      "change_type": "touched"
+    },
+    {
+      "id": "Function:src/lib/services/publishing.service.ts:schedule",
+      "name": "schedule",
+      "type": "Function",
+      "filePath": "src/lib/services/publishing.service.ts",
+      "change_type": "touched"
+    },
+    {
+      "id": "Function:src/lib/services/publishing.service.ts:scope",
+      "name": "scope",
+      "type": "Function",
+      "filePath": "src/lib/services/publishing.service.ts",
+      "change_type": "touched"
+    },
+    {
+      "id": "Const:src/lib/services/publishing.service.ts:profileId",
+      "name": "profileId",
+      "type": "Const",
+      "filePath": "src/lib/services/publishing.service.ts",
+      "change_type": "touched"
+    },
+    {
+      "id": "Function:src/lib/services/publishing.service.ts:assertPost",
+      "name": "assertPost",
+      "type": "Function",
+      "filePath": "src/lib/services/publishing.service.ts",
+      "change_type": "touched"
+    },
+    {
+      "id": "Function:src/lib/services/publishing.service.ts:postPreflight",
+      "name": "postPreflight",
+      "type": "Function",
+      "filePath": "src/lib/services/publishing.service.ts",
+      "change_type": "touched"
+    },
+    {
+      "id": "Function:src/lib/services/publishing.service.ts:mediaPreflight",
+      "name": "mediaPreflight",
+      "type": "Function",
+      "filePath": "src/lib/services/publishing.service.ts",
+      "change_type": "touched"
+    },
+    {
+      "id": "Function:src/lib/services/publishing.service.ts:publishingQuota",
+      "name": "publishingQuota",
+      "type": "Function",
+      "filePath": "src/lib/services/publishing.service.ts",
+      "change_type": "touched"
+    },
+    {
+      "id": "Function:src/lib/services/publishing.service.ts:ownedPreflightAccount",
+      "name": "ownedPreflightAccount",
+      "type": "Function",
+      "filePath": "src/lib/services/publishing.service.ts",
+      "change_type": "touched"
+    },
+    {
+      "id": "Function:src/lib/services/publishing.service.ts:storedTarget",
+      "name": "storedTarget",
+      "type": "Function",
+      "filePath": "src/lib/services/publishing.service.ts",
+      "change_type": "touched"
+    },
+    {
+      "id": "Function:src/lib/services/publishing.service.ts:serializeTarget",
+      "name": "serializeTarget",
+      "type": "Function",
+      "filePath": "src/lib/services/publishing.service.ts",
+      "change_type": "touched"
+    },
+    {
+      "id": "Function:src/lib/services/publishing.service.ts:effectiveTargets",
+      "name": "effectiveTargets",
+      "type": "Function",
+      "filePath": "src/lib/services/publishing.service.ts",
+      "change_type": "touched"
+    },
+    {
+      "id": "Function:src/lib/services/publishing.service.ts:body",
+      "name": "body",
+      "type": "Function",
+      "filePath": "src/lib/services/publishing.service.ts",
+      "change_type": "touched"
+    },
+    {
+      "id": "Class:src/lib/services/publishing.service.ts:PublishingService",
+      "name": "PublishingService",
+      "type": "Class",
+      "filePath": "src/lib/services/publishing.service.ts",
+      "change_type": "touched"
+    },
+    {
+      "id": "Method:src/lib/services/publishing.service.ts:PublishingService.validatePost#1",
+      "name": "validatePost",
+      "type": "Method",
+      "filePath": "src/lib/services/publishing.service.ts",
+      "change_type": "touched"
+    },
+    {
+      "id": "Method:src/lib/services/publishing.service.ts:PublishingService.validateMedia#1",
+      "name": "validateMedia",
+      "type": "Method",
+      "filePath": "src/lib/services/publishing.service.ts",
+      "change_type": "touched"
+    },
+    {
+      "id": "Method:src/lib/services/publishing.service.ts:PublishingService.getInstagramPublishingLimit#1",
+      "name": "getInstagramPublishingLimit",
+      "type": "Method",
+      "filePath": "src/lib/services/publishing.service.ts",
+      "change_type": "touched"
+    },
+    {
+      "id": "Method:src/lib/services/publishing.service.ts:PublishingService.createPost#1",
+      "name": "createPost",
+      "type": "Method",
+      "filePath": "src/lib/services/publishing.service.ts",
+      "change_type": "touched"
+    },
+    {
+      "id": "Const:src/lib/services/publishing.service.ts:idempotencyKey",
+      "name": "idempotencyKey",
+      "type": "Const",
+      "filePath": "src/lib/services/publishing.service.ts",
+      "change_type": "touched"
+    },
+    {
+      "id": "Method:src/lib/services/publishing.service.ts:PublishingService.listTenantPosts#2",
+      "name": "listTenantPosts",
+      "type": "Method",
+      "filePath": "src/lib/services/publishing.service.ts",
+      "change_type": "touched"
+    },
+    {
+      "id": "Const:src/lib/services/publishing.service.ts:limit",
+      "name": "limit",
+      "type": "Const",
+      "filePath": "src/lib/services/publishing.service.ts",
+      "change_type": "touched"
+    },
+    {
+      "id": "Const:src/lib/services/publishing.service.ts:page",
+      "name": "page",
+      "type": "Const",
+      "filePath": "src/lib/services/publishing.service.ts",
+      "change_type": "touched"
+    },
+    {
+      "id": "Const:src/lib/services/publishing.service.ts:posts",
+      "name": "posts",
+      "type": "Const",
+      "filePath": "src/lib/services/publishing.service.ts",
+      "change_type": "touched"
+    },
+    {
+      "id": "Method:src/lib/services/publishing.service.ts:PublishingService.listPosts#1",
+      "name": "listPosts",
+      "type": "Method",
+      "filePath": "src/lib/services/publishing.service.ts",
+      "change_type": "touched"
+    },
+    {
+      "id": "Method:src/lib/services/publishing.service.ts:PublishingService.getPost#2",
+      "name": "getPost",
+      "type": "Method",
+      "filePath": "src/lib/services/publishing.service.ts",
+      "change_type": "touched"
+    },
+    {
+      "id": "Method:src/lib/services/publishing.service.ts:PublishingService.updatePost#3",
+      "name": "updatePost",
+      "type": "Method",
+      "filePath": "src/lib/services/publishing.service.ts",
+      "change_type": "touched"
+    },
+    {
+      "id": "Method:src/lib/services/publishing.service.ts:PublishingService.deletePost#2",
+      "name": "deletePost",
+      "type": "Method",
+      "filePath": "src/lib/services/publishing.service.ts",
+      "change_type": "touched"
+    },
+    {
+      "id": "Method:src/lib/services/publishing.service.ts:PublishingService.retryPost#3",
+      "name": "retryPost",
+      "type": "Method",
+      "filePath": "src/lib/services/publishing.service.ts",
+      "change_type": "touched"
+    },
+    {
+      "id": "Method:src/lib/services/publishing.service.ts:PublishingService.upsertProfileQueue#1",
+      "name": "upsertProfileQueue",
+      "type": "Method",
+      "filePath": "src/lib/services/publishing.service.ts",
+      "change_type": "touched"
+    },
+    {
+      "id": "Method:src/lib/services/publishing.service.ts:PublishingService.createMediaPresignedUpload#1",
+      "name": "createMediaPresignedUpload",
+      "type": "Method",
+      "filePath": "src/lib/services/publishing.service.ts",
+      "change_type": "touched"
+    },
+    {
+      "id": "Class:src/lib/services/super-admin.service.ts:SuperAdminService",
+      "name": "SuperAdminService",
+      "type": "Class",
+      "filePath": "src/lib/services/super-admin.service.ts",
+      "change_type": "touched"
+    },
+    {
+      "id": "Method:src/lib/services/super-admin.service.ts:SuperAdminService.getControlPlaneSnapshot#0",
+      "name": "getControlPlaneSnapshot",
+      "type": "Method",
+      "filePath": "src/lib/services/super-admin.service.ts",
+      "change_type": "touched"
+    },
+    {
+      "id": "Method:src/lib/services/super-admin.service.ts:SuperAdminService.updateGlobalConfig#1",
+      "name": "updateGlobalConfig",
+      "type": "Method",
+      "filePath": "src/lib/services/super-admin.service.ts",
+      "change_type": "touched"
+    },
+    {
+      "id": "Method:src/lib/services/super-admin.service.ts:SuperAdminService.updatePlanTemplate#2",
+      "name": "updatePlanTemplate",
+      "type": "Method",
+      "filePath": "src/lib/services/super-admin.service.ts",
+      "change_type": "touched"
+    },
+    {
+      "id": "Method:src/lib/services/super-admin.service.ts:SuperAdminService.updateTenantOverride#2",
+      "name": "updateTenantOverride",
+      "type": "Method",
+      "filePath": "src/lib/services/super-admin.service.ts",
+      "change_type": "touched"
+    },
+    {
+      "id": "Method:src/lib/services/super-admin.service.ts:SuperAdminService.createTenantOrganization#1",
+      "name": "createTenantOrganization",
+      "type": "Method",
+      "filePath": "src/lib/services/super-admin.service.ts",
+      "change_type": "touched"
+    },
+    {
+      "id": "Method:src/lib/services/super-admin.service.ts:SuperAdminService.deleteTenantOrganization#1",
+      "name": "deleteTenantOrganization",
+      "type": "Method",
+      "filePath": "src/lib/services/super-admin.service.ts",
+      "change_type": "touched"
+    },
+    {
+      "id": "Method:src/lib/services/super-admin.service.ts:SuperAdminService.mintTenantScopedApiKey#1",
+      "name": "mintTenantScopedApiKey",
+      "type": "Method",
+      "filePath": "src/lib/services/super-admin.service.ts",
+      "change_type": "touched"
+    },
+    {
+      "id": "Method:src/lib/services/super-admin.service.ts:SuperAdminService.getWholesaleVsRetailBillingReport#0",
+      "name": "getWholesaleVsRetailBillingReport",
+      "type": "Method",
+      "filePath": "src/lib/services/super-admin.service.ts",
+      "change_type": "touched"
+    },
+    {
+      "id": "Const:src/lib/services/super-admin.service.ts:groups",
+      "name": "groups",
+      "type": "Const",
+      "filePath": "src/lib/services/super-admin.service.ts",
+      "change_type": "touched"
+    },
+    {
+      "id": "Class:src/lib/services/telephony.service.ts:TelephonyService",
+      "name": "TelephonyService",
+      "type": "Class",
+      "filePath": "src/lib/services/telephony.service.ts",
+      "change_type": "touched"
+    },
+    {
+      "id": "Method:src/lib/services/telephony.service.ts:TelephonyService.searchAvailableNumbers#1",
+      "name": "searchAvailableNumbers",
+      "type": "Method",
+      "filePath": "src/lib/services/telephony.service.ts",
+      "change_type": "touched"
+    },
+    {
+      "id": "Method:src/lib/services/telephony.service.ts:TelephonyService.buyPhoneNumber#1",
+      "name": "buyPhoneNumber",
+      "type": "Method",
+      "filePath": "src/lib/services/telephony.service.ts",
+      "change_type": "touched"
+    },
+    {
+      "id": "Method:src/lib/services/telephony.service.ts:TelephonyService.linkWhatsAppBusiness#1",
+      "name": "linkWhatsAppBusiness",
+      "type": "Method",
+      "filePath": "src/lib/services/telephony.service.ts",
+      "change_type": "touched"
+    },
+    {
+      "id": "Method:src/lib/services/telephony.service.ts:TelephonyService.sendTestWhatsAppMessage#1",
+      "name": "sendTestWhatsAppMessage",
+      "type": "Method",
+      "filePath": "src/lib/services/telephony.service.ts",
+      "change_type": "touched"
+    },
+    {
+      "id": "Const:src/lib/services/telephony.service.ts:accountId",
+      "name": "accountId",
+      "type": "Const",
+      "filePath": "src/lib/services/telephony.service.ts",
+      "change_type": "touched"
+    },
+    {
+      "id": "Method:src/lib/services/telephony.service.ts:TelephonyService.listMessages#1",
+      "name": "listMessages",
+      "type": "Method",
+      "filePath": "src/lib/services/telephony.service.ts",
+      "change_type": "touched"
+    },
+    {
+      "id": "Method:src/lib/services/telephony.service.ts:TelephonyService.listNumbersAndCapabilities#1",
+      "name": "listNumbersAndCapabilities",
+      "type": "Method",
+      "filePath": "src/lib/services/telephony.service.ts",
+      "change_type": "touched"
+    },
+    {
+      "id": "Class:src/lib/storage/workspace-store.ts:WorkspaceStore",
+      "name": "WorkspaceStore",
+      "type": "Class",
+      "filePath": "src/lib/storage/workspace-store.ts",
+      "change_type": "touched"
+    },
+    {
+      "id": "Method:src/lib/storage/workspace-store.ts:WorkspaceStore.getWorkspace#1",
+      "name": "getWorkspace",
+      "type": "Method",
+      "filePath": "src/lib/storage/workspace-store.ts",
+      "change_type": "touched"
+    },
+    {
+      "id": "Method:src/lib/storage/workspace-store.ts:WorkspaceStore.resolveApiKey#1",
+      "name": "resolveApiKey",
+      "type": "Method",
+      "filePath": "src/lib/storage/workspace-store.ts",
+      "change_type": "touched"
+    },
+    {
+      "id": "Method:src/lib/storage/workspace-store.ts:WorkspaceStore.adjustWalletBalance#4",
+      "name": "adjustWalletBalance",
+      "type": "Method",
+      "filePath": "src/lib/storage/workspace-store.ts",
+      "change_type": "touched"
+    },
+    {
+      "id": "Const:src/lib/storage/workspace-store.ts:wallet",
+      "name": "wallet",
+      "type": "Const",
+      "filePath": "src/lib/storage/workspace-store.ts",
+      "change_type": "touched"
+    },
+    {
+      "id": "Function:src/lib/supabase/admin.ts:isSupabaseConfigured",
+      "name": "isSupabaseConfigured",
+      "type": "Function",
+      "filePath": "src/lib/supabase/admin.ts",
+      "change_type": "touched"
+    },
+    {
+      "id": "Function:src/lib/supabase/admin.ts:createSupabaseAdminClient",
+      "name": "createSupabaseAdminClient",
+      "type": "Function",
+      "filePath": "src/lib/supabase/admin.ts",
+      "change_type": "touched"
+    },
+    {
+      "id": "Interface:src/lib/zernio/client.ts:ZernioRequestOptions",
+      "name": "ZernioRequestOptions",
+      "type": "Interface",
+      "filePath": "src/lib/zernio/client.ts",
+      "change_type": "touched"
+    },
+    {
+      "id": "Class:src/lib/zernio/client.ts:ZernioClient",
+      "name": "ZernioClient",
+      "type": "Class",
+      "filePath": "src/lib/zernio/client.ts",
+      "change_type": "touched"
+    },
+    {
+      "id": "Method:src/lib/zernio/client.ts:ZernioClient.request#2",
+      "name": "request",
+      "type": "Method",
+      "filePath": "src/lib/zernio/client.ts",
+      "change_type": "touched"
+    },
+    {
+      "id": "Function:src/lib/zernio/client.ts:ZernioClient.timeout",
+      "name": "timeout",
+      "type": "Function",
+      "filePath": "src/lib/zernio/client.ts",
+      "change_type": "touched"
+    },
+    {
+      "id": "Function:src/lib/zernio/openapi-spec.ts:getOpenApiV1Spec",
+      "name": "getOpenApiV1Spec",
+      "type": "Function",
+      "filePath": "src/lib/zernio/openapi-spec.ts",
+      "change_type": "touched"
+    },
+    {
+      "id": "Function:src/lib/zernio/openapi-spec.ts:commentBody",
+      "name": "commentBody",
+      "type": "Function",
+      "filePath": "src/lib/zernio/openapi-spec.ts",
+      "change_type": "touched"
+    },
+    {
+      "id": "Function:src/lib/zernio/openapi-spec.ts:settingOperations",
+      "name": "settingOperations",
+      "type": "Function",
+      "filePath": "src/lib/zernio/openapi-spec.ts",
+      "change_type": "touched"
+    },
+    {
+      "id": "Function:src/lib/zernio/openapi-spec.ts:getPostmanV1Collection",
+      "name": "getPostmanV1Collection",
+      "type": "Function",
+      "filePath": "src/lib/zernio/openapi-spec.ts",
+      "change_type": "touched"
+    },
+    {
+      "id": "Function:src/lib/zernio/openapi-spec.ts:metaExample",
+      "name": "metaExample",
+      "type": "Function",
+      "filePath": "src/lib/zernio/openapi-spec.ts",
+      "change_type": "touched"
+    },
+    {
+      "id": "Function:src/lib/zernio/policy-engine.ts:resolveEffectiveTenantPolicy",
+      "name": "resolveEffectiveTenantPolicy",
+      "type": "Function",
+      "filePath": "src/lib/zernio/policy-engine.ts",
+      "change_type": "touched"
+    },
+    {
+      "id": "Function:src/lib/zernio/policy-engine.ts:assertSubServiceAllowed",
+      "name": "assertSubServiceAllowed",
+      "type": "Function",
+      "filePath": "src/lib/zernio/policy-engine.ts",
+      "change_type": "touched"
+    },
+    {
+      "id": "Interface:src/types/telephony.ts:AvailablePhoneNumber",
+      "name": "AvailablePhoneNumber",
+      "type": "Interface",
+      "filePath": "src/types/telephony.ts",
+      "change_type": "touched"
+    },
+    {
+      "id": "Interface:src/types/telephony.ts:OwnedPhoneNumber",
+      "name": "OwnedPhoneNumber",
+      "type": "Interface",
+      "filePath": "src/types/telephony.ts",
+      "change_type": "touched"
+    }
+  ],
+  "affected_processes": [
+    {
+      "id": "proc_0_post",
+      "name": "POST → TimingSafeEqual",
+      "process_type": "cross_community",
+      "step_count": 7,
+      "changed_steps": [
+        {
+          "symbol": "decodeSession",
+          "step": 5
+        },
+        {
+          "symbol": "POST",
+          "step": 1
+        }
+      ]
+    },
+    {
+      "id": "proc_1_post",
+      "name": "POST → IsSupabaseConfigured",
+      "process_type": "cross_community",
+      "step_count": 6,
+      "changed_steps": [
+        {
+          "symbol": "createSupabaseAdminClient",
+          "step": 5
+        },
+        {
+          "symbol": "isSupabaseConfigured",
+          "step": 6
+        }
+      ]
+    },
+    {
+      "id": "proc_2_post",
+      "name": "POST → Base64ToUtf8",
+      "process_type": "cross_community",
+      "step_count": 6,
+      "changed_steps": [
+        {
+          "symbol": "decodeSession",
+          "step": 5
+        },
+        {
+          "symbol": "POST",
+          "step": 1
+        }
+      ]
+    },
+    {
+      "id": "proc_3_post",
+      "name": "POST → IsSupabaseConfigured",
+      "process_type": "cross_community",
+      "step_count": 6,
+      "changed_steps": [
+        {
+          "symbol": "createSupabaseAdminClient",
+          "step": 5
+        },
+        {
+          "symbol": "isSupabaseConfigured",
+          "step": 6
+        },
+        {
+          "symbol": "POST",
+          "step": 1
+        }
+      ]
+    },
+    {
+      "id": "proc_4_post",
+      "name": "POST → BytesToBase64Url",
+      "process_type": "cross_community",
+      "step_count": 6,
+      "changed_steps": [
+        {
+          "symbol": "decodeSession",
+          "step": 3
+        },
+        {
+          "symbol": "computeSignature",
+          "step": 5
+        },
+        {
+          "symbol": "POST",
+          "step": 1
+        }
+      ]
+    },
+    {
+      "id": "proc_6_send",
+      "name": "Send → TenantAccessError",
+      "process_type": "cross_community",
+      "step_count": 6,
+      "changed_steps": [
+        {
+          "symbol": "assertSubServiceAllowed",
+          "step": 3
+        },
+        {
+          "symbol": "resolveEffectiveTenantPolicy",
+          "step": 4
+        }
+      ]
+    },
+    {
+      "id": "proc_7_send",
+      "name": "Send → GlobalState",
+      "process_type": "cross_community",
+      "step_count": 6,
+      "changed_steps": [
+        {
+          "symbol": "assertSubServiceAllowed",
+          "step": 3
+        },
+        {
+          "symbol": "resolveEffectiveTenantPolicy",
+          "step": 4
+        }
+      ]
+    },
+    {
+      "id": "proc_8_send",
+      "name": "Send → ZernioApiException",
+      "process_type": "cross_community",
+      "step_count": 6,
+      "changed_steps": [
+        {
+          "symbol": "request",
+          "step": 5
+        },
+        {
+          "symbol": "ensureTenantProfile",
+          "step": 4
+        }
+      ]
+    },
+    {
+      "id": "proc_9_privatereply",
+      "name": "PrivateReply → TenantAccessError",
+      "process_type": "cross_community",
+      "step_count": 6,
+      "changed_steps": [
+        {
+          "symbol": "assertSubServiceAllowed",
+          "step": 3
+        },
+        {
+          "symbol": "resolveEffectiveTenantPolicy",
+          "step": 4
+        }
+      ]
+    },
+    {
+      "id": "proc_10_privatereply",
+      "name": "PrivateReply → GlobalState",
+      "process_type": "cross_community",
+      "step_count": 6,
+      "changed_steps": [
+        {
+          "symbol": "assertSubServiceAllowed",
+          "step": 3
+        },
+        {
+          "symbol": "resolveEffectiveTenantPolicy",
+          "step": 4
+        }
+      ]
+    },
+    {
+      "id": "proc_11_sendsms",
+      "name": "SendSms → NewIdempotencyKey",
+      "process_type": "cross_community",
+      "step_count": 6,
+      "changed_steps": [
+        {
+          "symbol": "ensureTenantProfile",
+          "step": 5
+        }
+      ]
+    },
+    {
+      "id": "proc_12_sendsms",
+      "name": "SendSms → TenantAccessError",
+      "process_type": "cross_community",
+      "step_count": 6,
+      "changed_steps": [
+        {
+          "symbol": "assertSubServiceAllowed",
+          "step": 5
+        }
+      ]
+    },
+    {
+      "id": "proc_13_post",
+      "name": "POST → GetFallbackStore",
+      "process_type": "cross_community",
+      "step_count": 5,
+      "changed_steps": [
+        {
+          "symbol": "ensureTenantProfile",
+          "step": 2
+        },
+        {
+          "symbol": "POST",
+          "step": 1
+        }
+      ]
+    },
+    {
+      "id": "proc_14_post",
+      "name": "POST → EnsureDataDir",
+      "process_type": "cross_community",
+      "step_count": 5,
+      "changed_steps": [
+        {
+          "symbol": "getWorkspace",
+          "step": 3
+        },
+        {
+          "symbol": "POST",
+          "step": 1
+        }
+      ]
+    },
+    {
+      "id": "proc_15_post",
+      "name": "POST → HasMeaningfulData",
+      "process_type": "cross_community",
+      "step_count": 5,
+      "changed_steps": [
+        {
+          "symbol": "getWorkspace",
+          "step": 3
+        },
+        {
+          "symbol": "POST",
+          "step": 1
+        }
+      ]
+    },
+    {
+      "id": "proc_16_post",
+      "name": "POST → TenantAccessError",
+      "process_type": "cross_community",
+      "step_count": 5,
+      "changed_steps": [
+        {
+          "symbol": "updateGlobalConfig",
+          "step": 2
+        },
+        {
+          "symbol": "POST",
+          "step": 1
+        }
+      ]
+    },
+    {
+      "id": "proc_17_post",
+      "name": "POST → Number",
+      "process_type": "intra_community",
+      "step_count": 5,
+      "changed_steps": [
+        {
+          "symbol": "getControlPlaneSnapshot",
+          "step": 2
+        },
+        {
+          "symbol": "POST",
+          "step": 1
+        }
+      ]
+    },
+    {
+      "id": "proc_20_post",
+      "name": "POST → TenantAccessError",
+      "process_type": "cross_community",
+      "step_count": 5,
+      "changed_steps": [
+        {
+          "symbol": "POST",
+          "step": 1
+        }
+      ]
+    },
+    {
+      "id": "proc_21_get",
+      "name": "GET → GetFallbackStore",
+      "process_type": "cross_community",
+      "step_count": 5,
+      "changed_steps": [
+        {
+          "symbol": "request",
+          "step": 3
+        },
+        {
+          "symbol": "listTenantAccountsWithHealth",
+          "step": 2
+        },
+        {
+          "symbol": "GET",
+          "step": 1
+        }
+      ]
+    },
+    {
+      "id": "proc_22_get",
+      "name": "GET → TenantAccessError",
+      "process_type": "cross_community",
+      "step_count": 5,
+      "changed_steps": [
+        {
+          "symbol": "listConversations",
+          "step": 2
+        },
+        {
+          "symbol": "GET",
+          "step": 1
+        }
+      ]
+    },
+    {
+      "id": "proc_23_get",
+      "name": "GET → IsSupabaseConfigured",
+      "process_type": "cross_community",
+      "step_count": 5,
+      "changed_steps": [
+        {
+          "symbol": "createSupabaseAdminClient",
+          "step": 4
+        },
+        {
+          "symbol": "isSupabaseConfigured",
+          "step": 5
+        }
+      ]
+    },
+    {
+      "id": "proc_25_get",
+      "name": "GET → GetFallbackStore",
+      "process_type": "cross_community",
+      "step_count": 5,
+      "changed_steps": [
+        {
+          "symbol": "request",
+          "step": 3
+        }
+      ]
+    },
+    {
+      "id": "proc_26_get",
+      "name": "GET → IsSupabaseConfigured",
+      "process_type": "cross_community",
+      "step_count": 5,
+      "changed_steps": [
+        {
+          "symbol": "createSupabaseAdminClient",
+          "step": 4
+        },
+        {
+          "symbol": "isSupabaseConfigured",
+          "step": 5
+        }
+      ]
+    },
+    {
+      "id": "proc_28_post",
+      "name": "POST → ZernioApiException",
+      "process_type": "cross_community",
+      "step_count": 5,
+      "changed_steps": [
+        {
+          "symbol": "request",
+          "step": 4
+        },
+        {
+          "symbol": "ensureTenantProfile",
+          "step": 3
+        }
+      ]
+    },
+    {
+      "id": "proc_30_post",
+      "name": "POST → NewIdempotencyKey",
+      "process_type": "cross_community",
+      "step_count": 5,
+      "changed_steps": [
+        {
+          "symbol": "ensureTenantProfile",
+          "step": 4
+        }
+      ]
+    },
+    {
+      "id": "proc_33_post",
+      "name": "POST → NewIdempotencyKey",
+      "process_type": "cross_community",
+      "step_count": 5,
+      "changed_steps": [
+        {
+          "symbol": "ensureTenantProfile",
+          "step": 4
+        }
+      ]
+    },
+    {
+      "id": "proc_36_post",
+      "name": "POST → NewIdempotencyKey",
+      "process_type": "cross_community",
+      "step_count": 5,
+      "changed_steps": [
+        {
+          "symbol": "ensureTenantProfile",
+          "step": 4
+        }
+      ]
+    },
+    {
+      "id": "proc_42_post",
+      "name": "POST → ZernioApiException",
+      "process_type": "cross_community",
+      "step_count": 5,
+      "changed_steps": [
+        {
+          "symbol": "request",
+          "step": 4
+        },
+        {
+          "symbol": "listTenantAccountsWithHealth",
+          "step": 3
+        }
+      ]
+    },
+    {
+      "id": "proc_44_post",
+      "name": "POST → NewIdempotencyKey",
+      "process_type": "cross_community",
+      "step_count": 5,
+      "changed_steps": [
+        {
+          "symbol": "ensureTenantProfile",
+          "step": 4
+        }
+      ]
+    },
+    {
+      "id": "proc_45_post",
+      "name": "POST → ZernioApiException",
+      "process_type": "cross_community",
+      "step_count": 5,
+      "changed_steps": [
+        {
+          "symbol": "request",
+          "step": 4
+        }
+      ]
+    },
+    {
+      "id": "proc_47_get",
+      "name": "GET → NewIdempotencyKey",
+      "process_type": "cross_community",
+      "step_count": 5,
+      "changed_steps": [
+        {
+          "symbol": "ensureTenantProfile",
+          "step": 4
+        }
+      ]
+    },
+    {
+      "id": "proc_50_get",
+      "name": "GET → NewIdempotencyKey",
+      "process_type": "cross_community",
+      "step_count": 5,
+      "changed_steps": [
+        {
+          "symbol": "ensureTenantProfile",
+          "step": 4
+        }
+      ]
+    },
+    {
+      "id": "proc_53_get",
+      "name": "GET → NewIdempotencyKey",
+      "process_type": "cross_community",
+      "step_count": 5,
+      "changed_steps": [
+        {
+          "symbol": "ensureTenantProfile",
+          "step": 4
+        }
+      ]
+    },
+    {
+      "id": "proc_59_get",
+      "name": "GET → ZernioApiException",
+      "process_type": "cross_community",
+      "step_count": 5,
+      "changed_steps": [
+        {
+          "symbol": "request",
+          "step": 4
+        },
+        {
+          "symbol": "listTenantAccountsWithHealth",
+          "step": 3
+        }
+      ]
+    },
+    {
+      "id": "proc_61_get",
+      "name": "GET → NewIdempotencyKey",
+      "process_type": "cross_community",
+      "step_count": 5,
+      "changed_steps": [
+        {
+          "symbol": "ensureTenantProfile",
+          "step": 4
+        }
+      ]
+    },
+    {
+      "id": "proc_62_get",
+      "name": "GET → ZernioApiException",
+      "process_type": "cross_community",
+      "step_count": 5,
+      "changed_steps": [
+        {
+          "symbol": "request",
+          "step": 4
+        }
+      ]
+    },
+    {
+      "id": "proc_63_simplemodeconsole",
+      "name": "SimpleModeConsole → PurchaseRequestError",
+      "process_type": "cross_community",
+      "step_count": 5,
+      "changed_steps": [
+        {
+          "symbol": "BuyNumberWhatsAppWizard",
+          "step": 2
+        },
+        {
+          "symbol": "SimpleModeConsole",
+          "step": 1
+        }
+      ]
+    },
+    {
+      "id": "proc_64_simplemodeconsole",
+      "name": "SimpleModeConsole → ErrorMessage",
+      "process_type": "cross_community",
+      "step_count": 5,
+      "changed_steps": [
+        {
+          "symbol": "BuyNumberWhatsAppWizard",
+          "step": 2
+        },
+        {
+          "symbol": "SimpleModeConsole",
+          "step": 1
+        }
+      ]
+    },
+    {
+      "id": "proc_65_simplemodeconsole",
+      "name": "SimpleModeConsole → PublishingRequest",
+      "process_type": "cross_community",
+      "step_count": 5,
+      "changed_steps": [
+        {
+          "symbol": "SmartPostComposerWizard",
+          "step": 2
+        },
+        {
+          "symbol": "SimpleModeConsole",
+          "step": 1
+        }
+      ]
+    },
+    {
+      "id": "proc_66_simplemodeconsole",
+      "name": "SimpleModeConsole → T",
+      "process_type": "cross_community",
+      "step_count": 5,
+      "changed_steps": [
+        {
+          "symbol": "SmartPostComposerWizard",
+          "step": 2
+        },
+        {
+          "symbol": "SimpleModeConsole",
+          "step": 1
+        }
+      ]
+    },
+    {
+      "id": "proc_67_simplemodeconsole",
+      "name": "SimpleModeConsole → SaveIntent",
+      "process_type": "cross_community",
+      "step_count": 5,
+      "changed_steps": [
+        {
+          "symbol": "SmartPostComposerWizard",
+          "step": 2
+        },
+        {
+          "symbol": "SimpleModeConsole",
+          "step": 1
+        }
+      ]
+    },
+    {
+      "id": "proc_68_handleapiv1",
+      "name": "HandleApiV1 → TenantAccessError",
+      "process_type": "cross_community",
+      "step_count": 5,
+      "changed_steps": [
+        {
+          "symbol": "handleApiV1",
+          "step": 1
+        }
+      ]
+    },
+    {
+      "id": "proc_69_handleapiv1",
+      "name": "HandleApiV1 → IsSupabaseConfigured",
+      "process_type": "cross_community",
+      "step_count": 5,
+      "changed_steps": [
+        {
+          "symbol": "createSupabaseAdminClient",
+          "step": 4
+        },
+        {
+          "symbol": "isSupabaseConfigured",
+          "step": 5
+        },
+        {
+          "symbol": "handleApiV1",
+          "step": 1
+        }
+      ]
+    },
+    {
+      "id": "proc_70_get",
+      "name": "GET → GetFallbackStore",
+      "process_type": "cross_community",
+      "step_count": 5,
+      "changed_steps": [
+        {
+          "symbol": "request",
+          "step": 3
+        },
+        {
+          "symbol": "listTenantAccountsWithHealth",
+          "step": 2
+        }
+      ]
+    },
+    {
+      "id": "proc_71_get",
+      "name": "GET → TenantAccessError",
+      "process_type": "cross_community",
+      "step_count": 5,
+      "changed_steps": [
+        {
+          "symbol": "getControlPlaneSnapshot",
+          "step": 2
+        },
+        {
+          "symbol": "GET",
+          "step": 1
+        }
+      ]
+    },
+    {
+      "id": "proc_72_get",
+      "name": "GET → Number",
+      "process_type": "intra_community",
+      "step_count": 5,
+      "changed_steps": [
+        {
+          "symbol": "getControlPlaneSnapshot",
+          "step": 2
+        },
+        {
+          "symbol": "GET",
+          "step": 1
+        }
+      ]
+    },
+    {
+      "id": "proc_73_get",
+      "name": "GET → GetFallbackStore",
+      "process_type": "cross_community",
+      "step_count": 5,
+      "changed_steps": [
+        {
+          "symbol": "getControlPlaneSnapshot",
+          "step": 2
+        },
+        {
+          "symbol": "GET",
+          "step": 1
+        }
+      ]
+    },
+    {
+      "id": "proc_76_get",
+      "name": "GET → GetFallbackStore",
+      "process_type": "cross_community",
+      "step_count": 5,
+      "changed_steps": [
+        {
+          "symbol": "request",
+          "step": 3
+        }
+      ]
+    },
+    {
+      "id": "proc_77_runlaunchpublicapi",
+      "name": "RunLaunchPublicApi → IsSupabaseConfigured",
+      "process_type": "cross_community",
+      "step_count": 5,
+      "changed_steps": [
+        {
+          "symbol": "createSupabaseAdminClient",
+          "step": 4
+        },
+        {
+          "symbol": "isSupabaseConfigured",
+          "step": 5
+        }
+      ]
+    },
+    {
+      "id": "proc_79_start",
+      "name": "Start → IsSupabaseConfigured",
+      "process_type": "cross_community",
+      "step_count": 5,
+      "changed_steps": [
+        {
+          "symbol": "createSupabaseAdminClient",
+          "step": 4
+        },
+        {
+          "symbol": "isSupabaseConfigured",
+          "step": 5
+        }
+      ]
+    },
+    {
+      "id": "proc_81_purchase",
+      "name": "Purchase → IsSupabaseConfigured",
+      "process_type": "cross_community",
+      "step_count": 5,
+      "changed_steps": [
+        {
+          "symbol": "createSupabaseAdminClient",
+          "step": 4
+        },
+        {
+          "symbol": "isSupabaseConfigured",
+          "step": 5
+        }
+      ]
+    },
+    {
+      "id": "proc_82_purchase",
+      "name": "Purchase → ZernioApiException",
+      "process_type": "cross_community",
+      "step_count": 5,
+      "changed_steps": [
+        {
+          "symbol": "request",
+          "step": 4
+        },
+        {
+          "symbol": "ensureTenantProfile",
+          "step": 3
+        }
+      ]
+    },
+    {
+      "id": "proc_83_telephonywhatsappvoi",
+      "name": "TelephonyWhatsAppVoiceHub → PurchaseRequestError",
+      "process_type": "cross_community",
+      "step_count": 5,
+      "changed_steps": [
+        {
+          "symbol": "TelephonyWhatsAppVoiceHub",
+          "step": 1
+        },
+        {
+          "symbol": "PhoneMarketplaceAndWhatsAppLinking",
+          "step": 2
+        }
+      ]
+    },
+    {
+      "id": "proc_84_telephonywhatsappvoi",
+      "name": "TelephonyWhatsAppVoiceHub → ErrorMessage",
+      "process_type": "cross_community",
+      "step_count": 5,
+      "changed_steps": [
+        {
+          "symbol": "TelephonyWhatsAppVoiceHub",
+          "step": 1
+        },
+        {
+          "symbol": "PhoneMarketplaceAndWhatsAppLinking",
+          "step": 2
+        }
+      ]
+    },
+    {
+      "id": "proc_85_telephonywhatsappvoi",
+      "name": "TelephonyWhatsAppVoiceHub → GetLocalizedText",
+      "process_type": "cross_community",
+      "step_count": 5,
+      "changed_steps": [
+        {
+          "symbol": "TelephonyWhatsAppVoiceHub",
+          "step": 1
+        }
+      ]
+    },
+    {
+      "id": "proc_86_dispatch",
+      "name": "Dispatch → IsSupabaseConfigured",
+      "process_type": "cross_community",
+      "step_count": 5,
+      "changed_steps": [
+        {
+          "symbol": "createSupabaseAdminClient",
+          "step": 4
+        },
+        {
+          "symbol": "isSupabaseConfigured",
+          "step": 5
+        }
+      ]
+    },
+    {
+      "id": "proc_87_dispatch",
+      "name": "Dispatch → NewIdempotencyKey",
+      "process_type": "cross_community",
+      "step_count": 5,
+      "changed_steps": [
+        {
+          "symbol": "ensureTenantProfile",
+          "step": 4
+        }
+      ]
+    },
+    {
+      "id": "proc_88_dispatch",
+      "name": "Dispatch → TenantAccessError",
+      "process_type": "cross_community",
+      "step_count": 5,
+      "changed_steps": [
+        {
+          "symbol": "assertSubServiceAllowed",
+          "step": 4
+        }
+      ]
+    },
+    {
+      "id": "proc_90_send",
+      "name": "Send → NewIdempotencyKey",
+      "process_type": "cross_community",
+      "step_count": 5,
+      "changed_steps": [
+        {
+          "symbol": "ensureTenantProfile",
+          "step": 4
+        }
+      ]
+    },
+    {
+      "id": "proc_91_send",
+      "name": "Send → TenantAccessError",
+      "process_type": "cross_community",
+      "step_count": 5,
+      "changed_steps": [
+        {
+          "symbol": "assertSubServiceAllowed",
+          "step": 4
+        }
+      ]
+    },
+    {
+      "id": "proc_92_purchasephonenumber",
+      "name": "PurchasePhoneNumber → GetFallbackStore",
+      "process_type": "cross_community",
+      "step_count": 5,
+      "changed_steps": [
+        {
+          "symbol": "ensureTenantProfile",
+          "step": 2
+        }
+      ]
+    },
+    {
+      "id": "proc_93_privatereply",
+      "name": "PrivateReply → NewIdempotencyKey",
+      "process_type": "cross_community",
+      "step_count": 5,
+      "changed_steps": [
+        {
+          "symbol": "ensureTenantProfile",
+          "step": 4
+        }
+      ]
+    },
+    {
+      "id": "proc_94_privatereply",
+      "name": "PrivateReply → ZernioApiException",
+      "process_type": "cross_community",
+      "step_count": 5,
+      "changed_steps": [
+        {
+          "symbol": "request",
+          "step": 4
+        }
+      ]
+    },
+    {
+      "id": "proc_95_change",
+      "name": "Change → NewIdempotencyKey",
+      "process_type": "cross_community",
+      "step_count": 5,
+      "changed_steps": [
+        {
+          "symbol": "ensureTenantProfile",
+          "step": 4
+        }
+      ]
+    },
+    {
+      "id": "proc_96_change",
+      "name": "Change → ZernioApiException",
+      "process_type": "cross_community",
+      "step_count": 5,
+      "changed_steps": [
+        {
+          "symbol": "request",
+          "step": 4
+        }
+      ]
+    },
+    {
+      "id": "proc_99_listcampaigns",
+      "name": "ListCampaigns → GetFallbackStore",
+      "process_type": "cross_community",
+      "step_count": 5,
+      "changed_steps": [
+        {
+          "symbol": "ensureTenantProfile",
+          "step": 2
+        }
+      ]
+    },
+    {
+      "id": "proc_100_updatepost",
+      "name": "UpdatePost → ZernioApiException",
+      "process_type": "cross_community",
+      "step_count": 5,
+      "changed_steps": [
+        {
+          "symbol": "request",
+          "step": 4
+        },
+        {
+          "symbol": "updatePost",
+          "step": 1
+        },
+        {
+          "symbol": "ensureTenantProfile",
+          "step": 3
+        },
+        {
+          "symbol": "scope",
+          "step": 2
+        }
+      ]
+    },
+    {
+      "id": "proc_101_updatepost",
+      "name": "UpdatePost → GetFallbackStore",
+      "process_type": "cross_community",
+      "step_count": 5,
+      "changed_steps": [
+        {
+          "symbol": "request",
+          "step": 3
+        },
+        {
+          "symbol": "updatePost",
+          "step": 1
+        },
+        {
+          "symbol": "scope",
+          "step": 2
+        }
+      ]
+    },
+    {
+      "id": "proc_102_superadmincontrolpla",
+      "name": "SuperAdminControlPlanePage → AdminRequest",
+      "process_type": "cross_community",
+      "step_count": 4,
+      "changed_steps": [
+        {
+          "symbol": "fetchSnapshot",
+          "step": 3
+        },
+        {
+          "symbol": "adminRequest",
+          "step": 4
+        },
+        {
+          "symbol": "SuperAdminControlPlanePage",
+          "step": 1
+        }
+      ]
+    },
+    {
+      "id": "proc_103_post",
+      "name": "POST → ZernioApiException",
+      "process_type": "intra_community",
+      "step_count": 4,
+      "changed_steps": [
+        {
+          "symbol": "request",
+          "step": 3
+        },
+        {
+          "symbol": "ensureTenantProfile",
+          "step": 2
+        },
+        {
+          "symbol": "POST",
+          "step": 1
+        }
+      ]
+    },
+    {
+      "id": "proc_104_post",
+      "name": "POST → TenantAccessError",
+      "process_type": "cross_community",
+      "step_count": 4,
+      "changed_steps": [
+        {
+          "symbol": "upsertProfileQueue",
+          "step": 2
+        },
+        {
+          "symbol": "bad",
+          "step": 3
+        },
+        {
+          "symbol": "POST",
+          "step": 1
+        }
+      ]
+    },
+    {
+      "id": "proc_105_post",
+      "name": "POST → GetFallbackStore",
+      "process_type": "cross_community",
+      "step_count": 4,
+      "changed_steps": [
+        {
+          "symbol": "POST",
+          "step": 1
+        }
+      ]
+    },
+    {
+      "id": "proc_106_post",
+      "name": "POST → GlobalState",
+      "process_type": "intra_community",
+      "step_count": 4,
+      "changed_steps": [
+        {
+          "symbol": "updateGlobalConfig",
+          "step": 2
+        },
+        {
+          "symbol": "POST",
+          "step": 1
+        }
+      ]
+    },
+    {
+      "id": "proc_107_post",
+      "name": "POST → PlanState",
+      "process_type": "cross_community",
+      "step_count": 4,
+      "changed_steps": [
+        {
+          "symbol": "updateGlobalConfig",
+          "step": 2
+        },
+        {
+          "symbol": "POST",
+          "step": 1
+        }
+      ]
+    },
+    {
+      "id": "proc_108_post",
+      "name": "POST → GetFallbackStore",
+      "process_type": "cross_community",
+      "step_count": 4,
+      "changed_steps": [
+        {
+          "symbol": "getControlPlaneSnapshot",
+          "step": 2
+        },
+        {
+          "symbol": "POST",
+          "step": 1
+        }
+      ]
+    },
+    {
+      "id": "proc_109_post",
+      "name": "POST → ZernioApiException",
+      "process_type": "cross_community",
+      "step_count": 4,
+      "changed_steps": [
+        {
+          "symbol": "request",
+          "step": 3
+        },
+        {
+          "symbol": "getWholesaleVsRetailBillingReport",
+          "step": 2
+        },
+        {
+          "symbol": "POST",
+          "step": 1
+        }
+      ]
+    },
+    {
+      "id": "proc_113_customerdashboardcon",
+      "name": "CustomerDashboardContent → GetLocalizedText",
+      "process_type": "cross_community",
+      "step_count": 4,
+      "changed_steps": [
+        {
+          "symbol": "loadWorkspace",
+          "step": 2
+        },
+        {
+          "symbol": "CustomerDashboardContent",
+          "step": 1
+        }
+      ]
+    },
+    {
+      "id": "proc_114_get",
+      "name": "GET → ZernioApiException",
+      "process_type": "cross_community",
+      "step_count": 4,
+      "changed_steps": [
+        {
+          "symbol": "request",
+          "step": 3
+        },
+        {
+          "symbol": "listTenantAccountsWithHealth",
+          "step": 2
+        },
+        {
+          "symbol": "GET",
+          "step": 1
+        }
+      ]
+    },
+    {
+      "id": "proc_119_get",
+      "name": "GET → ZernioApiException",
+      "process_type": "cross_community",
+      "step_count": 4,
+      "changed_steps": [
+        {
+          "symbol": "request",
+          "step": 3
+        }
+      ]
+    },
+    {
+      "id": "proc_121_get",
+      "name": "GET → IsSupabaseConfigured",
+      "process_type": "cross_community",
+      "step_count": 4,
+      "changed_steps": [
+        {
+          "symbol": "createSupabaseAdminClient",
+          "step": 3
+        },
+        {
+          "symbol": "isSupabaseConfigured",
+          "step": 4
+        }
+      ]
+    },
+    {
+      "id": "proc_124_post",
+      "name": "POST → IsSupabaseConfigured",
+      "process_type": "cross_community",
+      "step_count": 4,
+      "changed_steps": [
+        {
+          "symbol": "createSupabaseAdminClient",
+          "step": 3
+        },
+        {
+          "symbol": "isSupabaseConfigured",
+          "step": 4
+        }
+      ]
+    },
+    {
+      "id": "proc_125_post",
+      "name": "POST → NewIdempotencyKey",
+      "process_type": "cross_community",
+      "step_count": 4,
+      "changed_steps": [
+        {
+          "symbol": "ensureTenantProfile",
+          "step": 3
+        }
+      ]
+    },
+    {
+      "id": "proc_126_post",
+      "name": "POST → IsSupabaseConfigured",
+      "process_type": "cross_community",
+      "step_count": 4,
+      "changed_steps": [
+        {
+          "symbol": "createSupabaseAdminClient",
+          "step": 3
+        },
+        {
+          "symbol": "isSupabaseConfigured",
+          "step": 4
+        }
+      ]
+    },
+    {
+      "id": "proc_127_post",
+      "name": "POST → IsSupabaseConfigured",
+      "process_type": "cross_community",
+      "step_count": 4,
+      "changed_steps": [
+        {
+          "symbol": "createSupabaseAdminClient",
+          "step": 3
+        },
+        {
+          "symbol": "isSupabaseConfigured",
+          "step": 4
+        }
+      ]
+    },
+    {
+      "id": "proc_128_post",
+      "name": "POST → IsSupabaseConfigured",
+      "process_type": "cross_community",
+      "step_count": 4,
+      "changed_steps": [
+        {
+          "symbol": "createSupabaseAdminClient",
+          "step": 3
+        },
+        {
+          "symbol": "isSupabaseConfigured",
+          "step": 4
+        }
+      ]
+    },
+    {
+      "id": "proc_129_post",
+      "name": "POST → IsSupabaseConfigured",
+      "process_type": "cross_community",
+      "step_count": 4,
+      "changed_steps": [
+        {
+          "symbol": "createSupabaseAdminClient",
+          "step": 3
+        },
+        {
+          "symbol": "isSupabaseConfigured",
+          "step": 4
+        }
+      ]
+    },
+    {
+      "id": "proc_130_post",
+      "name": "POST → IsSupabaseConfigured",
+      "process_type": "cross_community",
+      "step_count": 4,
+      "changed_steps": [
+        {
+          "symbol": "createSupabaseAdminClient",
+          "step": 3
+        },
+        {
+          "symbol": "isSupabaseConfigured",
+          "step": 4
+        }
+      ]
+    },
+    {
+      "id": "proc_131_post",
+      "name": "POST → EnsureDataDir",
+      "process_type": "cross_community",
+      "step_count": 4,
+      "changed_steps": [
+        {
+          "symbol": "getWorkspace",
+          "step": 2
+        },
+        {
+          "symbol": "POST",
+          "step": 1
+        }
+      ]
+    },
+    {
+      "id": "proc_132_post",
+      "name": "POST → HasMeaningfulData",
+      "process_type": "cross_community",
+      "step_count": 4,
+      "changed_steps": [
+        {
+          "symbol": "getWorkspace",
+          "step": 2
+        },
+        {
+          "symbol": "POST",
+          "step": 1
+        }
+      ]
+    },
+    {
+      "id": "proc_133_post",
+      "name": "POST → IsSupabaseConfigured",
+      "process_type": "cross_community",
+      "step_count": 4,
+      "changed_steps": [
+        {
+          "symbol": "createSupabaseAdminClient",
+          "step": 3
+        },
+        {
+          "symbol": "isSupabaseConfigured",
+          "step": 4
+        }
+      ]
+    },
+    {
+      "id": "proc_134_inboxcrmworkflowshub",
+      "name": "InboxCrmWorkflowsHub → GetLocalizedText",
+      "process_type": "cross_community",
+      "step_count": 4,
+      "changed_steps": [
+        {
+          "symbol": "fetchHubData",
+          "step": 2
+        },
+        {
+          "symbol": "loc",
+          "step": 3
+        },
+        {
+          "symbol": "InboxCrmWorkflowsHub",
+          "step": 1
+        }
+      ]
+    },
+    {
+      "id": "proc_135_inboxcrmworkflowshub",
+      "name": "InboxCrmWorkflowsHub → MetaRequest",
+      "process_type": "cross_community",
+      "step_count": 4,
+      "changed_steps": [
+        {
+          "symbol": "InboxCrmWorkflowsHub",
+          "step": 1
+        }
+      ]
+    },
+    {
+      "id": "proc_136_inboxcrmworkflowshub",
+      "name": "InboxCrmWorkflowsHub → T",
+      "process_type": "cross_community",
+      "step_count": 4,
+      "changed_steps": [
+        {
+          "symbol": "InboxCrmWorkflowsHub",
+          "step": 1
+        }
+      ]
+    },
+    {
+      "id": "proc_137_get",
+      "name": "GET → IsSupabaseConfigured",
+      "process_type": "cross_community",
+      "step_count": 4,
+      "changed_steps": [
+        {
+          "symbol": "createSupabaseAdminClient",
+          "step": 3
+        },
+        {
+          "symbol": "isSupabaseConfigured",
+          "step": 4
+        }
+      ]
+    },
+    {
+      "id": "proc_138_get",
+      "name": "GET → IsSupabaseConfigured",
+      "process_type": "cross_community",
+      "step_count": 4,
+      "changed_steps": [
+        {
+          "symbol": "createSupabaseAdminClient",
+          "step": 3
+        },
+        {
+          "symbol": "isSupabaseConfigured",
+          "step": 4
+        }
+      ]
+    },
+    {
+      "id": "proc_139_get",
+      "name": "GET → IsSupabaseConfigured",
+      "process_type": "cross_community",
+      "step_count": 4,
+      "changed_steps": [
+        {
+          "symbol": "createSupabaseAdminClient",
+          "step": 3
+        },
+        {
+          "symbol": "isSupabaseConfigured",
+          "step": 4
+        }
+      ]
+    },
+    {
+      "id": "proc_140_get",
+      "name": "GET → IsSupabaseConfigured",
+      "process_type": "cross_community",
+      "step_count": 4,
+      "changed_steps": [
+        {
+          "symbol": "createSupabaseAdminClient",
+          "step": 3
+        },
+        {
+          "symbol": "isSupabaseConfigured",
+          "step": 4
+        }
+      ]
+    },
+    {
+      "id": "proc_141_get",
+      "name": "GET → IsSupabaseConfigured",
+      "process_type": "cross_community",
+      "step_count": 4,
+      "changed_steps": [
+        {
+          "symbol": "createSupabaseAdminClient",
+          "step": 3
+        },
+        {
+          "symbol": "isSupabaseConfigured",
+          "step": 4
+        }
+      ]
+    },
+    {
+      "id": "proc_142_get",
+      "name": "GET → IsSupabaseConfigured",
+      "process_type": "cross_community",
+      "step_count": 4,
+      "changed_steps": [
+        {
+          "symbol": "createSupabaseAdminClient",
+          "step": 3
+        },
+        {
+          "symbol": "isSupabaseConfigured",
+          "step": 4
+        }
+      ]
+    },
+    {
+      "id": "proc_143_simplemodeconsole",
+      "name": "SimpleModeConsole → UseThemeAndLocale",
+      "process_type": "cross_community",
+      "step_count": 4,
+      "changed_steps": [
+        {
+          "symbol": "BuyNumberWhatsAppWizard",
+          "step": 2
+        },
+        {
+          "symbol": "SimpleModeConsole",
+          "step": 1
+        }
+      ]
+    },
+    {
+      "id": "proc_144_simplemodeconsole",
+      "name": "SimpleModeConsole → SecureLink",
+      "process_type": "cross_community",
+      "step_count": 4,
+      "changed_steps": [
+        {
+          "symbol": "BuyNumberWhatsAppWizard",
+          "step": 2
+        },
+        {
+          "symbol": "SimpleModeConsole",
+          "step": 1
+        }
+      ]
+    },
+    {
+      "id": "proc_145_handleapiv1",
+      "name": "HandleApiV1 → ZernioApiException",
+      "process_type": "cross_community",
+      "step_count": 4,
+      "changed_steps": [
+        {
+          "symbol": "request",
+          "step": 3
+        },
+        {
+          "symbol": "listTenantAccountsWithHealth",
+          "step": 2
+        },
+        {
+          "symbol": "handleApiV1",
+          "step": 1
+        }
+      ]
+    },
+    {
+      "id": "proc_146_get",
+      "name": "GET → ZernioApiException",
+      "process_type": "cross_community",
+      "step_count": 4,
+      "changed_steps": [
+        {
+          "symbol": "request",
+          "step": 3
+        },
+        {
+          "symbol": "listTenantAccountsWithHealth",
+          "step": 2
+        }
+      ]
+    },
+    {
+      "id": "proc_147_get",
+      "name": "GET → TenantAccessError",
+      "process_type": "cross_community",
+      "step_count": 4,
+      "changed_steps": [
+        {
+          "symbol": "listTenantAccountsWithHealth",
+          "step": 2
+        },
+        {
+          "symbol": "assertSubServiceAllowed",
+          "step": 3
+        }
+      ]
+    },
+    {
+      "id": "proc_148_get",
+      "name": "GET → IsSupabaseConfigured",
+      "process_type": "cross_community",
+      "step_count": 4,
+      "changed_steps": [
+        {
+          "symbol": "createSupabaseAdminClient",
+          "step": 3
+        },
+        {
+          "symbol": "isSupabaseConfigured",
+          "step": 4
+        }
+      ]
+    },
+    {
+      "id": "proc_149_get",
+      "name": "GET → GlobalState",
+      "process_type": "intra_community",
+      "step_count": 4,
+      "changed_steps": [
+        {
+          "symbol": "getControlPlaneSnapshot",
+          "step": 2
+        },
+        {
+          "symbol": "GET",
+          "step": 1
+        }
+      ]
+    },
+    {
+      "id": "proc_150_get",
+      "name": "GET → ZernioApiException",
+      "process_type": "cross_community",
+      "step_count": 4,
+      "changed_steps": [
+        {
+          "symbol": "request",
+          "step": 3
+        },
+        {
+          "symbol": "getWholesaleVsRetailBillingReport",
+          "step": 2
+        },
+        {
+          "symbol": "GET",
+          "step": 1
+        }
+      ]
+    },
+    {
+      "id": "proc_151_get",
+      "name": "GET → IsSupabaseConfigured",
+      "process_type": "cross_community",
+      "step_count": 4,
+      "changed_steps": [
+        {
+          "symbol": "createSupabaseAdminClient",
+          "step": 3
+        },
+        {
+          "symbol": "isSupabaseConfigured",
+          "step": 4
+        },
+        {
+          "symbol": "GET",
+          "step": 1
+        }
+      ]
+    },
+    {
+      "id": "proc_152_get",
+      "name": "GET → IsSupabaseConfigured",
+      "process_type": "cross_community",
+      "step_count": 4,
+      "changed_steps": [
+        {
+          "symbol": "createSupabaseAdminClient",
+          "step": 3
+        },
+        {
+          "symbol": "isSupabaseConfigured",
+          "step": 4
+        }
+      ]
+    },
+    {
+      "id": "proc_153_livesmsandwhatsappin",
+      "name": "LiveSmsAndWhatsAppInbox → Request",
+      "process_type": "cross_community",
+      "step_count": 4,
+      "changed_steps": [
+        {
+          "symbol": "LiveSmsAndWhatsAppInbox",
+          "step": 1
+        }
+      ]
+    },
+    {
+      "id": "proc_156_purchase",
+      "name": "Purchase → NewIdempotencyKey",
+      "process_type": "cross_community",
+      "step_count": 4,
+      "changed_steps": [
+        {
+          "symbol": "ensureTenantProfile",
+          "step": 3
+        }
+      ]
+    },
+    {
+      "id": "proc_157_telephonywhatsappvoi",
+      "name": "TelephonyWhatsAppVoiceHub → UseThemeAndLocale",
+      "process_type": "cross_community",
+      "step_count": 4,
+      "changed_steps": [
+        {
+          "symbol": "TelephonyWhatsAppVoiceHub",
+          "step": 1
+        },
+        {
+          "symbol": "PhoneMarketplaceAndWhatsAppLinking",
+          "step": 2
+        }
+      ]
+    },
+    {
+      "id": "proc_158_telephonywhatsappvoi",
+      "name": "TelephonyWhatsAppVoiceHub → SecureLink",
+      "process_type": "cross_community",
+      "step_count": 4,
+      "changed_steps": [
+        {
+          "symbol": "TelephonyWhatsAppVoiceHub",
+          "step": 1
+        },
+        {
+          "symbol": "PhoneMarketplaceAndWhatsAppLinking",
+          "step": 2
+        }
+      ]
+    },
+    {
+      "id": "proc_160_businessworkspace",
+      "name": "BusinessWorkspace → GetLocalizedText",
+      "process_type": "cross_community",
+      "step_count": 4,
+      "changed_steps": [
+        {
+          "symbol": "ConnectAndAccountsHub",
+          "step": 2
+        }
+      ]
+    },
+    {
+      "id": "proc_164_rootlayout",
+      "name": "RootLayout → Asra3Mark",
+      "process_type": "intra_community",
+      "step_count": 4,
+      "changed_steps": [
+        {
+          "symbol": "Navbar",
+          "step": 2
+        }
+      ]
+    },
+    {
+      "id": "proc_170_purchasephonenumber",
+      "name": "PurchasePhoneNumber → ZernioApiException",
+      "process_type": "cross_community",
+      "step_count": 4,
+      "changed_steps": [
+        {
+          "symbol": "request",
+          "step": 3
+        },
+        {
+          "symbol": "ensureTenantProfile",
+          "step": 2
+        }
+      ]
+    },
+    {
+      "id": "proc_171_change",
+      "name": "Change → TenantAccessError",
+      "process_type": "cross_community",
+      "step_count": 4,
+      "changed_steps": [
+        {
+          "symbol": "assertSubServiceAllowed",
+          "step": 3
+        }
+      ]
+    },
+    {
+      "id": "proc_173_listcampaigns",
+      "name": "ListCampaigns → ZernioApiException",
+      "process_type": "intra_community",
+      "step_count": 4,
+      "changed_steps": [
+        {
+          "symbol": "request",
+          "step": 3
+        },
+        {
+          "symbol": "ensureTenantProfile",
+          "step": 2
+        }
+      ]
+    },
+    {
+      "id": "proc_174_listcampaigns",
+      "name": "ListCampaigns → EnsureDataDir",
+      "process_type": "cross_community",
+      "step_count": 4,
+      "changed_steps": [
+        {
+          "symbol": "getWorkspace",
+          "step": 2
+        }
+      ]
+    },
+    {
+      "id": "proc_175_listcampaigns",
+      "name": "ListCampaigns → HasMeaningfulData",
+      "process_type": "cross_community",
+      "step_count": 4,
+      "changed_steps": [
+        {
+          "symbol": "getWorkspace",
+          "step": 2
+        }
+      ]
+    },
+    {
+      "id": "proc_176_updatepost",
+      "name": "UpdatePost → NewIdempotencyKey",
+      "process_type": "cross_community",
+      "step_count": 4,
+      "changed_steps": [
+        {
+          "symbol": "updatePost",
+          "step": 1
+        },
+        {
+          "symbol": "ensureTenantProfile",
+          "step": 3
+        },
+        {
+          "symbol": "scope",
+          "step": 2
+        }
+      ]
+    },
+    {
+      "id": "proc_177_updatepost",
+      "name": "UpdatePost → TenantAccessError",
+      "process_type": "cross_community",
+      "step_count": 4,
+      "changed_steps": [
+        {
+          "symbol": "updatePost",
+          "step": 1
+        },
+        {
+          "symbol": "assertSubServiceAllowed",
+          "step": 3
+        },
+        {
+          "symbol": "scope",
+          "step": 2
+        }
+      ]
+    },
+    {
+      "id": "proc_178_checkverification",
+      "name": "CheckVerification → EnsureDataDir",
+      "process_type": "cross_community",
+      "step_count": 4,
+      "changed_steps": [
+        {
+          "symbol": "getWorkspace",
+          "step": 2
+        }
+      ]
+    },
+    {
+      "id": "proc_179_checkverification",
+      "name": "CheckVerification → HasMeaningfulData",
+      "process_type": "cross_community",
+      "step_count": 4,
+      "changed_steps": [
+        {
+          "symbol": "getWorkspace",
+          "step": 2
+        }
+      ]
+    },
+    {
+      "id": "proc_181_post",
+      "name": "POST → NewIdempotencyKey",
+      "process_type": "intra_community",
+      "step_count": 3,
+      "changed_steps": [
+        {
+          "symbol": "ensureTenantProfile",
+          "step": 2
+        },
+        {
+          "symbol": "POST",
+          "step": 1
+        }
+      ]
+    },
+    {
+      "id": "proc_190_platformshowcase",
+      "name": "PlatformShowcase → Text",
+      "process_type": "cross_community",
+      "step_count": 3,
+      "changed_steps": [
+        {
+          "symbol": "PlatformShowcase",
+          "step": 1
+        }
+      ]
+    },
+    {
+      "id": "proc_191_simplemodeconsole",
+      "name": "SimpleModeConsole → GetLocalizedText",
+      "process_type": "cross_community",
+      "step_count": 3,
+      "changed_steps": [
+        {
+          "symbol": "SimpleModeConsole",
+          "step": 1
+        }
+      ]
+    },
+    {
+      "id": "proc_192_handleapiv1",
+      "name": "HandleApiV1 → CommentBody",
+      "process_type": "intra_community",
+      "step_count": 3,
+      "changed_steps": [
+        {
+          "symbol": "commentBody",
+          "step": 3
+        },
+        {
+          "symbol": "getOpenApiV1Spec",
+          "step": 2
+        },
+        {
+          "symbol": "handleApiV1",
+          "step": 1
+        }
+      ]
+    },
+    {
+      "id": "proc_193_handleapiv1",
+      "name": "HandleApiV1 → SettingOperations",
+      "process_type": "intra_community",
+      "step_count": 3,
+      "changed_steps": [
+        {
+          "symbol": "settingOperations",
+          "step": 3
+        },
+        {
+          "symbol": "getOpenApiV1Spec",
+          "step": 2
+        },
+        {
+          "symbol": "handleApiV1",
+          "step": 1
+        }
+      ]
+    },
+    {
+      "id": "proc_194_handleapiv1",
+      "name": "HandleApiV1 → MetaExample",
+      "process_type": "intra_community",
+      "step_count": 3,
+      "changed_steps": [
+        {
+          "symbol": "metaExample",
+          "step": 3
+        },
+        {
+          "symbol": "getPostmanV1Collection",
+          "step": 2
+        },
+        {
+          "symbol": "handleApiV1",
+          "step": 1
+        }
+      ]
+    },
+    {
+      "id": "proc_196_livesmsandwhatsappin",
+      "name": "LiveSmsAndWhatsAppInbox → UseThemeAndLocale",
+      "process_type": "cross_community",
+      "step_count": 3,
+      "changed_steps": [
+        {
+          "symbol": "LiveSmsAndWhatsAppInbox",
+          "step": 1
+        }
+      ]
+    },
+    {
+      "id": "proc_197_livesmsandwhatsappin",
+      "name": "LiveSmsAndWhatsAppInbox → GetLocalizedText",
+      "process_type": "cross_community",
+      "step_count": 3,
+      "changed_steps": [
+        {
+          "symbol": "LiveSmsAndWhatsAppInbox",
+          "step": 1
+        }
+      ]
+    },
+    {
+      "id": "proc_199_telephonywhatsappvoi",
+      "name": "TelephonyWhatsAppVoiceHub → HandleSaveVoiceConfig",
+      "process_type": "cross_community",
+      "step_count": 3,
+      "changed_steps": [
+        {
+          "symbol": "TelephonyWhatsAppVoiceHub",
+          "step": 1
+        },
+        {
+          "symbol": "PhoneMarketplaceAndWhatsAppLinking",
+          "step": 2
+        }
+      ]
+    },
+    {
+      "id": "proc_200_telephonywhatsappvoi",
+      "name": "TelephonyWhatsAppVoiceHub → HandleKeyClick",
+      "process_type": "cross_community",
+      "step_count": 3,
+      "changed_steps": [
+        {
+          "symbol": "TelephonyWhatsAppVoiceHub",
+          "step": 1
+        }
+      ]
+    },
+    {
+      "id": "proc_201_giantbrandfooter",
+      "name": "GiantBrandFooter → Text",
+      "process_type": "intra_community",
+      "step_count": 3,
+      "changed_steps": [
+        {
+          "symbol": "GiantBrandFooter",
+          "step": 1
+        }
+      ]
+    },
+    {
+      "id": "proc_202_herostage",
+      "name": "HeroStage → Text",
+      "process_type": "intra_community",
+      "step_count": 3,
+      "changed_steps": [
+        {
+          "symbol": "HeroStage",
+          "step": 1
+        }
+      ]
+    },
+    {
+      "id": "proc_205_businessworkspace",
+      "name": "BusinessWorkspace → FetchGroups",
+      "process_type": "cross_community",
+      "step_count": 3,
+      "changed_steps": [
+        {
+          "symbol": "ConnectAndAccountsHub",
+          "step": 2
+        }
+      ]
+    },
+    {
+      "id": "proc_206_businessworkspace",
+      "name": "BusinessWorkspace → FetchEntities",
+      "process_type": "cross_community",
+      "step_count": 3,
+      "changed_steps": [
+        {
+          "symbol": "ConnectAndAccountsHub",
+          "step": 2
+        }
+      ]
+    },
+    {
+      "id": "proc_208_rootlayout",
+      "name": "RootLayout → GetLandingCopy",
+      "process_type": "intra_community",
+      "step_count": 3,
+      "changed_steps": [
+        {
+          "symbol": "Navbar",
+          "step": 2
+        }
+      ]
+    },
+    {
+      "id": "proc_209_rootlayout",
+      "name": "RootLayout → CheckSession",
+      "process_type": "intra_community",
+      "step_count": 3,
+      "changed_steps": [
+        {
+          "symbol": "Navbar",
+          "step": 2
+        }
+      ]
+    },
+    {
+      "id": "proc_210_telephonybentoshowca",
+      "name": "TelephonyBentoShowcase → Text",
+      "process_type": "intra_community",
+      "step_count": 3,
+      "changed_steps": [
+        {
+          "symbol": "TelephonyBentoShowcase",
+          "step": 1
+        }
+      ]
+    },
+    {
+      "id": "proc_211_purchasephonenumber",
+      "name": "PurchasePhoneNumber → NewIdempotencyKey",
+      "process_type": "cross_community",
+      "step_count": 3,
+      "changed_steps": [
+        {
+          "symbol": "ensureTenantProfile",
+          "step": 2
+        }
+      ]
+    },
+    {
+      "id": "proc_212_purchasephonenumber",
+      "name": "PurchasePhoneNumber → TenantAccessError",
+      "process_type": "cross_community",
+      "step_count": 3,
+      "changed_steps": [
+        {
+          "symbol": "assertSubServiceAllowed",
+          "step": 2
+        }
+      ]
+    },
+    {
+      "id": "proc_213_threestepbroadcastwi",
+      "name": "ThreeStepBroadcastWizard → Loc",
+      "process_type": "intra_community",
+      "step_count": 3,
+      "changed_steps": [
+        {
+          "symbol": "create",
+          "step": 2
+        },
+        {
+          "symbol": "loc",
+          "step": 3
+        },
+        {
+          "symbol": "ThreeStepBroadcastWizard",
+          "step": 1
+        }
+      ]
+    },
+    {
+      "id": "proc_214_threestepbroadcastwi",
+      "name": "ThreeStepBroadcastWizard → Api",
+      "process_type": "intra_community",
+      "step_count": 3,
+      "changed_steps": [
+        {
+          "symbol": "create",
+          "step": 2
+        },
+        {
+          "symbol": "ThreeStepBroadcastWizard",
+          "step": 1
+        },
+        {
+          "symbol": "api",
+          "step": 3
+        }
+      ]
+    },
+    {
+      "id": "proc_217_listcampaigns",
+      "name": "ListCampaigns → NewIdempotencyKey",
+      "process_type": "intra_community",
+      "step_count": 3,
+      "changed_steps": [
+        {
+          "symbol": "ensureTenantProfile",
+          "step": 2
+        }
+      ]
+    }
+  ]
+}

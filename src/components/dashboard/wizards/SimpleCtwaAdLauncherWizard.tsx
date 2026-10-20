@@ -261,7 +261,6 @@ export function SimpleCtwaAdLauncherWizard({
 
                   {/* Creative Preview Image */}
                   <div className="relative aspect-square w-full overflow-hidden rounded-xl bg-slate-800">
-                    {/* eslint-disable-next-line @next/next/no-img-element */}
                     <img
                       src={creativeUrl}
                       alt="Ad Creative"

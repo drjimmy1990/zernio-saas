@@ -1,0 +1,4 @@
+old_url,previous_content,action,new_url,expected_status,notes
+https://asra3.com/,SaaS & Automation Solutions portfolio,update_same_url,https://asra3.com/,200,Deploy corrected homepage then request recrawl
+https://asra3.com/blog,Former automation and SaaS portfolio blog,retire_without_redirect,,404,No equivalent product page; verify aaPanel serves the application 404
+https://asra3.com/blog/tri-lingual-restaurant-os-kds,Restaurant OS case study,retire_without_redirect,,404,No equivalent product page; do not redirect to CRM or homepage

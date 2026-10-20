@@ -1,0 +1,5 @@
+simulation: phase1c-zernio-whatsapp
+routing: path
+mocks:
+  - routeKey: zernio
+    path: ../mocks/zernio-whatsapp/config.yaml

@@ -5,7 +5,7 @@ import {
   getFallbackStore,
   resolveConnectScopesParam,
 } from '@/lib/zernio/policy-engine';
-import { WorkspaceStore } from '@/lib/storage/workspace-store';
+import { verifyReconnectIdentity } from '@/lib/accounts/lifecycle';
 import type {
   OAuthScopeArea,
   SecondarySelectionStep,
@@ -31,19 +31,28 @@ export class CoreConnectService {
     organizationName?: string
   ): Promise<string> {
     const policy = await assertSubServiceAllowed(organizationId, 'core_connect');
-    if (policy.zernioProfileId) {
-      return policy.zernioProfileId;
-    }
-
     const name = organizationName || policy.organizationName;
 
     if (!zernioClient.isConfigured()) {
-      const simulatedProfileId = `66a1f0c2${organizationId.replace(/[^a-f0-9]/gi, '').slice(0, 16).padEnd(16, '0')}`;
-      const store = getFallbackStore();
-      if (store.tenants[organizationId]) {
-        store.tenants[organizationId].zernioProfileId = simulatedProfileId;
+      throw new ZernioApiException({
+        status: 503,
+        error: 'Zernio is not configured. Contact your administrator to enable account connections.',
+        code: 'provider_not_configured',
+      });
+    }
+
+    if (policy.zernioProfileId) {
+      const { data } = await zernioClient.request<{
+        profile?: { _id: string; externalId?: string | null };
+      }>({ method: 'GET', path: `/profiles/${encodeURIComponent(policy.zernioProfileId)}` });
+      if (data.profile?._id !== policy.zernioProfileId || data.profile.externalId !== organizationId) {
+        throw new ZernioApiException({
+          status: 409,
+          error: 'The saved Zernio profile does not match this workspace. Contact your administrator.',
+          code: 'profile_mapping_mismatch',
+        });
       }
-      return simulatedProfileId;
+      return policy.zernioProfileId;
     }
 
     let profileId: string;
@@ -59,25 +68,44 @@ export class CoreConnectService {
           externalId: organizationId,
         },
       });
-      profileId = data.profile._id;
+      if (data.profile?.externalId !== organizationId) {
+        throw new ZernioApiException({ status: 502, error: 'Zernio returned a profile for a different workspace.', code: 'profile_mapping_mismatch' });
+      }
+      profileId = data.profile?._id;
     } catch (err) {
       if (
         err instanceof ZernioApiException &&
         err.envelope.status === 409 &&
+        err.envelope.code === 'profile_external_id_conflict' &&
         typeof err.envelope.details?.existingProfileId === 'string'
       ) {
         profileId = err.envelope.details.existingProfileId;
+        const { data } = await zernioClient.request<{ profile?: { _id: string; externalId?: string | null } }>({
+          method: 'GET', path: `/profiles/${encodeURIComponent(profileId)}`,
+        });
+        if (data.profile?._id !== profileId || data.profile.externalId !== organizationId) {
+          throw new ZernioApiException({ status: 409, error: 'The existing Zernio profile belongs to a different workspace.', code: 'profile_mapping_mismatch' });
+        }
       } else {
-        profileId = `66a1f0c2${organizationId.replace(/[^a-f0-9]/gi, '').slice(0, 16).padEnd(16, '0')}`;
+        throw err;
       }
+    }
+
+    if (typeof profileId !== 'string' || !/^[a-f0-9]{24}$/i.test(profileId)) {
+      throw new ZernioApiException({
+        status: 502,
+        error: 'Zernio did not return a valid profile ID.',
+        code: 'invalid_provider_response',
+      });
     }
 
     const supabase = createSupabaseAdminClient();
     if (supabase) {
-      await supabase
+      const { error } = await supabase
         .from('organizations')
         .update({ zernio_profile_id: profileId, updated_at: new Date().toISOString() })
         .eq('id', organizationId);
+      if (error) throw new Error('Could not save the Zernio profile mapping. Please retry.');
     }
 
     const store = getFallbackStore();
@@ -104,7 +132,15 @@ export class CoreConnectService {
     loginMethod?: 'instagram_login' | 'facebook_login'; // Optional for Instagram
     whatsappOnboarding?: 'api' | 'business_app';
     whatsappSignupMode?: 'hosted' | 'headless';
+    reconnectAccountId?: string;
   }) {
+    if (params.loginMethod && (params.platform !== 'instagram' || !['instagram_login', 'facebook_login'].includes(params.loginMethod))) {
+      throw new ZernioApiException({ status: 400, error: 'Choose a supported Instagram login method.' });
+    }
+    if (params.whatsappOnboarding && !['api', 'business_app'].includes(params.whatsappOnboarding) ||
+        params.whatsappSignupMode && !['hosted', 'headless'].includes(params.whatsappSignupMode)) {
+      throw new ZernioApiException({ status: 400, error: 'Choose a supported WhatsApp onboarding and signup mode.' });
+    }
     const policy = await assertSubServiceAllowed(
       params.organizationId,
       'core_connect'
@@ -117,6 +153,8 @@ export class CoreConnectService {
     }
 
     const profileId = await this.ensureTenantProfile(params.organizationId);
+    const reconnect = params.reconnectAccountId
+      ? await verifyReconnectIdentity(params.organizationId, params.reconnectAccountId, params.platform) : undefined;
     const scopesParam = resolveConnectScopesParam(
       policy,
       params.platform,
@@ -125,7 +163,7 @@ export class CoreConnectService {
     const isWhatsAppHosted =
       params.platform === 'whatsapp' &&
       (params.whatsappSignupMode || 'hosted') === 'hosted';
-    const headless = isWhatsAppHosted ? false : policy.enforceHeadlessOAuth;
+    const headless = params.platform === 'whatsapp' ? !isWhatsAppHosted : policy.enforceHeadlessOAuth;
 
     if (!zernioClient.isConfigured()) {
       const simulatedCallback = new URL(params.redirectUrl);
@@ -189,6 +227,7 @@ export class CoreConnectService {
       query: {
         profileId,
         redirect_url: params.redirectUrl,
+        ...(reconnect || {}),
         ...(isWhatsAppHosted
           ? {
               signup: 'hosted',
@@ -198,7 +237,7 @@ export class CoreConnectService {
           : { headless }),
         ...(scopesParam ? { scopes: scopesParam } : {}),
         ...(params.shopDomain ? { shop: params.shopDomain } : {}),
-        ...(params.loginMethod ? { loginMethod: params.loginMethod } : {}),
+        ...(params.platform === 'instagram' ? { loginMethod: reconnect?.loginMethod || params.loginMethod || 'instagram_login' } : {}),
         ...(params.whatsappOnboarding
           ? { onboarding: params.whatsappOnboarding }
           : {}),
@@ -225,6 +264,7 @@ export class CoreConnectService {
     organizationId: string;
     step: SecondarySelectionStep;
     tempToken: string;
+    connectToken?: string;
   }) {
     const profileId = await this.ensureTenantProfile(params.organizationId);
 
@@ -263,6 +303,7 @@ export class CoreConnectService {
       method: 'GET',
       path: endpointByStep[params.step],
       query: { profileId, tempToken: params.tempToken },
+      ...(params.connectToken ? { extraHeaders: { 'X-Connect-Token': params.connectToken } } : {}),
     });
 
     return {
@@ -283,21 +324,16 @@ export class CoreConnectService {
     entityId: string;
     tempToken: string;
     userProfile?: Record<string, unknown>;
+    connectToken?: string;
     wabaId?: string;
     redirectUrl?: string;
   }) {
-    const profileId = await this.ensureTenantProfile(params.organizationId);
-
-    if (!zernioClient.isConfigured() || params.tempToken.startsWith('sim_')) {
-      return {
-        simulated: true,
-        account: {
-          accountId: `acc_headless_${Date.now().toString(36)}`,
-          profileId,
-          entityId: params.entityId,
-          isActive: true,
-        },
-      };
+    if (params.step === 'select_public_profile') {
+      throw new ZernioApiException({ status: 501, error: 'Snapchat profile selection is not implemented yet.' });
+    }
+    if (typeof params.tempToken !== 'string' || !params.tempToken.trim() || params.tempToken.startsWith('sim_') ||
+        typeof params.entityId !== 'string' || !params.entityId.trim()) {
+      throw new ZernioApiException({ status: 400, error: 'A valid authorization token and selected entity are required.' });
     }
 
     const endpointByStep: Record<
@@ -332,13 +368,19 @@ export class CoreConnectService {
     };
 
     const target = endpointByStep[params.step];
+    if (!target) throw new ZernioApiException({ status: 400, error: 'Unsupported account selection step.' });
+    if (params.step === 'select_phone_number' && !params.wabaId?.trim()) {
+      throw new ZernioApiException({ status: 400, error: 'Select the WhatsApp Business Account associated with this number.' });
+    }
+    const profileId = await this.ensureTenantProfile(params.organizationId);
 
     const { data } = await zernioClient.request<Record<string, unknown>>({
       method: 'POST',
       path: target.path,
+      ...(params.connectToken ? { extraHeaders: { 'X-Connect-Token': params.connectToken } } : {}),
       body: {
-        profileId,
         [target.idField]: params.entityId,
+        profileId,
         tempToken: params.tempToken,
         ...(params.userProfile ? { userProfile: params.userProfile } : {}),
         ...(params.wabaId ? { wabaId: params.wabaId } : {}),
@@ -391,12 +433,36 @@ export class CoreConnectService {
       whatsapp: '/connect/whatsapp/credentials',
     } as const;
 
+    // Only credential fields may cross this boundary; routing belongs to the server.
+    const credentials = params.credentials;
+    const credentialFields = {
+      bluesky: {
+        identifier: credentials.identifier || credentials.handle,
+        appPassword: credentials.appPassword || credentials.password,
+      },
+      wordpress: {
+        siteUrl: credentials.siteUrl,
+        username: credentials.username,
+        applicationPassword: credentials.applicationPassword,
+      },
+      shopify: {
+        shop: credentials.shop || credentials.shopDomain,
+        accessToken: credentials.accessToken || credentials.adminToken,
+      },
+      whatsapp: {
+        accessToken: credentials.accessToken || credentials.systemUserToken,
+        wabaId: credentials.wabaId,
+        phoneNumberId: credentials.phoneNumberId,
+        ...(credentials.pin ? { pin: credentials.pin } : {}),
+      },
+    };
+
     const { data } = await zernioClient.request({
       method: 'POST',
       path: pathMap[params.platform],
       body: {
+        ...credentialFields[params.platform],
         profileId,
-        ...params.credentials,
       },
     });
 
@@ -412,67 +478,35 @@ export class CoreConnectService {
     const policy = await assertSubServiceAllowed(organizationId, 'core_connect');
     const profileId = await this.ensureTenantProfile(organizationId);
 
-    const ws = WorkspaceStore.getWorkspace(organizationId);
-    const accounts = ws.connectedAccounts || [];
-    const healthyCount = accounts.filter((a) => a.status === 'healthy').length;
-    const errorCount = accounts.filter((a) => a.status === 'error' || a.needsReconnect).length;
-
-    const localFallback = {
-      simulated: true,
-      profileId,
-      quota: {
-        used: accounts.length,
-        max: policy.quotas.maxConnectedAccounts,
-      },
-      summary: {
-        total: accounts.length,
-        healthy: healthyCount,
-        warning: 0,
-        error: errorCount,
-        needsReconnect: errorCount,
-      },
-      accounts,
-    };
-
-    if (!zernioClient.isConfigured()) {
-      return localFallback;
+    const { data: inventory } = await zernioClient.request<{
+      accounts?: Array<{ _id: string; profileId: string | { _id?: string }; platform: string; username?: string; displayName?: string; metadata?: { loginMethod?: string }; isActive: boolean; enabled?: boolean; needsReconnection?: boolean }>;
+    }>({ method: 'GET', path: '/accounts', query: { profileId } });
+    const { data: health } = await zernioClient.request<{
+      accounts?: Array<{ accountId?: string; profileId?: string; status?: string; needsReconnect?: boolean; issues?: string[]; canPost?: boolean; canFetchAnalytics?: boolean; tokenExpiresAt?: string; tokenValid?: boolean; messagingRestriction?: unknown; analyticsSync?: unknown }>;
+    }>({ method: 'GET', path: '/accounts/health', query: { profileId } });
+    if (!Array.isArray(inventory.accounts) || !Array.isArray(health.accounts)) {
+      throw new ZernioApiException({ status: 502, error: 'The provider did not return a valid account health inventory.' });
     }
-
-    try {
-      const { data: health } = await zernioClient.request<{
-        summary?: {
-          total?: number;
-          healthy?: number;
-          warning?: number;
-          error?: number;
-          needsReconnect?: number;
-        };
-        accounts?: Array<Record<string, unknown>>;
-      }>({
-        method: 'GET',
-        path: '/accounts/health',
-        query: { profileId },
-      });
-
-      const remoteAccounts = Array.isArray(health?.accounts) ? health.accounts : accounts;
-      return {
-        simulated: false,
-        profileId,
-        quota: {
-          used: health?.summary?.total ?? remoteAccounts.length,
-          max: policy.quotas.maxConnectedAccounts,
-        },
-        summary: {
-          total: health?.summary?.total ?? remoteAccounts.length,
-          healthy: health?.summary?.healthy ?? healthyCount,
-          warning: health?.summary?.warning ?? 0,
-          error: health?.summary?.error ?? errorCount,
-          needsReconnect: health?.summary?.needsReconnect ?? errorCount,
-        },
-        accounts: remoteAccounts,
-      };
-    } catch {
-      return localFallback;
-    }
+    const checkedAt = new Date().toISOString();
+    const accounts = inventory.accounts.filter((account) =>
+      (typeof account.profileId === 'string' ? account.profileId : account.profileId?._id) === profileId
+    ).map((account) => {
+      const observed = health.accounts!.find((item) => item.accountId === account._id && item.profileId === profileId);
+      const status = observed && ['healthy', 'warning', 'error'].includes(observed.status || '') ? observed.status! : 'unknown';
+      return { _id: account._id, id: account._id, accountId: account._id, platform: account.platform,
+        ...(account.platform === 'instagram' ? { loginMethod: account.metadata?.loginMethod === 'facebook_login' ? 'facebook_login' as const : 'instagram_login' as const } : {}),
+        isActive: account.isActive, enabled: account.enabled, needsReconnection: account.needsReconnection === true,
+        username: account.username || '', displayName: account.displayName || account.username || '',
+        status, needsReconnect: account.needsReconnection === true || observed?.needsReconnect === true || !account.isActive,
+        issues: observed?.issues || [], canPost: observed?.canPost === true, canFetchAnalytics: observed?.canFetchAnalytics === true,
+        tokenExpiresAt: observed?.tokenExpiresAt, tokenValid: observed?.tokenValid,
+        messagingRestriction: observed?.messagingRestriction, analyticsSync: observed?.analyticsSync, checkedAt, syncTime: checkedAt };
+    });
+    return { simulated: false, profileId, checkedAt,
+      quota: { used: accounts.length, max: policy.quotas.maxConnectedAccounts },
+      summary: { total: accounts.length, healthy: accounts.filter((a) => a.status === 'healthy').length,
+        warning: accounts.filter((a) => a.status === 'warning').length, error: accounts.filter((a) => a.status === 'error').length,
+        unknown: accounts.filter((a) => a.status === 'unknown').length, needsReconnect: accounts.filter((a) => a.needsReconnect).length },
+      accounts };
   }
 }

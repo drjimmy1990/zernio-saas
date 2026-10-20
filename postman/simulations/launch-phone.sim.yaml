@@ -1,0 +1,5 @@
+simulation: launch-phone
+routing: path
+mocks:
+  - routeKey: zernio
+    path: ../mocks/launch-phone/config.yaml

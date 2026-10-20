@@ -1,0 +1,5 @@
+simulation: phase2a-zernio-meta-inbox
+routing: path
+mocks:
+  - routeKey: zernio
+    path: ../mocks/zernio-meta-inbox/config.yaml

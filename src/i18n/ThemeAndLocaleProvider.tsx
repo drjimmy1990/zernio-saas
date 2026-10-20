@@ -30,10 +30,13 @@ const ThemeAndLocaleContext = createContext<ThemeAndLocaleContextValue>({
 
 export function ThemeAndLocaleProvider({
   children,
+  fixedLocale,
 }: {
   children: React.ReactNode;
+  fixedLocale?: SupportedLocale;
 }) {
-  const [locale, setLocaleState] = useState<SupportedLocale>('ar');
+  const [storedLocale, setLocaleState] = useState<SupportedLocale>('ar');
+  const locale = fixedLocale ?? storedLocale;
   const [theme, setThemeState] = useState<ThemeMode>('light');
 
   useEffect(() => {

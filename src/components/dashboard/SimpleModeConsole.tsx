@@ -49,7 +49,7 @@ export function SimpleModeConsole({
   const connectedCount =
     workspace?.subServicesData?.core_connect?.accounts?.length || 0;
   const numbersCount =
-    workspace?.subServicesData?.telephony?.phoneNumbers?.length || 0;
+    workspace?.subServicesData?.telephony?.numbers?.length || 0;
   const unreadMessagesCount =
     workspace?.subServicesData?.inbox_crm?.data?.reduce(
       (sum: number, item: any) => sum + (item.unreadCount || 0),
@@ -109,7 +109,7 @@ export function SimpleModeConsole({
                 {numbersCount}
               </span>
               <span className="block text-[9px] text-emerald-600 font-semibold mt-0.5">
-                {numbersCount > 0 ? loc('موثقة WABA', 'WABA Verified') : loc('متاح للشراء', 'Available')}
+                {numbersCount > 0 ? loc('أرقام مملوكة', 'Owned numbers') : loc('متاح للشراء', 'Available')}
               </span>
             </div>
 
@@ -166,16 +166,16 @@ export function SimpleModeConsole({
                   <Phone className="h-5 w-5" />
                 </div>
                 <span className="rounded-full bg-emerald-500/10 px-2.5 py-0.5 text-[10px] font-bold text-emerald-600">
-                  {loc('60 ثانية', '60 Seconds')}
+                  {loc('إعداد موجّه', 'Guided setup')}
                 </span>
               </div>
               <h4 className="text-sm font-bold text-[var(--text-primary)] group-hover:text-emerald-600 transition">
-                {loc('شراء رقم وتفعيل واتساب في 60 ثانية', 'Buy Number & Link WhatsApp in 60s')}
+                {loc('شراء رقم وربط واتساب', 'Buy a number & connect WhatsApp')}
               </h4>
               <p className="mt-1.5 text-xs text-[var(--text-secondary)] leading-relaxed">
                 {loc(
-                  'اختر دولتك ورقمك المحلي، واحصل على علامة التوثيق الخضراء على واتساب بيزنس تلقائياً دون إعدادات معقدة.',
-                  'Pick your local country number and get an official verified WhatsApp Business profile instantly.'
+                  'اختر رقمًا متاحًا، واستكمل متطلبات المزوّد، ثم اربطه بواتساب من خلال Meta.',
+                  'Choose an available number, complete the provider requirements, then connect WhatsApp through Meta.'
                 )}
               </p>
             </div>

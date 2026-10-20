@@ -1,0 +1,5 @@
+simulation: phase2b-zernio-meta-settings
+routing: path
+mocks:
+  - routeKey: zernio
+    path: ../mocks/zernio-meta-settings/config.yaml

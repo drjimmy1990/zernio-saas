@@ -1,0 +1,10 @@
+version: 1
+name: Zernio purchased-number contract fixture
+slug: zernio-purchased-number-contract
+protocol: http
+port: 4948
+interceptRequests: true
+scenarios:
+  - name: default
+    path: ./default.js
+    default: true

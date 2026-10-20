@@ -17,11 +17,14 @@ export interface AuthSession {
   tenant: AuthTenant;
   createdAt: number;
   expiresAt: number;
+  sessionId?: string;
+  securityVersion?: number;
+  adminCredentialVersion?: string;
 }
 
 export const SESSION_COOKIE_NAME = 'asra3_session';
 export const SESSION_MAX_AGE = 7 * 24 * 60 * 60; // 7 days in seconds
-export const SESSION_SECRET = process.env.SESSION_SECRET || 'asra3_secure_session_secret_2026';
+export const SESSION_SECRET = process.env.SESSION_SECRET?.trim() || '';
 
 function rotr(x: number, n: number): number {
   return (x >>> n) | (x << (32 - n));
@@ -188,6 +191,9 @@ function timingSafeEqual(a: string, b: string): boolean {
 }
 
 function computeSignature(payload: string): string {
+  if (!SESSION_SECRET || SESSION_SECRET === 'asra3_secure_session_secret_2026') {
+    throw new Error('SESSION_SECRET must be configured with a private signing secret.');
+  }
   return bytesToBase64Url(hmacSha256(SESSION_SECRET, payload));
 }
 
@@ -228,7 +234,13 @@ export function decodeSession(token: string | null | undefined): AuthSession | n
     const raw = base64ToUtf8(payload);
     const parsed = JSON.parse(raw) as AuthSession;
 
-    if (!parsed || !parsed.user || !parsed.user.id || !parsed.user.role || !parsed.expiresAt) {
+    if (
+      !parsed ||
+      typeof parsed.user?.id !== 'string' || !parsed.user.id ||
+      !['super_admin', 'owner', 'member'].includes(parsed.user.role) ||
+      typeof parsed.tenant?.organizationId !== 'string' || !parsed.tenant.organizationId ||
+      typeof parsed.expiresAt !== 'number' || !Number.isFinite(parsed.expiresAt)
+    ) {
       return null;
     }
 

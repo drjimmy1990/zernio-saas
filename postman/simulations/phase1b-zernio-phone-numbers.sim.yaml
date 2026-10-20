@@ -1,0 +1,5 @@
+simulation: phase1b-zernio-phone-numbers
+routing: path
+mocks:
+  - routeKey: zernio
+    path: ../mocks/zernio-phone-numbers/config.yaml

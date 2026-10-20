@@ -114,6 +114,7 @@ interface ZernioWebhookPayload {
   id: string;
   event: ZernioWebhookEventType;
   timestamp?: string;
+  test?: boolean;
   profiles?: Array<{
     id: string;
     externalId: string | null;
@@ -202,6 +203,14 @@ interface ZernioWebhookPayload {
     phoneNumber?: string;
     qualityRating?: string;
   };
+  template?: {
+    templateId: string;
+    name: string;
+    language: string;
+    status?: string;
+    category?: string;
+    reason?: string;
+  };
   verification?: {
     id: string;
     phoneNumber?: string;
@@ -228,70 +237,142 @@ interface ZernioWebhookPayload {
  * - Verifies `X-Zernio-Signature` using HMAC-SHA256 against the raw request body
  * - Deduplicates deliveries on `event.id` (at-least-once delivery contract)
  * - Routes every event across all 22 Zernio webhook categories (72 events)
- *   to the right tenant via `event.profiles[0].externalId` in both WorkspaceStore & Supabase.
+ *   to the tenant whose durable organization/profile mapping matches the signed event.
  */
 export async function POST(request: Request) {
-  const rawBody = await request.text();
   const secret = process.env.ZERNIO_WEBHOOK_SECRET;
-
-  if (secret && !secret.startsWith('whsec_your_')) {
-    const signatureHeader = request.headers.get('X-Zernio-Signature') || '';
-    const computedSignature = crypto
-      .createHmac('sha256', secret)
-      .update(rawBody)
-      .digest('hex');
-
-    const sigBuffer = Buffer.from(signatureHeader);
-    const compBuffer = Buffer.from(computedSignature);
-
-    if (
-      sigBuffer.length !== compBuffer.length ||
-      !crypto.timingSafeEqual(sigBuffer, compBuffer)
-    ) {
-      return NextResponse.json(
-        { error: 'Invalid X-Zernio-Signature' },
-        { status: 400 }
-      );
-    }
+  if (!secret?.trim() || secret.trim().startsWith('whsec_your_')) {
+    return NextResponse.json({ error: 'Webhook signing is not configured' }, { status: 503 });
+  }
+  const rawBody = await request.text();
+  const signatureHeader = request.headers.get('X-Zernio-Signature') || '';
+  const computedSignature = crypto.createHmac('sha256', secret).update(rawBody).digest('hex');
+  if (
+    !/^[a-f0-9]{64}$/.test(signatureHeader) ||
+    !crypto.timingSafeEqual(Buffer.from(signatureHeader, 'hex'), Buffer.from(computedSignature, 'hex'))
+  ) {
+    return NextResponse.json({ error: 'Invalid X-Zernio-Signature' }, { status: 400 });
   }
 
-  let event: ZernioWebhookPayload;
+  let payload: unknown;
   try {
-    event = JSON.parse(rawBody) as ZernioWebhookPayload;
+    payload = JSON.parse(rawBody);
   } catch {
     return NextResponse.json({ error: 'Invalid JSON payload' }, { status: 400 });
   }
+  const isRecord = (value: unknown): value is Record<string, unknown> =>
+    value !== null && typeof value === 'object' && !Array.isArray(value);
+  const isIdentifier = (value: unknown): value is string =>
+    typeof value === 'string' && value.trim().length > 0 && value === value.trim();
+  if (
+    !isRecord(payload) || !isIdentifier(payload.id) || !isIdentifier(payload.event) ||
+    (payload.test !== undefined && typeof payload.test !== 'boolean') ||
+    (payload.timestamp !== undefined && (typeof payload.timestamp !== 'string' || !Number.isFinite(Date.parse(payload.timestamp)))) ||
+    (payload.profiles !== undefined && (!Array.isArray(payload.profiles) || payload.profiles.some((profile) =>
+      !isRecord(profile) || !isIdentifier(profile.id) ||
+      (profile.externalId !== null && !isIdentifier(profile.externalId))
+    )))
+  ) {
+    return NextResponse.json({ error: 'Invalid webhook envelope' }, { status: 400 });
+  }
+  if (payload.event === 'webhook.test' || payload.test === true) {
+    return NextResponse.json({ ok: true, test: true, event: payload.event });
+  }
+  for (const field of ['account', 'post', 'conversation', 'control', 'message', 'comment', 'review', 'contact', 'call', 'ad', 'lead', 'whatsapp', 'template', 'verification', 'product', 'number']) {
+    if (payload[field] !== undefined && !isRecord(payload[field])) {
+      return NextResponse.json({ error: `Invalid webhook ${field}` }, { status: 400 });
+    }
+  }
+  const event = payload as unknown as ZernioWebhookPayload;
+  if (event.event === 'account.connected' && (!isIdentifier(event.account?.accountId || event.account?.id) || !isIdentifier(event.account?.platform))) {
+    return NextResponse.json({ error: 'Invalid webhook account' }, { status: 400 });
+  }
+  if (event.event.startsWith('message.') && (!isIdentifier(event.message?.id) || !isIdentifier(event.conversation?.id || event.message?.conversationId))) {
+    return NextResponse.json({ error: 'Invalid webhook message' }, { status: 400 });
+  }
+  if (event.event === 'conversation.control_changed') {
+    const control = payload.control as Record<string, unknown> | undefined;
+    if (!isIdentifier(event.account?.accountId || event.account?.id) || !isIdentifier(event.conversation?.id) ||
+        !control || !['app', 'ai_agent', 'other'].includes(String(control.owner)) ||
+        typeof payload.changedAt !== 'string' || !Number.isFinite(Date.parse(payload.changedAt))) {
+      return NextResponse.json({ error: 'Invalid webhook conversation control' }, { status: 400 });
+    }
+  }
+  if (event.event === 'whatsapp.template.status_updated' || event.event === 'whatsapp.template.category_updated') {
+    if (!isIdentifier(event.account?.accountId) || !isIdentifier(event.template?.templateId) || !isIdentifier(event.template?.name) || !isIdentifier(event.template?.language) ||
+      (event.event === 'whatsapp.template.status_updated' && !isIdentifier(event.template?.status)) ||
+      (event.event === 'whatsapp.template.category_updated' && !['UTILITY', 'MARKETING', 'AUTHENTICATION'].includes(event.template?.category || ''))) {
+      return NextResponse.json({ error: 'Invalid webhook template' }, { status: 400 });
+    }
+  }
 
-  const organizationId = event.profiles?.[0]?.externalId || null;
-  const zernioProfileId = event.profiles?.[0]?.id || event.account?.profileId || null;
+  if (payload.statusAt !== undefined && (typeof payload.statusAt !== 'string' || !Number.isFinite(Date.parse(payload.statusAt)))) {
+    return NextResponse.json({ error: 'Invalid webhook status time' }, { status: 400 });
+  }
+  const message = payload.message as Record<string, unknown> | undefined;
+  if (message?.sentAt !== undefined && (typeof message.sentAt !== 'string' || !Number.isFinite(Date.parse(message.sentAt)))) {
+    return NextResponse.json({ error: 'Invalid webhook message time' }, { status: 400 });
+  }
+  const number = payload.number as Record<string, unknown> | undefined;
+  if (event.event.startsWith('whatsapp.number.') && (!isIdentifier(number?.id) || !isIdentifier(number?.profileId))) {
+    return NextResponse.json({ error: 'Invalid webhook number' }, { status: 400 });
+  }
+  if (!event.profiles?.length) {
+    if (event.account?.profileId != null) {
+      return NextResponse.json({ error: 'Profile-scoped webhook is missing its routing profile' }, { status: 409 });
+    }
+    return NextResponse.json({ ok: true, ignored: true, event: event.event });
+  }
+  // Multi-profile payloads can contain another tenant's resources. Splitting them
+  // requires event-specific routing and is not supported by this single-tenant handler.
+  if (event.profiles.length !== 1) {
+    return NextResponse.json({ error: 'Multi-profile webhook routing is not supported' }, { status: 409 });
+  }
+  const { id: zernioProfileId, externalId: organizationId } = event.profiles[0];
+  if (!organizationId || (number?.profileId !== undefined && number.profileId !== zernioProfileId) ||
+      (event.account?.profileId !== undefined && event.account.profileId !== zernioProfileId) ||
+      (event.account?.accountId !== undefined && event.account.id !== undefined && event.account.accountId !== event.account.id)) {
+    return NextResponse.json({ error: 'Webhook account/profile mapping is inconsistent' }, { status: 409 });
+  }
+  const deadline = AbortSignal.timeout(4000);
+  let supabase: ReturnType<typeof createSupabaseAdminClient>;
+  try {
+    if (!process.env.SUPABASE_SERVICE_ROLE_KEY?.trim()) return NextResponse.json({ error: 'Webhook service role unavailable' }, { status: 503 });
+    supabase = createSupabaseAdminClient();
+    if (!supabase) return NextResponse.json({ error: 'Webhook tenant verification is unavailable' }, { status: 503 });
+    const { data: organization, error } = await supabase.from('organizations')
+      .select('id,zernio_profile_id').eq('id', organizationId).eq('zernio_profile_id', zernioProfileId).abortSignal(deadline).maybeSingle();
+    if (error) return NextResponse.json({ error: 'Could not verify webhook tenant mapping' }, { status: 503 });
+    if (!organization || organization.id !== organizationId || organization.zernio_profile_id !== zernioProfileId) {
+      return NextResponse.json({ error: 'Webhook profile does not match a registered workspace' }, { status: 409 });
+    }
+  } catch {
+    return NextResponse.json({ error: 'Webhook tenant verification is unavailable' }, { status: 503 });
+  }
   const nowIso = event.timestamp || new Date().toISOString();
-
-  // ---------------------------------------------------------------------------
-  // A. Local WorkspaceStore Routing (Works with zero database setup + caches state)
-  // ---------------------------------------------------------------------------
-  if (organizationId && event.event) {
-    const ws = WorkspaceStore.getWorkspace(organizationId);
-    const dedupKey = `webhook:${event.id || `${event.event}:${nowIso}`}`;
-
-    if (event.id && ws.idempotencyStore?.[dedupKey]) {
-      return NextResponse.json({
-        ok: true,
-        deduplicated: true,
-        routedOrganizationId: organizationId,
-        event: event.event,
-      });
-    }
-
-    if (event.id) {
-      ws.idempotencyStore[dedupKey] = {
-        status: 200,
-        body: { ok: true },
-        createdAt: nowIso,
-        path: '/webhooks/zernio',
-        contentHash: event.event,
-      };
-    }
-
+  // Endpoint configuration is snapshotted into the same transaction as the event.
+  // Customer network calls are handled by the leased outbox worker, never here.
+  let ws: ReturnType<typeof WorkspaceStore.getWorkspace>;
+  try { ws = WorkspaceStore.getWorkspace(organizationId); } catch {
+    return NextResponse.json({ error: 'Webhook endpoint registry unavailable' }, { status: 503 });
+  }
+  const endpoints = (ws.webhooks || []).filter((endpoint) => endpoint.status === 'active' &&
+    (endpoint.events.includes(event.event) || endpoint.events.includes('*')));
+  try {
+    const { data, error } = await supabase.rpc('accept_zernio_webhook', {
+      p_organization_id: organizationId, p_profile_id: zernioProfileId,
+      p_payload: payload, p_endpoints: endpoints.map(({ id, url, secret }) => ({ id, url, secret })),
+    }).abortSignal(deadline);
+    if (error || !data) return NextResponse.json({ error: 'Webhook persistence is unavailable' }, { status: 503 });
+    if (data.error) return NextResponse.json({ error: data.error }, { status: 409 });
+    if (data.deduplicated) return NextResponse.json({ ok: true, deduplicated: true });
+  } catch {
+    return NextResponse.json({ error: 'Webhook persistence is unavailable' }, { status: 503 });
+  }
+  // Legacy generic workspace views remain compatible. WhatsApp and message views
+  // are read from the provider; the durable event journal is their audit trail.
+  try {
+  if (!event.event.startsWith('message.') && !event.event.startsWith('whatsapp.') && event.event !== 'conversation.control_changed') {
     // 1. Accounts
     if (event.event === 'account.connected' && event.account) {
       const accId = event.account.accountId || event.account.id || `acc_${Date.now()}`;
@@ -380,7 +461,7 @@ export async function POST(request: Request) {
       } else {
         conv.lastMessage = msgItem.text;
         conv.unreadCount = (conv.unreadCount || 0) + 1;
-        conv.updatedTime = nowIso,
+        conv.updatedTime = nowIso;
         conv.messages = [...(conv.messages || []), msgItem];
       }
     } else if (event.event === 'conversation.control_changed' && event.conversation?.id) {
@@ -519,14 +600,16 @@ export async function POST(request: Request) {
     else if (
       (event.event === 'whatsapp.template.status_updated' ||
         event.event === 'whatsapp.template.category_updated') &&
-      event.whatsapp
+      event.template
     ) {
       const tpl = ws.whatsappTemplates.find(
-        (t) => t.id === event.whatsapp?.templateId || t.name === event.whatsapp?.templateName
+        (t) => t.accountId === event.account?.accountId &&
+          (t.id === event.template?.templateId ||
+            (t.name === event.template?.name && t.language === event.template?.language))
       );
       if (tpl) {
-        if (event.whatsapp.status) tpl.status = event.whatsapp.status as any;
-        if (event.whatsapp.category) tpl.category = event.whatsapp.category as any;
+        if (event.template.status) tpl.status = event.template.status as any;
+        if (event.template.category) tpl.category = event.template.category as any;
       }
     }
 
@@ -580,181 +663,9 @@ export async function POST(request: Request) {
 
     WorkspaceStore.saveWorkspace(organizationId, ws);
 
-    // Fan-out to customer's own registered outbound webhooks (signed with their whsec_ secret)
-    await WorkspaceStore.dispatchCustomerWebhook(
-      organizationId,
-      event.event,
-      event as unknown as Record<string, unknown>
-    );
   }
 
-  // ---------------------------------------------------------------------------
-  // B. Supabase Database Routing (Active when Supabase credentials are set)
-  // ---------------------------------------------------------------------------
-  const supabase = createSupabaseAdminClient();
-  if (supabase && event.id) {
-    // 1. Idempotent deduplication on event.id
-    const { data: existing } = await supabase
-      .from('webhook_events_dedup')
-      .select('event_id')
-      .eq('event_id', event.id)
-      .maybeSingle();
-
-    if (existing) {
-      return NextResponse.json({ ok: true, deduplicated: true });
-    }
-
-    await supabase.from('webhook_events_dedup').insert({
-      event_id: event.id,
-      event_type: event.event,
-      organization_id: organizationId,
-      zernio_profile_id: zernioProfileId,
-      payload: event,
-    });
-
-    // 2. Route to tenant tables (triggers Supabase Realtime to customer UI)
-    if (organizationId) {
-      switch (event.event) {
-        case 'account.connected': {
-          if (event.account?.accountId) {
-            await supabase.from('connected_accounts').upsert(
-              {
-                organization_id: organizationId,
-                zernio_account_id: event.account.accountId,
-                zernio_profile_id: zernioProfileId || '',
-                platform: event.account.platform || 'unknown',
-                username: event.account.username || null,
-                is_active: true,
-                health_status: 'healthy',
-                needs_reconnect: false,
-                updated_at: new Date().toISOString(),
-              },
-              { onConflict: 'zernio_account_id' }
-            );
-          }
-          break;
-        }
-
-        case 'account.disconnected': {
-          if (event.account?.accountId) {
-            await supabase
-              .from('connected_accounts')
-              .update({
-                is_active: false,
-                health_status: 'disconnected',
-                needs_reconnect: true,
-                updated_at: new Date().toISOString(),
-              })
-              .eq('zernio_account_id', event.account.accountId);
-          }
-          break;
-        }
-
-        case 'post.scheduled':
-        case 'post.published':
-        case 'post.partial':
-        case 'post.failed':
-        case 'post.cancelled':
-        case 'post.recycled': {
-          if (event.post?.id) {
-            await supabase
-              .from('posts')
-              .update({
-                status: event.post.status,
-                platforms: event.post.platforms || [],
-                published_at: event.post.publishedAt || new Date().toISOString(),
-                updated_at: new Date().toISOString(),
-              })
-              .eq('zernio_post_id', event.post.id);
-          }
-          break;
-        }
-
-        case 'conversation.started':
-        case 'message.received': {
-          if (event.message && event.conversation) {
-            const { data: convRow } = await supabase
-              .from('inbox_conversations')
-              .upsert(
-                {
-                  organization_id: organizationId,
-                  zernio_conversation_id: event.conversation.id,
-                  zernio_account_id:
-                    event.account?.accountId || event.account?.id || '',
-                  platform: event.message.platform,
-                  participant_name: event.message.sender?.name || null,
-                  participant_username: event.message.sender?.username || null,
-                  participant_id: event.message.sender?.id || null,
-                  status: event.conversation.status || 'active',
-                  last_message_text: event.message.text || '',
-                  last_message_at: event.timestamp || new Date().toISOString(),
-                  updated_at: new Date().toISOString(),
-                },
-                { onConflict: 'zernio_conversation_id' }
-              )
-              .select('id')
-              .single();
-
-            if (convRow) {
-              await supabase.from('inbox_messages').upsert(
-                {
-                  organization_id: organizationId,
-                  conversation_id: convRow.id,
-                  zernio_message_id: event.message.id,
-                  platform: event.message.platform,
-                  direction: event.message.direction || 'incoming',
-                  text_content: event.message.text || '',
-                  delivery_status: 'delivered',
-                  sender_info: event.message.sender || {},
-                  sent_at: event.timestamp || new Date().toISOString(),
-                },
-                { onConflict: 'zernio_message_id' }
-              );
-            }
-          }
-          break;
-        }
-
-        case 'message.sent':
-        case 'message.delivered':
-        case 'message.read':
-        case 'message.failed': {
-          if (event.message?.id) {
-            const statusMap: Record<string, string> = {
-              'message.sent': 'sent',
-              'message.delivered': 'delivered',
-              'message.read': 'read',
-              'message.failed': 'failed',
-            };
-            await supabase
-              .from('inbox_messages')
-              .update({
-                delivery_status: statusMap[event.event] || 'sent',
-              })
-              .eq('zernio_message_id', event.message.id);
-          }
-          break;
-        }
-
-        case 'support.run.completed':
-        case 'support.run.failed': {
-          if (event.runId) {
-            await supabase
-              .from('ai_support_runs')
-              .update({
-                status: event.status || 'completed',
-                answer: event.answer || null,
-                cost_usd: event.costUsd ?? 0,
-                finished_at: new Date().toISOString(),
-              })
-              .eq('zernio_run_id', event.runId);
-          }
-          break;
-        }
-      }
-    }
-  }
-
+  } catch { console.warn('Legacy webhook workspace projection unavailable after durable acceptance'); }
   return NextResponse.json({
     ok: true,
     routedOrganizationId: organizationId,

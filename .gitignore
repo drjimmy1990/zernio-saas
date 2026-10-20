@@ -20,6 +20,12 @@
 /.claude/
 /.gitnexus/
 /.data/
+/.playwright-mcp/
+
+# local release packages and generated review screenshots
+/release/
+/docs/reviews/screenshots/
+/scripts/tests/*.png
 
 # misc
 .DS_Store

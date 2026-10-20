@@ -1,0 +1,5 @@
+simulation: phase2c-instagram
+routing: path
+mocks:
+  - routeKey: zernio
+    path: ../mocks/phase2c-instagram/config.yaml

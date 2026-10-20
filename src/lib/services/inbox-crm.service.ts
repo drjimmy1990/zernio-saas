@@ -1,8 +1,8 @@
 import { createSupabaseAdminClient } from '@/lib/supabase/admin';
-import { ZernioClient, zernioClient } from '@/lib/zernio/client';
+import { ZernioApiException, ZernioClient, zernioClient } from '@/lib/zernio/client';
 import { assertSubServiceAllowed } from '@/lib/zernio/policy-engine';
 import { CoreConnectService } from '@/lib/services/core-connect.service';
-import { WorkspaceStore } from '@/lib/storage/workspace-store';
+import { runInboxPublicApi, runInboxReply } from '@/lib/inbox/actions';
 
 /**
  * SUB-SERVICE 3: UNIFIED OMNICHANNEL INBOX, CRM, BROADCASTS & AUTOMATIONS
@@ -17,7 +17,8 @@ import { WorkspaceStore } from '@/lib/storage/workspace-store';
  */
 export class InboxCrmService {
   /**
-   * Sends a reply in an inbox conversation with an `Idempotency-Key` so retries never double-send.
+   * Sends through the verified account's channel. An uncertain send requires
+   * reconciliation; idempotency alone does not guarantee safe retries after 5xx.
    * Ref: zernio.txt lines 19057-19139
    */
   public static async sendConversationReply(params: {
@@ -27,41 +28,9 @@ export class InboxCrmService {
     message: string;
     idempotencyKey?: string;
   }) {
-    await assertSubServiceAllowed(params.organizationId, 'inbox_crm');
-    const idempotencyKey =
-      params.idempotencyKey || ZernioClient.newIdempotencyKey('msg');
-
-    if (!zernioClient.isConfigured()) {
-      return {
-        simulated: true,
-        idempotencyKey,
-        success: true,
-        data: {
-          messageId: `msg_${Date.now().toString(36)}`,
-          conversationId: params.conversationId,
-          status: 'accepted',
-        },
-      };
-    }
-
-    const { data } = await zernioClient.request<{
-      success: boolean;
-      data: { messageId: string; conversationId: string };
-    }>({
-      method: 'POST',
-      path: `/inbox/conversations/${params.conversationId}/messages`,
-      idempotencyKey,
-      body: {
-        accountId: params.accountId,
-        message: params.message,
-      },
-    });
-
-    return {
-      simulated: false,
-      idempotencyKey,
-      ...data,
-    };
+    return runInboxReply(params.organizationId, {
+      accountId: params.accountId, conversationId: params.conversationId,
+      text: params.message, idempotencyKey: params.idempotencyKey });
   }
 
   /**
@@ -71,37 +40,12 @@ export class InboxCrmService {
    */
   public static async listConversations(params: {
     organizationId: string;
+    accountId?: string;
+    platform?: 'facebook' | 'instagram' | 'whatsapp';
     cursor?: string;
     limit?: number;
   }) {
-    await assertSubServiceAllowed(params.organizationId, 'inbox_crm');
-    const profileId = await CoreConnectService.ensureTenantProfile(
-      params.organizationId
-    );
-
-    const ws = WorkspaceStore.getWorkspace(params.organizationId);
-
-    if (!zernioClient.isConfigured()) {
-      return {
-        simulated: true,
-        data: ws.inboxConversations || [],
-        pagination: { hasMore: false, nextCursor: null },
-        meta: { accountsQueried: 0, accountsFailed: 0, failedAccounts: [] },
-      };
-    }
-
-    const { data } = await zernioClient.request({
-      method: 'GET',
-      path: '/inbox/conversations',
-      query: {
-        profileId,
-        status: 'active',
-        limit: params.limit ?? 50,
-        ...(params.cursor ? { cursor: params.cursor } : {}),
-      },
-    });
-
-    return { simulated: false, ...data };
+    return runInboxPublicApi(params.organizationId, 'GET', ['inbox', 'conversations'], params);
   }
 
   /**
@@ -114,6 +58,9 @@ export class InboxCrmService {
     name: string;
     config: Record<string, unknown>;
   }) {
+    if (params.type === 'broadcast') {
+      throw new ZernioApiException({ status: 410, code: 'use_whatsapp_broadcast_flow', error: 'Create a reviewed WhatsApp draft through /api/v1/broadcasts with an account, approved template and stable idempotency key.' });
+    }
     await assertSubServiceAllowed(params.organizationId, 'inbox_crm');
     const profileId = await CoreConnectService.ensureTenantProfile(
       params.organizationId

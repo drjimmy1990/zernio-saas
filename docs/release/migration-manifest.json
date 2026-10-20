@@ -1,0 +1,111 @@
+{
+  "baselineAlreadyApplied": "20261017000001_full_schema_and_super_admin.sql",
+  "pending": [
+    {
+      "file": "20261019000002_oauth_sessions.sql",
+      "transaction": "wrap"
+    },
+    {
+      "file": "20261019000003_phone_purchase_intents.sql",
+      "transaction": "wrap"
+    },
+    {
+      "file": "20261019000004_durable_webhooks.sql",
+      "transaction": "wrap"
+    },
+    {
+      "file": "20261019000005_conversation_control_projection.sql",
+      "transaction": "wrap"
+    },
+    {
+      "file": "20261020000006_manual_crm.sql",
+      "transaction": "self"
+    },
+    {
+      "file": "20261020000007_saas_security.sql",
+      "transaction": "self"
+    },
+    {
+      "file": "20261020000008_phone_lifecycle.sql",
+      "transaction": "wrap"
+    },
+    {
+      "file": "20261020000009_campaigns.sql",
+      "transaction": "wrap"
+    }
+  ],
+  "tables": [
+    "oauth_sessions",
+    "phone_purchase_intents",
+    "zernio_webhook_events",
+    "zernio_webhook_projection",
+    "zernio_webhook_outbox",
+    "crm_fields",
+    "crm_audiences",
+    "crm_import_runs",
+    "saas_user_security",
+    "saas_sessions",
+    "saas_signup_workspaces",
+    "saas_invitations",
+    "saas_api_keys",
+    "saas_audit",
+    "saas_auth_limits",
+    "saas_spending_limits",
+    "saas_allowances",
+    "saas_allowance_reservations",
+    "saas_allowance_ledger",
+    "phone_lifecycle_operations",
+    "phone_rental_obligations",
+    "asra3_campaigns"
+  ],
+  "functions": [
+    "public.acquire_phone_purchase_intent(uuid,text,text,text,text)",
+    "public.update_phone_purchase_intent(uuid,text,text,text,boolean,text,text,text,boolean)",
+    "public.accept_zernio_webhook(uuid,text,jsonb,jsonb)",
+    "public.claim_zernio_webhook_outbox(text,integer)",
+    "public.finish_zernio_webhook_outbox(uuid,text,integer,boolean)",
+    "public.project_zernio_conversation_control()",
+    "public.crm_role(uuid)",
+    "public.crm_guard_contact()",
+    "public.crm_retain_suppression()",
+    "public.crm_guard_audience()",
+    "public.crm_import_contacts(uuid,uuid,text,text,jsonb)",
+    "public.saas_require_manager(uuid,uuid,boolean)",
+    "public.saas_provision_signup(uuid,text)",
+    "public.saas_issue_session(uuid,uuid,timestamptz)",
+    "public.saas_revoke_sessions(uuid,uuid)",
+    "public.saas_recover_access(uuid)",
+    "public.saas_auth_throttle(text,integer)",
+    "public.saas_change_member(uuid,uuid,uuid,text)",
+    "public.saas_accept_invitation(uuid,text,text)",
+    "public.saas_spending_capability(uuid,text)",
+    "public.saas_reserve_allowance(uuid,text,text,bigint,text,text,integer,text)",
+    "public.saas_finish_allowance(uuid,uuid,bigint,text,jsonb,text)",
+    "public.saas_grant_allowance(uuid,text,bigint,text,text)",
+    "public.saas_resolve_api_key(text,text)",
+    "public.saas_create_api_key(uuid,uuid,text,text[],timestamptz,text,text)",
+    "public.saas_revoke_api_key(uuid,uuid,uuid)",
+    "public.saas_invite_member(uuid,uuid,text,text,text)",
+    "public.saas_revoke_invitation(uuid,uuid,uuid)",
+    "public.saas_configure_spending(uuid,text,text,boolean,bigint,integer,text)",
+    "public.saas_admin_patch(text,text,jsonb,text)",
+    "public.saas_admin_create_workspace(text,text,jsonb,text)",
+    "public.saas_archive_workspace(uuid,text)",
+    "public.saas_member_read(uuid)",
+    "public.saas_member_write(uuid)",
+    "public.acquire_phone_lifecycle_operation(uuid,text,text,text,text,jsonb)",
+    "public.claim_asra3_campaign(uuid,uuid,text)"
+  ],
+  "indexes": [
+    "oauth_sessions_expiry_idx",
+    "phone_purchase_intents_profile_open_idx",
+    "zernio_outbox_pending",
+    "crm_contacts_org_updated",
+    "crm_contacts_phones",
+    "crm_contacts_emails",
+    "crm_contacts_tags",
+    "saas_sessions_user",
+    "asra3_campaigns_due",
+    "asra3_campaigns_tenant"
+  ]
+}

@@ -1,0 +1,5 @@
+simulation: launch-saas
+routing: path
+mocks:
+  - routeKey: saas
+    path: ../mocks/launch-saas/config.yaml

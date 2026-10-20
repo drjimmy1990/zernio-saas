@@ -1,13 +1,14 @@
 services:
   asra3-saas:
     container_name: asra3-zernio-saas
+    image: asra3-zernio-saas:local
     build:
       context: .
       dockerfile: Dockerfile
       network: host
       args:
-        NEXT_PUBLIC_SUPABASE_URL: ${NEXT_PUBLIC_SUPABASE_URL:-https://placeholder.supabase.co}
-        NEXT_PUBLIC_SUPABASE_ANON_KEY: ${NEXT_PUBLIC_SUPABASE_ANON_KEY:-placeholder-anon-key}
+        NEXT_PUBLIC_SUPABASE_URL: ${NEXT_PUBLIC_SUPABASE_URL:?Set the Supabase project URL before building}
+        NEXT_PUBLIC_SUPABASE_ANON_KEY: ${NEXT_PUBLIC_SUPABASE_ANON_KEY:?Set the public Supabase anonymous key before building}
         NEXT_PUBLIC_APP_URL: ${NEXT_PUBLIC_APP_URL:-https://asra3.com}
         NEXT_PUBLIC_BRAND_NAME: ${NEXT_PUBLIC_BRAND_NAME:-Asra3}
         NEXT_PUBLIC_BRAND_PRIMARY_COLOR: ${NEXT_PUBLIC_BRAND_PRIMARY_COLOR:-#4F46E5}
@@ -25,4 +26,18 @@ services:
       - HOSTNAME=0.0.0.0
     volumes:
       - ./.data:/app/.data
+    restart: unless-stopped
+  asra3-webhook-worker:
+    image: asra3-zernio-saas:local
+    command: ["node", "scripts/webhook-worker.mjs"]
+    depends_on:
+      asra3-saas:
+        condition: service_healthy
+    env_file:
+      - path: .env
+        required: false
+      - path: .env.local
+        required: false
+    environment:
+      WEBHOOK_DRAIN_URL: http://asra3-saas:3008/api/internal/webhooks/drain
     restart: unless-stopped

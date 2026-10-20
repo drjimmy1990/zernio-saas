@@ -1,0 +1,10 @@
+version: 1
+name: Phone lifecycle installed SDK contract fixture
+slug: launch-phone
+protocol: http
+port: 4962
+interceptRequests: true
+scenarios:
+  - name: default
+    path: ./default.js
+    default: true

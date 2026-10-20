@@ -1,0 +1,10 @@
+version: 1
+name: Zernio Instagram publishing SDK contract fixture
+slug: phase2c-instagram
+protocol: http
+port: 4952
+interceptRequests: true
+scenarios:
+  - name: default
+    path: ./default.js
+    default: true
