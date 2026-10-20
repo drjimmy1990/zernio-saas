@@ -42,6 +42,12 @@ try{
  sql(`select saas_change_member('${org}','${owner}','${viewer}','owner');select saas_change_member('${org}','${owner}','${owner}','viewer');`);
  assert.equal(JSON.parse(sql(`select saas_resolve_api_key('hash-one','write');`).split('\n').at(-1)).status,401);
  assert.ok(sql(`select revoked_at is not null from saas_sessions where id='${session.sessionId}'`)==='t');
+ const membersBeforePlanChange=sql(`select jsonb_agg(jsonb_build_array(user_id,role) order by user_id) from org_members where organization_id='${org}'`);
+ sql(`select saas_admin_patch('tenant','${org}','{"plan_key":"starter"}','usr_super_admin');`);
+ assert.equal(sql(`select 'whatsapp'=any(p.allowed_platforms) from organizations o join subscription_plan_templates p on p.plan_key=o.plan_key where o.id='${org}'`),'f');
+ sql(`select saas_admin_patch('tenant','${org}','{"plan_key":"agency"}','usr_super_admin');`);
+ assert.equal(sql(`select 'whatsapp'=any(p.allowed_platforms) from organizations o join subscription_plan_templates p on p.plan_key=o.plan_key where o.id='${org}'`),'t');
+ assert.equal(sql(`select jsonb_agg(jsonb_build_array(user_id,role) order by user_id) from org_members where organization_id='${org}'`),membersBeforePlanChange);
  const patched=JSON.parse(sql(`select saas_admin_patch('tenant','${org}','{"custom_allowed_platforms":[],"custom_max_phone_numbers":0}','usr_super_admin');`).split('\n').at(-1));assert.deepEqual(patched.override.custom_allowed_platforms,[]);assert.equal(patched.override.custom_max_phone_numbers,0);
  sql(`select saas_admin_patch('plan','starter','{"max_monthly_posts":0}','usr_super_admin');select saas_admin_patch('global','1','{"enabled_ad_platforms":[]}','usr_super_admin');`);
  assert.equal(sql(`select max_monthly_posts from subscription_plan_templates where plan_key='starter'`),'0');

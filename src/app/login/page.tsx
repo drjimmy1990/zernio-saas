@@ -52,7 +52,7 @@ function LoginFormContent() {
         return;
       }
 
-      router.push(redirectTarget || data.redirectTo || (data.user?.role === 'super_admin' ? '/admin' : '/dashboard'));
+      router.push(data.user?.role === 'super_admin' ? '/admin' : (redirectTarget || data.redirectTo || '/dashboard'));
     } catch (err) {
       setError(err instanceof Error ? err.message : t.auth.unableToSignIn);
     } finally {

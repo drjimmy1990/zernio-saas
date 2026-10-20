@@ -186,6 +186,12 @@ function CustomerDashboardContent() {
           router.push('/login?redirect=/dashboard');
           return;
         }
+        if (sessionData.session.user?.role === 'super_admin') {
+          setOrganizationId('');
+          setWorkspace(null);
+          router.replace('/admin');
+          return;
+        }
 
         const org =
           queryOrg ||

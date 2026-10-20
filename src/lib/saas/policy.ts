@@ -10,6 +10,9 @@ export function tenantState(r: any,ov: any = {}): TenantOverrideState {
   return { organizationId:r.id,organizationName:r.name,slug:r.slug,zernioProfileId:r.zernio_profile_id,zernioScopedKeyId:r.zernio_scoped_key_id,zernioScopedKeyPrefix:r.zernio_scoped_key_prefix,planKey:r.plan_key,status:r.status,forceHeadlessMode:ov.force_headless_mode??true,customEnabledSubServices:ov.custom_enabled_subservices,customAllowedPlatforms:ov.custom_allowed_platforms,customAllowedAdPlatforms:ov.custom_allowed_ad_platforms,customAllowedOAuthScopes:ov.custom_allowed_oauth_scopes,customDisabledResourceGroups:ov.custom_disabled_resource_groups,customMaxConnectedAccounts:ov.custom_max_connected_accounts,customMaxMonthlyPosts:ov.custom_max_monthly_posts,customMaxMonthlyMessages:ov.custom_max_monthly_messages,customMaxManagedAds:ov.custom_max_managed_ads,customMaxPhoneNumbers:ov.custom_max_phone_numbers,customMaxAiSupportUsd:number(ov.custom_max_ai_support_usd),customMaxXApiSpendUsd:number(ov.custom_max_x_api_spend_usd),whiteLabelBranding:r.white_label_config };
 }
 export async function strictTenantPolicy(organizationId: string): Promise<EffectiveTenantPolicy> {
+  if (organizationId === 'org_admin_platform') {
+    throw new TenantAccessError(403, 'Sign in with a business account to connect channels and use a customer workspace. The platform administrator account manages the platform at /admin.');
+  }
   const db = saasDatabase();
   const [g,o,v] = await Promise.all([db.from('platform_global_config').select('*').eq('id',1).maybeSingle(),db.from('organizations').select('*').eq('id',organizationId).maybeSingle(),db.from('org_feature_overrides').select('*').eq('organization_id',organizationId).maybeSingle()]);
   if(g.error||o.error||v.error||!g.data) throw new TenantAccessError(503,'Tenant policy verification is unavailable.');

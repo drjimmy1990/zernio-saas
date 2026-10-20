@@ -49,3 +49,21 @@ test('actual policy reads distinguish absent inheritance from empty denial and z
 test('password recovery verifies ownership and durably revokes sessions/keys around provider password change',async()=>{const e=await environment();try{const r=await e.post({action:'complete_recovery',accessToken:'verified-local-token',password:'new-private-password'});assert.equal(r.status,200);assert.equal(r.cookie,null);const calls=e.calls.filter(c=>c.path.endsWith('saas_recover_access')||c.method==='PUT');assert.deepEqual(calls.map(c=>c.method),['POST','PUT','POST']);assert.equal(calls[1].body.password,'new-private-password');const generic=await e.post({action:'recover',email:user.email});assert.equal(generic.status,200);assert.ok(e.calls.find(c=>c.path==='/auth/v1/recover'));}finally{await e.close();}});
 test('only private configured administrator credentials work and rotation invalidates the signed session',async()=>{const e=await environment({admin:true});try{const r=await e.post({action:'login',email:'admin@example.invalid',password:'private-configured-admin-password'});assert.equal(r.status,200);assert.equal(r.body.user.role,'super_admin');const request=new Request('https://app.example.invalid/api/auth',{headers:{cookie:r.cookie.split(';')[0]}});assert.equal((await(await e.route.GET(request)).json()).authenticated,true);e.env.ADMIN_PASSWORD='rotated-private-password';assert.equal((await(await e.route.GET(request)).json()).authenticated,false);}finally{await e.close();}const defaults=await environment({admin:true,adminPassword:'AdminPassword2026!',badPassword:true});try{const r=await defaults.post({action:'login',email:'admin@example.invalid',password:'AdminPassword2026!'});assert.equal(r.status,401);assert.equal(r.cookie,null);}finally{await defaults.close();}});
 test('auth rejects cross-origin mutations and GET logout has no effect',async()=>{const e=await environment();try{const r=await e.route.POST(new Request('https://app.example.invalid/api/auth',{method:'POST',headers:{origin:'https://foreign.invalid','content-type':'application/json'},body:JSON.stringify({action:'signup'})}));assert.equal(r.status,403);assert.equal(e.calls.length,0);assert.equal((await e.route.GET(new Request('https://app.example.invalid/api/auth?action=logout'))).status,405);}finally{await e.close();}});
+
+test('administrator login cannot use its management identity for customer policy queries', async () => {
+  const e = await environment({ admin: true });
+  try {
+    const login = await e.post({ action: 'login', email: 'admin@example.invalid', password: 'private-configured-admin-password' });
+    assert.equal(login.status, 200);
+    assert.equal(login.body.redirectTo, '/admin');
+    const before = e.calls.length;
+    await assert.rejects(e.load('src/lib/saas/policy.ts').strictTenantPolicy(login.body.tenant.organizationId),
+      error => error.status === 403 && /business account/i.test(error.message));
+    assert.equal(e.calls.length, before, 'The management identity must not be queried as a UUID workspace');
+    const customerPolicy = await e.load('src/lib/saas/policy.ts').strictTenantPolicy(org.id);
+    assert.equal(customerPolicy.organizationId, org.id);
+    assert.deepEqual(Array.from(customerPolicy.allowedPlatforms), ['facebook', 'instagram']);
+  } finally {
+    await e.close();
+  }
+});

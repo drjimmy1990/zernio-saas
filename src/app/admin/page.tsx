@@ -75,6 +75,30 @@ export default function SuperAdminControlPlanePage() {
   const [mintedKeySecret, setMintedKeySecret] = useState<string>('');
   const [zernioKeyInput, setZernioKeyInput] = useState<string>('');
   const [zernioKeySaved, setZernioKeySaved] = useState<boolean>(false);
+  const [tenantPlanDrafts, setTenantPlanDrafts] = useState<Record<string, string>>({});
+  const [savingTenantPlans, setSavingTenantPlans] = useState<Record<string, boolean>>({});
+
+  const assignTenantPlan = async (organizationId: string, planKey: string) => {
+    setSavingTenantPlans(previous => ({ ...previous, [organizationId]: true }));
+    try {
+      const response = await adminRequest('/api/admin', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'update_tenant_override', organizationId, patch: { planKey } }),
+      });
+      if (!response.ok) return;
+      const result = await response.json();
+      if (!result.snapshot?.tenants?.some((tenant: TenantOverrideState) => tenant.organizationId === organizationId && tenant.planKey === planKey)) {
+        setError(locale === 'ar' ? 'لم يتم تأكيد تغيير الخطة. حدّث البيانات قبل المحاولة مجدداً.' : 'Plan change was not confirmed. Refresh before retrying.');
+        return;
+      }
+      setData(previous => previous ? { ...previous, ...result.snapshot } : result.snapshot);
+      setTenantPlanDrafts(previous => { const next = { ...previous }; delete next[organizationId]; return next; });
+    } catch {
+      setError(locale === 'ar' ? 'تعذر تأكيد تغيير الخطة. حدّث البيانات قبل المحاولة مجدداً.' : 'Could not confirm the plan change. Refresh before retrying.');
+    } finally {
+      setSavingTenantPlans(previous => ({ ...previous, [organizationId]: false }));
+    }
+  };
 
   // Quick Create Tenant state inside Admin
   const [newOrgName, setNewOrgName] = useState<string>('');
@@ -777,14 +801,31 @@ export default function SuperAdminControlPlanePage() {
                     </div>
 
                     <div className="flex flex-wrap items-center gap-2">
+                      <div className="flex flex-wrap items-center gap-2">
+                        <label className="text-xs font-semibold" htmlFor={`tenant-plan-${tenant.organizationId}`}>
+                          {locale === 'ar' ? 'خطة مساحة العمل' : 'Workspace plan'}
+                        </label>
+                        <select id={`tenant-plan-${tenant.organizationId}`} aria-label={`${locale === 'ar' ? 'خطة' : 'Plan for'} ${tenant.organizationName}`}
+                          value={tenantPlanDrafts[tenant.organizationId] ?? tenant.planKey}
+                          disabled={savingTenantPlans[tenant.organizationId]}
+                          onChange={event => setTenantPlanDrafts(previous => ({ ...previous, [tenant.organizationId]: event.target.value }))}
+                          className="rounded-xl border border-[var(--border-subtle)] bg-[var(--bg-subtle)] px-3 py-2 text-xs text-[var(--text-primary)]">
+                          {data.plans.map(plan => <option key={plan.planKey} value={plan.planKey}>{plan.displayName}</option>)}
+                        </select>
+                        <button disabled={savingTenantPlans[tenant.organizationId] || !tenantPlanDrafts[tenant.organizationId] || tenantPlanDrafts[tenant.organizationId] === tenant.planKey}
+                          onClick={() => void assignTenantPlan(tenant.organizationId, tenantPlanDrafts[tenant.organizationId])}
+                          className="rounded-xl bg-[var(--accent-primary)] px-3 py-2 text-xs font-bold text-white disabled:opacity-50">
+                          {savingTenantPlans[tenant.organizationId] ? (locale === 'ar' ? 'جارٍ الحفظ...' : 'Saving...') : (locale === 'ar' ? 'حفظ الخطة' : 'Save plan')}
+                        </button>
+                        <p className="w-full text-xs text-[var(--text-muted)]">{locale === 'ar' ? 'تحديد الصلاحيات فقط. تحصيل المدفوعات قريباً.' : 'Assigns workspace access. Payment collection is coming soon.'}</p>
+                      </div>
                       <Link
-                        href={`/dashboard?org=${encodeURIComponent(
-                          tenant.organizationId
-                        )}`}
+                        href={`/login?redirect=${encodeURIComponent(`/dashboard?org=${encodeURIComponent(tenant.organizationId)}`)}`}
+                        title={locale === 'ar' ? 'سجّل الدخول بحساب هذه المنشأة للوصول إلى مساحة عملها.' : 'Sign in with this business account to access its workspace.'}
                         className="inline-flex items-center gap-1.5 rounded-xl border border-[var(--border-subtle)] bg-[var(--bg-subtle)] px-3 py-2 text-xs font-semibold text-[var(--text-primary)] hover:border-[var(--accent-primary)]"
                       >
                         <ExternalLink className="h-3.5 w-3.5" />
-                        <span>{t.admin.openWorkspaceBtn}</span>
+                        <span>{locale === 'ar' ? 'دخول حساب المنشأة' : 'Business sign-in'}</span>
                       </Link>
 
                       <button
