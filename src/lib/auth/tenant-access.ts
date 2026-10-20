@@ -2,6 +2,7 @@ import { getSessionFromCookieHeader, type AuthSession } from '@/lib/auth/session
 import { createSupabaseAdminClient } from '@/lib/supabase/admin';
 import { verifyCurrentSession } from '@/lib/saas/auth';
 import { createHash } from 'node:crypto';
+import { checkRequestOrigin } from '@/lib/auth/request-origin';
 
 export type TenantRole = 'super_admin' | 'owner' | 'admin' | 'editor' | 'viewer';
 
@@ -25,9 +26,11 @@ export function requireTenantSession(request: Request, requestedOrganizationId?:
 
   // Session cookies are for this app; browser cross-origin mutations are refused.
   if (!['GET', 'HEAD', 'OPTIONS'].includes(request.method)) {
-    const origin = request.headers.get('origin');
-    if (request.headers.get('sec-fetch-site') === 'cross-site' ||
-        (origin && origin !== new URL(request.url).origin)) {
+    const origin = checkRequestOrigin(request);
+    if (origin === 'misconfigured') {
+      throw new TenantAccessError(503, 'Public application URL is not configured correctly.');
+    }
+    if (origin === 'cross-origin') {
       throw new TenantAccessError(403, 'Cross-origin workspace requests are not allowed.');
     }
   }

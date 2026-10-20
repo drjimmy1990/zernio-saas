@@ -9,7 +9,7 @@ import ts from 'typescript';
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../..');
 const sources = new Map(Object.entries({
-  oauth: 'src/lib/auth/oauth-session.ts', session: 'src/lib/auth/session.ts', access: 'src/lib/auth/tenant-access.ts',
+  oauth: 'src/lib/auth/oauth-session.ts', session: 'src/lib/auth/session.ts', access: 'src/lib/auth/tenant-access.ts', origin: 'src/lib/auth/request-origin.ts',
   provider: 'src/lib/auth/tenant-provider.ts', connect: 'src/app/api/connect/route.ts',
   services: 'src/app/api/services/route.ts', core: 'src/lib/services/core-connect.service.ts',
   lifecycle: 'src/lib/accounts/lifecycle.ts',
@@ -87,7 +87,7 @@ function sandbox(options = {}) {
     if (modules[name]) return modules[name];
     const module = { exports: {} };
     const require = (specifier) => {
-      const mapped = { '@/lib/auth/oauth-session': 'oauth', '@/lib/auth/session': 'session', '@/lib/auth/tenant-access': 'access', '@/lib/auth/tenant-provider': 'provider' }[specifier];
+      const mapped = { '@/lib/auth/oauth-session': 'oauth', '@/lib/auth/session': 'session', '@/lib/auth/tenant-access': 'access', '@/lib/auth/tenant-provider': 'provider', '@/lib/auth/request-origin': 'origin' }[specifier];
       if (mapped) return load(mapped);
       if (specifier === '@/lib/accounts/lifecycle') return load('lifecycle');
       if (specifier === '@/lib/inbox/actions') return { runInboxReply: async (organizationId, params) => {

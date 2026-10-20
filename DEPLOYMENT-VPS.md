@@ -84,6 +84,8 @@ proxy_set_header X-Forwarded-Proto $scheme;
 
 Verify `https://asra3.com/api/v1/openapi.json`, sign-in and protected workspace behavior. Configure actual incoming provider webhook at `https://asra3.com/api/webhooks/zernio`; signature verification is mandatory. Follow [worker/health/live acceptance](docs/release/operations.md). OpenAPI HTTP200 alone does not prove schema, permissions or delivery.
 
+If sign-in reports **Cross-origin authentication requests are not allowed**, confirm the browser is using `https://asra3.com` and `NEXT_PUBLIC_APP_URL=https://asra3.com` was supplied when building the image. Authentication and workspace writes compare the browser origin with that configured public URL, so HTTPS termination at aaPanel can forward to internal HTTP. Pull the latest code, rebuild `asra3-saas`, then run `docker compose --env-file .env up -d`; restarting an old image does not update code or embedded public settings. Keep cross-origin protection enabled. Invalid public URL configuration returns HTTP503 instead of trusting caller-supplied forwarded headers.
+
 ## Update and recover
 
 For each update, record/back up the previous release, pull with `git pull --ff-only origin main`, verify the release commit, apply only confirmed pending migrations, then rebuild and verify app/worker. A successful pull updates the source; the running containers change only after rebuilding/restarting. Payments, AI/automation and self-service outgoing webhook setup remain Coming soon. Configured plan limits are not universally enforced quotas; monthly publishing/account enforcement is not certified.

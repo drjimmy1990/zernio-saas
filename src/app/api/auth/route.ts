@@ -6,9 +6,12 @@ import { createHash } from 'node:crypto';
 import { requireTenantAccess, TenantAccessError } from '@/lib/auth/tenant-access';
 import { issueUserSession, throttleAuth } from '@/lib/saas/auth';
 import { saasDatabase, saasRpc } from '@/lib/saas/storage';
+import { checkRequestOrigin } from '@/lib/auth/request-origin';
 
 function originGuard(request: Request) {
-  if (request.headers.get('sec-fetch-site') === 'cross-site' || request.headers.get('origin') && request.headers.get('origin') !== new URL(request.url).origin) throw new TenantAccessError(403, 'Cross-origin authentication requests are not allowed.');
+  const origin = checkRequestOrigin(request);
+  if (origin === 'misconfigured') throw new TenantAccessError(503, 'Public application URL is not configured correctly.');
+  if (origin === 'cross-origin') throw new TenantAccessError(403, 'Cross-origin authentication requests are not allowed.');
 }
 export async function GET(request: Request) {
   try {

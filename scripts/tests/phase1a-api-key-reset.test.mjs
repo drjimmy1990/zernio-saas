@@ -18,6 +18,7 @@ const sources = new Map([
   ['route', 'src/app/api/v1/[...path]/route.ts'],
   ['session', 'src/lib/auth/session.ts'],
   ['access', 'src/lib/auth/tenant-access.ts'],
+  ['origin', 'src/lib/auth/request-origin.ts'],
   ['spec', 'src/lib/zernio/openapi-spec.ts'],
   ['client', 'src/lib/zernio/client.ts'],
   ['whatsappActions', 'src/lib/whatsapp/actions.ts'],
@@ -142,6 +143,7 @@ function sandbox(options = {}) {
       if (specifier === '@/lib/storage/workspace-store') return load('store');
       if (specifier === '@/lib/auth/session') return load('session');
       if (specifier === '@/lib/auth/tenant-access') return load('access');
+      if (specifier === '@/lib/auth/request-origin') return load('origin');
       if (specifier === '@/lib/supabase/admin') return { createSupabaseAdminClient: () => security.databaseConfigured ? database : null };
       if (specifier === '@/lib/zernio/openapi-spec') return load('spec');
       if (specifier === '@/lib/zernio/client') return load('client');
