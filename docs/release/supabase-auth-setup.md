@@ -2,6 +2,8 @@
 
 Applying the SQL migrations creates application tables and functions. Supabase Authentication URL settings, email confirmation and SMTP settings must also be configured in the Supabase dashboard. A confirmation email linking to localhost indicates that the production authentication URL configuration or an email template still points to a development address.
 
+Public registration is closed by default during private testing. Follow [private testing](private-testing.md) to close direct Supabase registration too, grant an existing test workspace access, and reopen registration later. Existing customer login and recovery remain available.
+
 ## Configure the existing production Supabase project
 
 1. Open the project used by the deployed application's `NEXT_PUBLIC_SUPABASE_URL`. Do not create a replacement project.
@@ -21,7 +23,7 @@ For an already-confirmed user, Supabase intentionally returns a successful signu
 2. Select **Resend verification** for an unconfirmed signup, or **Send recovery link** if resetting an existing account's password. Wait if the service reports a rate limit.
 3. Open the newly received email privately. Existing messages retain their old URLs and may have expired; changing project settings does not rewrite them. Do not reuse a link containing access or refresh tokens that was shared publicly.
 4. Complete confirmation on the production recovery page. If the account is already confirmed, use `https://asra3.com/login` with its existing password instead of creating another account.
-5. After verification, customer sign-in provisions or restores the customer's Starter workspace. The platform administrator account belongs to `/admin`; it cannot connect business channels from the customer dashboard.
+5. When public registration is enabled, customer sign-in provisions or restores the customer's Starter workspace after verification. While registration is closed, only existing workspace memberships can sign in. The platform administrator account belongs to `/admin`; it cannot connect business channels from the customer dashboard.
 
 For WhatsApp entitlement, the administrator can open **Accounts & API Keys**, locate this exact customer workspace, choose an appropriate returned plan such as Agency or Enterprise, and select **Save plan**. Confirm that WhatsApp is enabled globally. Customer messaging may also require administrator spending allocations. This assigns access; it does not collect payment. Sign in with the customer's account to connect its business channels.
 

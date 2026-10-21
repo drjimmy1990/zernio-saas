@@ -8,6 +8,7 @@ import { issueUserSession, throttleAuth } from '@/lib/saas/auth';
 import { saasDatabase, saasRpc } from '@/lib/saas/storage';
 import { checkRequestOrigin } from '@/lib/auth/request-origin';
 import { AuthProviderError, handleAuthProviderError } from '@/lib/auth/provider-errors';
+import { isPublicRegistrationEnabled } from '@/lib/auth/registration';
 
 function originGuard(request: Request) {
   const origin = checkRequestOrigin(request);
@@ -35,6 +36,9 @@ export async function POST(request: Request) {
       const response = NextResponse.json({ ok: true }); response.cookies.set(SESSION_COOKIE_NAME, '', { path: '/', httpOnly: true, sameSite: 'lax', maxAge: 0 }); return response;
     }
     if (!['login','signup','recover','resend','complete_recovery','verify_email'].includes(action)) throw new TenantAccessError(400, 'Unsupported authentication action.');
+    if (action === 'signup' && !isPublicRegistrationEnabled()) {
+      throw new AuthProviderError(403, 'Registration is coming soon. Existing accounts can still sign in.', 'registration_closed');
+    }
     const email = typeof body.email === 'string' ? body.email.trim().toLowerCase() : '';
     const password = typeof body.password === 'string' ? body.password : '';
     const adminEmail = process.env.ADMIN_EMAIL?.trim().toLowerCase(); const adminPassword = process.env.ADMIN_PASSWORD;

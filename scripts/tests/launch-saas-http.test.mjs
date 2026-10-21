@@ -3,6 +3,21 @@ import assert from 'node:assert/strict';import test from 'node:test';import fs f
 const user={id:'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa',email:'owner@example.invalid',email_confirmed_at:'2026-10-20T00:00:00Z',user_metadata:{full_name:'Owner',company_name:'Business'}};
 const org={id:'11111111-1111-4111-8111-111111111111',name:'Business',slug:'business',plan_key:'starter',status:'active'};
 const sessionId='22222222-2222-4222-8222-222222222222';
+test('closed registration blocks signup and new workspace provisioning while existing login and recovery remain available through actual SDK', async () => {
+ for (const partial of [false, true]) {
+  const e = await environment({ partial, env: { PUBLIC_REGISTRATION_ENABLED: 'false' } });
+  try {
+   const signup = await e.post({ action: 'signup', email: user.email, password: 'private-password', fullName: 'Owner' });
+   assert.equal(signup.status, 403); assert.equal(signup.body.code, 'registration_closed'); assert.equal(e.calls.length, 0);
+   const login = await e.post({ action: 'login', email: user.email, password: 'private-password' });
+   assert.equal(login.status, partial ? 403 : 200);
+   if (partial) assert.equal(login.body.code, 'registration_closed');
+   assert.equal(e.calls.filter(c => c.path.endsWith('saas_provision_signup')).length, 0);
+   const recover = await e.post({ action: 'recover', email: user.email });
+   assert.equal(recover.status, 200); assert.ok(e.calls.some(c => c.path === '/auth/v1/recover'));
+  } finally { await e.close(); }
+ }
+});
 async function environment(options={}) {
  const calls=[];let memberships=options.partial?[]:[{organization_id:org.id,role:'owner',organizations:org}];
  const server=createServer(async(req,res)=>{let raw='';for await(const chunk of req)raw+=chunk;const body=raw?JSON.parse(raw):{};const u=new URL(req.url,'http://localhost');calls.push({path:u.pathname,method:req.method,body});res.setHeader('content-type','application/json');let data;
@@ -31,7 +46,7 @@ async function environment(options={}) {
   else {res.statusCode=404;data={message:'Unexpected path'};}res.end(JSON.stringify(data));
  });await new Promise(r=>server.listen(0,'127.0.0.1',r));const base=`http://127.0.0.1:${server.address().port}`;
  const db=createClient(base,'isolated-service-key',{auth:{persistSession:false,autoRefreshToken:false}});
- const env={SESSION_SECRET:'test-private-long-secret',SUPABASE_SERVICE_ROLE_KEY:'isolated-service-key',NEXT_PUBLIC_APP_URL:'https://app.example.invalid',...(options.admin?{ADMIN_EMAIL:'admin@example.invalid',ADMIN_PASSWORD:options.adminPassword||'private-configured-admin-password'}:{})};
+ const env={SESSION_SECRET:'test-private-long-secret',SUPABASE_SERVICE_ROLE_KEY:'isolated-service-key',NEXT_PUBLIC_APP_URL:'https://app.example.invalid',PUBLIC_REGISTRATION_ENABLED:'true',...(options.admin?{ADMIN_EMAIL:'admin@example.invalid',ADMIN_PASSWORD:options.adminPassword||'private-configured-admin-password'}:{}),...options.env};
  const context=vm.createContext({process:{env},Buffer,TextEncoder,TextDecoder,URL,Date,console});const modules={};
  function load(file){if(modules[file])return modules[file];const exports={};modules[file]=exports;const source=ts.transpileModule(fs.readFileSync(path.resolve(file),'utf8'),{compilerOptions:{module:ts.ModuleKind.CommonJS,target:ts.ScriptTarget.ES2022,esModuleInterop:true}}).outputText;
   function require(name){if(name==='node:crypto'||name==='crypto')return crypto;if(name==='@/lib/supabase/admin')return{createSupabaseAdminClient:()=>db};if(name==='next/server')return{NextResponse:{json:(body,init)=>{const r=Response.json(body,init);r.cookies={set:(name,value)=>r.headers.append('set-cookie',`${name}=${value}; HttpOnly`)};return r;}}};if(name.startsWith('@/'))return load(`src/${name.slice(2)}.ts`);if(name.startsWith('.'))return load(path.posix.normalize(`${path.posix.dirname(file)}/${name}.ts`));throw Error(name);}

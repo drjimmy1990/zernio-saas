@@ -6,7 +6,7 @@ import { fileURLToPath } from 'node:url';
 import ts from 'typescript';
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../../..');
-const files = { route:'src/app/api/auth/route.ts', session:'src/lib/auth/session.ts', auth:'src/lib/saas/auth.ts', http:'src/lib/saas/http.ts', origin:'src/lib/auth/request-origin.ts', providerErrors:'src/lib/auth/provider-errors.ts' };
+const files = { route:'src/app/api/auth/route.ts', session:'src/lib/auth/session.ts', auth:'src/lib/saas/auth.ts', http:'src/lib/saas/http.ts', origin:'src/lib/auth/request-origin.ts', providerErrors:'src/lib/auth/provider-errors.ts', registration:'src/lib/auth/registration.ts' };
 const sources = Object.fromEntries(Object.entries(files).map(([key,file])=>[key,ts.transpileModule(fs.readFileSync(path.join(root,file),'utf8'),{compilerOptions:{module:ts.ModuleKind.CommonJS,target:ts.ScriptTarget.ES2022,esModuleInterop:true}}).outputText]));
 export const organizationId='aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa';
 // Real auth route, session issuer, throttling and cookie encoding. Only database I/O is replaced.
@@ -23,9 +23,9 @@ export function authSandbox(options={}) {
   then:(resolve,reject)=>Promise.resolve().then(()=>{calls.push({type:'select',table,filters});return {data:options.noMembership&&!provisioned?[]:[{organization_id:organizationId,role:options.role||'viewer',organizations:{id:organizationId,name:'Tenant A',slug:'tenant-a',plan_key:'starter',status:options.inactive?'suspended':'active'}}],error:options.membershipFailure?{message:'Failure'}:null};}).then(resolve,reject),
   maybeSingle:async()=>({data:null,error:null})};return query;}};
  const storage={saasDatabase:()=>{if(options.noSupabase)throw new TenantAccessError(503,'Database unavailable');return db;},saasRpc:async(name,args)=>{calls.push({type:'rpc',name,args});if(options.noSupabase)throw new TenantAccessError(503,'Database unavailable');if(name==='saas_auth_throttle')return !options.throttled;if(name==='saas_provision_signup'){if(options.provisionFailure)throw new TenantAccessError(503,'Provisioning unavailable');provisioned=true;return organizationId;}if(name==='saas_issue_session'){if(options.sessionFailure)throw new TenantAccessError(503,'Session unavailable');return {sessionId:'durable-session',securityVersion:1};}return true;}};
- const context=vm.createContext({Buffer,Date,URL,TextEncoder,TextDecoder,process:{env:{SESSION_SECRET:'isolated-session-key',...options.env}}});
+ const context=vm.createContext({Buffer,Date,URL,TextEncoder,TextDecoder,process:{env:{SESSION_SECRET:'isolated-session-key',PUBLIC_REGISTRATION_ENABLED:'true',...options.env}}});
  function load(name){if(modules[name])return modules[name];const exports={};const require=specifier=>{
-  const key={'@/lib/auth/session':'session','@/lib/saas/http':'http','@/lib/saas/auth':'auth','@/lib/auth/request-origin':'origin','@/lib/auth/provider-errors':'providerErrors'}[specifier];if(key)return load(key);
+  const key={'@/lib/auth/session':'session','@/lib/saas/http':'http','@/lib/saas/auth':'auth','@/lib/auth/request-origin':'origin','@/lib/auth/provider-errors':'providerErrors','@/lib/auth/registration':'registration'}[specifier];if(key)return load(key);
   if(specifier==='@/lib/saas/storage'||specifier==='./storage')return storage;
   if(specifier==='@/lib/auth/tenant-access')return {TenantAccessError,requireTenantAccess:async()=>{throw new TenantAccessError(401,'No session');}};
   if(specifier==='node:crypto')return crypto;

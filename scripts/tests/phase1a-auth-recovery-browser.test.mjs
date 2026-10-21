@@ -8,7 +8,7 @@ import { chromium } from 'playwright';
 let server, browser, origin;
 before(async () => {
   const absolute = file => path.resolve(file).replaceAll('\\', '/');
-  const entry = `import React from 'react';import{createRoot}from'react-dom/client';import Signup from '${absolute('src/app/signup/page.tsx')}';import Recovery from '${absolute('src/app/recovery/page.tsx')}';import{ThemeAndLocaleProvider}from'${absolute('src/i18n/ThemeAndLocaleProvider.tsx')}';createRoot(document.getElementById('root')).render(<ThemeAndLocaleProvider fixedLocale={new URLSearchParams(location.search).get('locale')||'en'}>{location.pathname==='/signup'?<Signup/>:<Recovery/>}</ThemeAndLocaleProvider>);`;
+  const entry = `import React from 'react';import{createRoot}from'react-dom/client';import Signup from '${absolute('src/components/auth/SignUpForm.tsx')}';import Recovery from '${absolute('src/app/recovery/page.tsx')}';import ComingSoon from '${absolute('src/components/auth/RegistrationComingSoon.tsx')}';import{ThemeAndLocaleProvider}from'${absolute('src/i18n/ThemeAndLocaleProvider.tsx')}';createRoot(document.getElementById('root')).render(<ThemeAndLocaleProvider fixedLocale={new URLSearchParams(location.search).get('locale')||'en'}>{location.pathname==='/signup'?<Signup/>:location.pathname==='/closed-signup'?<ComingSoon/>:<Recovery/>}</ThemeAndLocaleProvider>);`;
   const bundle = await build({ stdin: { contents: entry, resolveDir: process.cwd(), loader: 'tsx' }, bundle: true, write: false, format: 'iife', jsx: 'automatic', define: { 'process.env.NODE_ENV': '"production"' }, plugins: [{ name: 'local-link', setup(b) {
     b.onResolve({ filter: /^next\/link$/ }, a => ({ path: a.path, namespace: 'fixture' }));
     b.onLoad({ filter: /.*/, namespace: 'fixture' }, () => ({ loader: 'jsx', resolveDir: process.cwd(), contents: `import React from 'react';export default function Link({children,...props}){return <a {...props}>{children}</a>}` }));
@@ -111,3 +111,16 @@ test('expired error fragments show fixed safe text and never submit embedded tok
   assert.equal(await page.getByRole('alert').innerText(), 'This email link is invalid or expired. Request a new link.');
   assert.equal(new URL(page.url()).hash, ''); assert.equal(await page.getByRole('button', { name: 'Verify account and open workspace' }).count(), 0); assert.deepEqual(writes, []);
 }));
+
+test('closed registration shows bilingual coming-soon without a form or authentication requests', async () => {
+  for (const locale of ['en', 'ar']) await fixture(async (page, context) => {
+    const requests = [];
+    await context.route('**/api/**', route => { requests.push(route.request().url()); return route.abort(); });
+    await page.goto(`${origin}/closed-signup?locale=${locale}`);
+    await page.getByRole('heading', { name: locale === 'ar' ? 'التسجيل قريباً' : 'Registration coming soon' }).waitFor();
+    assert.equal(await page.locator('form,input').count(), 0);
+    assert.equal(await page.getByRole('link', { name: locale === 'ar' ? 'تسجيل الدخول' : 'Sign in', exact: true }).getAttribute('href'), '/login');
+    assert.equal(await page.getByRole('link', { name: locale === 'ar' ? 'استعادة الحساب' : 'Recover account', exact: true }).getAttribute('href'), '/recovery');
+    assert.deepEqual(requests, []);
+  });
+});

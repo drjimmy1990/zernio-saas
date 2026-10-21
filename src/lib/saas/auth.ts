@@ -3,6 +3,7 @@ import { TenantAccessError } from '@/lib/auth/tenant-access';
 import { SESSION_MAX_AGE, type AuthSession } from '@/lib/auth/session';
 import { createHash } from 'node:crypto';
 import { saasDatabase, saasRpc } from './storage';
+import { isPublicRegistrationEnabled } from '@/lib/auth/registration';
 
 export async function throttleAuth(request: Request, action: string, email: string) {
   // Identity throttling is durable. Forwarded headers are not trusted as a unique client identity.
@@ -18,6 +19,11 @@ export async function issueUserSession(user: User, organizationId?: string): Pro
   if (error) throw new TenantAccessError(503, 'Workspace membership could not be loaded.');
   const membership = memberships?.find((m: any) => (Array.isArray(m.organizations) ? m.organizations[0] : m.organizations)?.status === 'active');
   if (!membership && !organizationId && !memberships?.length) {
+    if (!isPublicRegistrationEnabled()) {
+      // Load after session modules initialize; provider errors extend TenantAccessError.
+      const { AuthProviderError } = await import('@/lib/auth/provider-errors');
+      throw new AuthProviderError(403, 'Registration is coming soon. Existing accounts can still sign in.', 'registration_closed');
+    }
     const org = await saasRpc<string>('saas_provision_signup', { p_user_id: user.id, p_name: user.user_metadata?.company_name || user.user_metadata?.full_name || 'My workspace' });
     if (!org || typeof org !== 'string') throw new TenantAccessError(503, 'Workspace recovery was not confirmed.');
     return issueUserSession(user, org);

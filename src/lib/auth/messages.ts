@@ -1,4 +1,5 @@
 const messages: Record<string, [string, string]> = {
+  registration_closed: ['Registration is coming soon. Existing accounts can still sign in.', 'التسجيل قريباً. الحسابات الحالية تقدر تسجّل الدخول.'],
   auth_rate_limited: ['Too many requests. Wait a few minutes before trying again.', 'تم إرسال طلبات كثيرة. انتظر بضع دقائق قبل المحاولة مرة أخرى.'],
   email_delivery_unavailable: ['Account email delivery is unavailable. Contact support to restore it.', 'إرسال رسائل الحساب غير متاح حالياً. تواصل مع الدعم لتفعيل الخدمة.'],
   signup_unavailable: ['New account registration is unavailable. Contact support.', 'إنشاء الحسابات غير متاح حالياً. تواصل مع الدعم.'],
