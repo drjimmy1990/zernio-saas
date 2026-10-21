@@ -923,3 +923,18 @@ test('Phase 2C preflight and quota use fresh provider results without cached suc
   const failed=await s.request('POST','/validate/media',params);assert.equal(failed.status,503);assert.equal(failed.body.error.requestId,'provider-id');assert.equal(failed.body.meta.idempotent_replayed,undefined);
   assert.equal((await s.request('GET','/accounts/ig-a/instagram/publishing-limit',{token:writer.token})).status,503);
 });
+
+
+test('call routing changes require an owner or admin through the public API, including scoped keys', async () => {
+  const s=sandbox({role:'editor',telephonyResult:{httpStatus:200,confirmed:true}});
+  const editor=s.issueKey('tenant-a',{scopes:['read','write']});
+  const body=JSON.stringify({action:'call_settings_save',channel:'pstn',numberId:'number-a',enabled:true,forwardTo:'tel:+14155550999',chargesReviewed:true});
+  assert.equal((await s.request('POST','/phone-lifecycle',{token:editor.token,body})).status,403);
+  assert.equal(s.telephonyCalls.length,0);
+  s.security.role='owner';
+  assert.equal((await s.request('POST','/phone-lifecycle',{token:editor.token,body})).status,200);
+  assert.equal(s.telephonyCalls.at(-1).organizationId,'tenant-a');
+  const reader=s.issueKey('tenant-a',{scopes:['read']});
+  assert.equal((await s.request('POST','/phone-lifecycle',{token:reader.token,body})).status,403);
+  assert.equal(s.telephonyCalls.length,1);
+});

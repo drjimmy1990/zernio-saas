@@ -66,7 +66,7 @@ export async function runLaunchPublicApi(actor: PublicActor, method: string, pat
   if (!action) throw new TenantAccessError(501, 'Use the Phone workspace or /phone-lifecycle with an implemented action.');
   if (method === 'GET' && !PHONE_READ_ACTIONS.includes(action)) throw new TenantAccessError(405, 'Use POST for a reviewed phone change.');
   if (method !== 'GET') {
-    requireWorkspaceRole(actor.role, true);
+    requireWorkspaceRole(actor.role, action !== 'call_settings_save');
     if (PHONE_READ_ACTIONS.includes(action)) throw new TenantAccessError(405, 'Use GET for phone reads.');
   }
   return runPhoneLifecycleAction(org, action, { ...input, intent: input.idempotencyKey || input.intent });

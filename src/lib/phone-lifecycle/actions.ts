@@ -2,13 +2,15 @@ import { PhoneNumbersLifecycle } from './numbers';
 import { PhoneMessages } from './messages';
 import { PhoneTemplates } from './templates';
 import { PhoneCalls } from './calls';
+import { PhoneCallSettings } from './call-settings';
 import { WhatsAppFlowsLifecycle } from './flows';
 import { WhatsAppService } from '@/lib/whatsapp/service';
 import { TenantAccessError } from '@/lib/auth/tenant-access';
 import { ZernioApiException } from '@/lib/zernio/client';
-export const PHONE_READ_ACTIONS=['numbers','offers','number','accounts','conversations','messages','call_history','call_estimate','call_permission','templates','flows','flow','flow_preview','flow_responses'];
+export const PHONE_READ_ACTIONS=['numbers','offers','number','accounts','conversations','messages','call_history','call_estimate','call_permission','call_settings','templates','flows','flow','flow_preview','flow_responses'];
 export async function runPhoneLifecycleAction(organizationId:string,action:string,input:Record<string,any>):Promise<Record<string,any>> {
  switch(action){
+  case'call_settings':return PhoneCallSettings.read(organizationId,input);case'call_settings_save':return PhoneCallSettings.save(organizationId,input);case'call_permission_request':return PhoneCallSettings.requestPermission(organizationId,input);
   case'numbers':return PhoneNumbersLifecycle.list(organizationId);case'offers':return PhoneNumbersLifecycle.offers(organizationId,input.country,input.numberType);case'number':return PhoneNumbersLifecycle.detail(organizationId,input.numberId);case'purchase':return PhoneNumbersLifecycle.purchase(organizationId,input);case'purchase_reconcile':return PhoneNumbersLifecycle.reconcile(organizationId,input.operationKey);case'release_reconcile':return PhoneNumbersLifecycle.reconcileRelease(organizationId,input.operationKey);case'release':return PhoneNumbersLifecycle.release(organizationId,input);
   case'accounts':return PhoneMessages.accounts(organizationId);case'conversations':return PhoneMessages.conversations(organizationId,input.accountId,input.cursor);case'messages':return PhoneMessages.messages(organizationId,input.accountId,input.conversationId,input.cursor);case'sms_send':return PhoneMessages.sendSms(organizationId,input);
   case'call_history':return PhoneCalls.history(organizationId,input);case'call_estimate':return PhoneCalls.estimate(organizationId,input);case'call_permission':return PhoneCalls.permission(organizationId,input.accountId,input.to);case'call_start':return PhoneCalls.start(organizationId,input);case'call_reconcile':return PhoneCalls.reconcile(organizationId,input.operationKey);

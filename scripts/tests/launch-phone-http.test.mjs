@@ -39,7 +39,7 @@ test('instant offers still expose exact-number inventory and the current catalog
  assert.equal(writes(await state()).length,0);
 });
 function runtime({disabled=false,withdrawn=false,storageUnavailable=false,telephonyDisabled=false,allowedPlatforms=['facebook','instagram','whatsapp']}={}){
- const files={crmAudience:'src/lib/crm/audience.ts',provider:'src/lib/phone-lifecycle/provider.ts',numbers:'src/lib/phone-lifecycle/numbers.ts',messages:'src/lib/phone-lifecycle/messages.ts',calls:'src/lib/phone-lifecycle/calls.ts',flows:'src/lib/phone-lifecycle/flows.ts',templates:'src/lib/phone-lifecycle/templates.ts',whatsapp:'src/lib/whatsapp/service.ts',saasSend:'src/lib/saas/send.ts',paid:'src/lib/phone-lifecycle/paid.ts',client:'src/lib/zernio/client.ts',accounts:'src/lib/auth/tenant-provider.ts',instagram:'src/lib/publishing/instagram.ts'};
+ const files={'call-settings':'src/lib/phone-lifecycle/call-settings.ts',crmAudience:'src/lib/crm/audience.ts',provider:'src/lib/phone-lifecycle/provider.ts',numbers:'src/lib/phone-lifecycle/numbers.ts',messages:'src/lib/phone-lifecycle/messages.ts',calls:'src/lib/phone-lifecycle/calls.ts',flows:'src/lib/phone-lifecycle/flows.ts',templates:'src/lib/phone-lifecycle/templates.ts',whatsapp:'src/lib/whatsapp/service.ts',saasSend:'src/lib/saas/send.ts',paid:'src/lib/phone-lifecycle/paid.ts',client:'src/lib/zernio/client.ts',accounts:'src/lib/auth/tenant-provider.ts',instagram:'src/lib/publishing/instagram.ts'};
  const sources=Object.fromEntries(Object.entries(files).map(([name,file])=>[name,ts.transpileModule(fs.readFileSync(path.join(root,file),'utf8'),{compilerOptions:{module:ts.ModuleKind.CommonJS,target:ts.ScriptTarget.ES2022}}).outputText]));
  class TenantAccessError extends Error{constructor(status,message){super(message);this.status=status;}}
  const context=vm.createContext({Buffer,URL,Headers,Request,Response,TextEncoder,TextDecoder,AbortController,setTimeout,clearTimeout,console,process:{env:{ZERNIO_BASE_URL:`${origin}/api/v1`,ZERNIO_API_KEY:'launch_phone_mock_key'}},fetch:(url,options)=>{assert.equal(new URL(url).origin,new URL(origin).origin,'Live network forbidden');return fetch(url,options);}});
@@ -47,11 +47,11 @@ function runtime({disabled=false,withdrawn=false,storageUnavailable=false,teleph
  const store={async acquire(org,profile,kind,intent,input){if(storageUnavailable)throw new TenantAccessError(503,'No durable storage');const key=`${kind}:${intent}`,lookup=`${org}:${key}`,old=operations.get(lookup);if(old)return {...old,replayed:true};if(kind==='purchase'&&[...operations.values()].some(o=>o.organization_id===org&&o.profile_id===profile&&o.kind==='purchase'&&['prepared','dispatched','unknown'].includes(o.state)))throw new TenantAccessError(409,'Original purchase unresolved');const o={organization_id:org,operation_key:key,profile_id:profile,kind,input,state:'prepared',reservations:[]};operations.set(lookup,o);return o;},async save(o,patch){Object.assign(o,patch);operations.set(`${o.organization_id}:${o.operation_key}`,o);},async get(org,key){const o=operations.get(`${org}:${key}`);if(!o)throw new TenantAccessError(404,'Not found');return o;},async rental(org,n,state,evidence){rentals.push({org,n,state,evidence});}};
  const allowance={operationKey:parts=>crypto.createHash('sha256').update(JSON.stringify(parts)).digest('hex'),async assertCapability(){return{enabled:!disabled};},async reserve(input){if(disabled)throw new TenantAccessError(403,'Spending disabled');const r={...input,reservationId:`reservation-${reservations.length}`,state:'reserved',replayed:false};reservations.push(r);return r;},async reserveUnits(input){return this.reserve({...input,amountMinor:input.units*10,quoteSource:'admin spending allocation, not provider quote'});},async settle(input){settlements.push(input);},async release(input){releases.push(input);}};
  const cache={};function load(name){if(cache[name])return cache[name];const module={exports:{}};cache[name]=module.exports;const require=specifier=>{if(specifier==='node:crypto'||specifier==='crypto')return crypto;const alias={'@/lib/zernio/client':'client','@/lib/auth/tenant-provider':'accounts','@/lib/publishing/instagram':'instagram','@/lib/whatsapp/service':'whatsapp','@/lib/saas/send':'saasSend','@/lib/crm/audience':'crmAudience'}[specifier];if(alias)return load(alias);if(specifier.startsWith('./')){const next=specifier.slice(2);if(next==='allowance')return{SaasAllowanceService:allowance};if(next==='store')return{PhoneOperationStore:store};return load(next);}if(specifier==='@/lib/supabase/admin')return{createSupabaseAdminClient:()=>null};if(specifier==='@/lib/auth/tenant-access')return{TenantAccessError};if(specifier==='@/lib/services/core-connect.service')return{CoreConnectService:{ensureTenantProfile:async org=>org==='tenant-a'?'profile-a':'profile-b'}};if(specifier==='@/lib/zernio/policy-engine')return{getFallbackStore:()=>({globalConfig:{},tenants:{}}),assertSubServiceAllowed:async(org,service)=>{if(service==='telephony'&&telephonyDisabled)throw new TenantAccessError(403,'Telephony disabled');return{allowedPlatforms,quotas:{maxPhoneNumbers:5}}}};if(specifier==='@/lib/saas/allowance')return{SaasAllowanceService:allowance};if(specifier==='@/lib/crm/consent')return{assertDestinationConsent:async()=>{if(withdrawn)throw new TenantAccessError(403,'Consent withdrawn');return{crmChecked:true};}};throw new Error(`Unexpected dependency ${specifier}`);};vm.runInContext(`(function(require,module,exports){${sources[name]}\n})`,context)(require,module,module.exports);return module.exports;}
- return{numbers:load('numbers').PhoneNumbersLifecycle,messages:load('messages').PhoneMessages,calls:load('calls').PhoneCalls,flows:load('flows').WhatsAppFlowsLifecycle,templates:load('templates').PhoneTemplates,whatsapp:load('whatsapp').WhatsAppService,operations,reservations,settlements,releases,rentals};
+ return{settings:load('call-settings').PhoneCallSettings,numbers:load('numbers').PhoneNumbersLifecycle,messages:load('messages').PhoneMessages,calls:load('calls').PhoneCalls,flows:load('flows').WhatsAppFlowsLifecycle,templates:load('templates').PhoneTemplates,whatsapp:load('whatsapp').WhatsAppService,operations,reservations,settlements,releases,rentals};
 }
 const purchase=(patch={})=>({country:'US',numberType:'local',connectWhatsapp:false,wantsSms:true,allowMultiple:true,expectedMonthlyCents:300,intent:'purchase-intent-a',...patch});
 const sms=(patch={})=>({numberId:'number-a',to:'+14155550999',text:'Reviewed message',consentReviewed:true,intent:'sms-intent-a',...patch});
-const call=(patch={})=>({channel:'pstn',numberId:'number-a',to:'+14155550999',consentReviewed:true,expectedAmountMinor:12,intent:'call-intent-a',...patch});
+const call=(patch={})=>({channel:'whatsapp',accountId:'wa-a',numberId:'number-a',to:'+14155550999',consentReviewed:true,expectedAmountMinor:12,intent:'call-intent-a',...patch});
 test('owned SMS inbox works with social-only platform policy while tenant and service denials remain enforced',async()=>{
  await fixture();
  const r=runtime();
@@ -64,14 +64,14 @@ test('owned SMS inbox works with social-only platform policy while tenant and se
  await assert.rejects(runtime({allowedPlatforms:['facebook']}).calls.permission('tenant-a','wa-a','+14155550999'),e=>e.status===403);
  assert.equal(writes(await state()).length,0);
 });
-const writes=s=>s.requests.filter(r=>['POST','PUT','DELETE'].includes(r.method));
+const writes=s=>s.requests.filter(r=>['POST','PUT','PATCH','DELETE'].includes(r.method));
 test('additional numbers remain in verified profile, rental is held, and confirmed intent does not buy twice',async()=>{await fixture();const r=runtime(),result=await r.numbers.purchase('tenant-a',purchase());assert.equal(result.confirmed,true);assert.equal(result.phoneNumber.profileId,'profile-a');assert.equal(r.reservations[0].capability,'phone_rental');assert.equal(r.reservations[0].amountMinor,300);assert.equal(r.rentals[0].state,'active');await r.numbers.purchase('tenant-a',purchase());const requests=writes(await state());assert.equal(requests.length,1);assert.equal(requests[0].path,'/phone-numbers/purchase');assert.equal(requests[0].body.profileId,'profile-a');assert.equal(requests[0].body.allowMultiple,true);assert.equal(requests[0].body.connectWhatsapp,false);});
 test('allocation uncertainty reconciles unique inventory without another charge; KYC remains unresolved',async()=>{for(const name of ['purchase-unknown','wrong-profile']){await fixture(name);const r=runtime();await assert.rejects(r.numbers.purchase('tenant-a',purchase()));await assert.rejects(r.numbers.purchase('tenant-a',purchase()),e=>e.status===409);const result=await r.numbers.reconcile('tenant-a','purchase:purchase-intent-a');assert.equal(result.confirmed,true);assert.equal(writes(await state()).length,1);assert.equal(r.releases.length,0);}await fixture('kyc');const r=runtime(),result=await r.numbers.purchase('tenant-a',purchase());assert.equal(result.httpStatus,202);assert.equal(result.confirmed,false);await assert.rejects(r.numbers.purchase('tenant-a',purchase({intent:'second-kyc-intent'})),e=>e.status===409);});
 test('ownership, reviewed quotes, explicit additional-number consent and durable spending block purchase writes',async()=>{for(const[fixtureName,options,input,status]of [['price-changed',{},purchase(),409],['success',{},purchase({allowMultiple:false}),409],['success',{disabled:true},purchase(),403],['success',{storageUnavailable:true},purchase(),503]]){await fixture(fixtureName);await assert.rejects(runtime(options).numbers.purchase('tenant-a',input),e=>e.status===status);assert.equal(writes(await state()).length,0);}await fixture();await assert.rejects(runtime().numbers.detail('tenant-a','foreign-number'),e=>e.status===404);assert.equal((await state()).requests.some(r=>r.path==='/phone-numbers/foreign-number'),false);});
 test('release requires canonical released state, and ambiguous release retains operation for review',async()=>{await fixture();const r=runtime(),result=await r.numbers.release('tenant-a',{numberId:'number-a',confirmRelease:true,intent:'release-intent-a'});assert.equal(result.confirmed,true);assert.equal(r.rentals[0].state,'released');await fixture('release-unconfirmed');const uncertain=runtime();await assert.rejects(uncertain.numbers.release('tenant-a',{numberId:'number-a',confirmRelease:true,intent:'release-intent-a'}));assert.equal(uncertain.operations.get('tenant-a:release:release-intent-a').state,'unknown');assert.equal(uncertain.rentals.length,0);});
 test('SMS approval, provider STOP completeness and CRM suppression are rechecked before dispatch',async()=>{for(const[name,options,status]of [['sms-unapproved',{},409],['opt-out',{},403],['opt-out-incomplete',{},503],['success',{withdrawn:true},403],['success',{disabled:true},403]]){await fixture(name);await assert.rejects(runtime(options).messages.sendSms('tenant-a',sms()),e=>e.status===status);assert.equal(writes(await state()).length,0);}await fixture();await assert.rejects(runtime().messages.sendSms('tenant-a',sms({text:'😀'.repeat(336)})),e=>e.status===400);assert.equal(writes(await state()).length,0);const r=runtime(),result=await r.messages.sendSms('tenant-a',sms());assert.equal(result.status,'sent');assert.equal(result.deliveryStatus,undefined);await r.messages.sendSms('tenant-a',sms());assert.equal(writes(await state()).length,1);const messages=await r.messages.messages('tenant-a','sms-a','conversation-a');assert.equal(messages.messages[0].deliveryStatus,'delivered');await scenario('foreign-conversation');await assert.rejects(r.messages.messages('tenant-a','sms-a','conversation-a'),e=>e.status===404);});
 test('unknown SMS outcome never automatically retries or releases spending',async()=>{await fixture('sms-unknown');const r=runtime();await assert.rejects(r.messages.sendSms('tenant-a',sms()));await assert.rejects(r.messages.sendSms('tenant-a',sms()),e=>e.status===409);assert.equal(writes(await state()).length,1);assert.equal(r.releases.length,0);});
-test('calls require capped estimates, CRM consent and WhatsApp permission; billing settles only from final call',async()=>{for(const[name,options,input,status]of [['no-duration',{},call(),409],['success',{withdrawn:true},call(),403],['success',{},call({expectedAmountMinor:13}),409],['no-call-permission',{},call({channel:'whatsapp',accountId:'wa-a'}),403]]){await fixture(name);await assert.rejects(runtime(options).calls.start('tenant-a',input),e=>e.status===status);assert.equal(writes(await state()).length,0);}for(const channel of ['pstn','whatsapp']){await fixture();const r=runtime(),result=await r.calls.start('tenant-a',call({channel,accountId:'wa-a'}));assert.equal(result.status,'dialing');assert.equal(r.settlements.length,0);const final=await r.calls.reconcile('tenant-a',result.operationKey);assert.equal(final.settled,true);assert.equal(r.settlements[0].actualAmountMinor,2);assert.equal((await r.calls.history('tenant-a',{channel,accountId:'wa-a',numberId:'number-a'})).calls[0].durationSeconds,12);assert.equal(writes(await state()).length,1);}});
+test('calls require capped estimates, CRM consent and WhatsApp permission; billing settles only from final call',async()=>{for(const[name,options,input,status]of [['no-duration',{},call(),409],['success',{withdrawn:true},call(),403],['success',{},call({expectedAmountMinor:13}),409],['no-call-permission',{},call({channel:'whatsapp',accountId:'wa-a'}),403]]){await fixture(name);await assert.rejects(runtime(options).calls.start('tenant-a',input),e=>e.status===status);assert.equal(writes(await state()).length,0);}for(const channel of ['whatsapp']){await fixture();const r=runtime(),result=await r.calls.start('tenant-a',call({channel,accountId:'wa-a'}));assert.equal(result.status,'dialing');assert.equal(r.settlements.length,0);const final=await r.calls.reconcile('tenant-a',result.operationKey);assert.equal(final.settled,true);assert.equal(r.settlements[0].actualAmountMinor,2);assert.equal((await r.calls.history('tenant-a',{channel,accountId:'wa-a',numberId:'number-a'})).calls[0].durationSeconds,12);assert.equal(writes(await state()).length,1);}});
 test('manual Flow lifecycle uses canonical status and explicit irreversible review',async()=>{await fixture();const r=runtime();const create=await r.flows.create('tenant-a',{accountId:'wa-a',name:'Support',categories:['CONTACT_US'],intent:'flow-intent-a'});assert.equal(create.flow.status,'DRAFT');await assert.rejects(r.flows.change('tenant-a','flow_upload',{accountId:'wa-a',flowId:'flow-a',flow_json:{data_api_version:'3.0',screens:[{}]}}),e=>e.status===501);await scenario('invalid-flow');const invalid=await r.flows.change('tenant-a','flow_upload',{accountId:'wa-a',flowId:'flow-a',flow_json:{version:'7.3',screens:[{id:'WELCOME'}]}});assert.equal(invalid.valid,false);await scenario('success');assert.equal((await r.flows.change('tenant-a','flow_publish',{accountId:'wa-a',flowId:'flow-a',confirm:true})).confirmed,true);assert.equal((await r.flows.change('tenant-a','flow_deprecate',{accountId:'wa-a',flowId:'flow-a',confirm:true})).confirmed,true);await assert.rejects(r.flows.send('tenant-a',{accountId:'wa-a',flowId:'flow-a'}),e=>e.status===409);assert.equal((await r.flows.change('tenant-a','flow_delete',{accountId:'wa-a',flowId:'flow-new',confirm:true})).confirmed,true);});
 test('published navigation Flow sending reserves allowance and never retries unknown acceptance',async()=>{await fixture();const r=runtime();await r.flows.change('tenant-a','flow_publish',{accountId:'wa-a',flowId:'flow-a',confirm:true});await scenario('flow-send-unknown');const input={accountId:'wa-a',flowId:'flow-a',to:'+14155550999',body:'Reviewed form',flow_cta:'Open form',screen:'WELCOME',consentReviewed:true,intent:'flow-send-intent'};await assert.rejects(r.flows.send('tenant-a',input));await assert.rejects(r.flows.send('tenant-a',input),e=>e.status===409);const sent=writes(await state()).filter(r=>r.path==='/whatsapp/flows/send');assert.equal(sent.length,1);assert.equal(sent[0].body.flow_action,'navigate');assert.equal(sent[0].body.flow_token,'flow-a:flow-send-intent');assert.equal(r.releases.length,0);});
 
@@ -80,3 +80,89 @@ test('approved media templates check status/header/CRM consent and use actual ca
 test('unknown canonical template acceptance keeps its single reservation in the durable phone journal',async()=>{await fixture('template-unknown');const r=runtime(),input={accountId:'wa-a',recipient:'+14155550999',consentReviewed:true,intent:'unknown-template-intent',template:{name:'order_update',language:'en_US',parameters:['Customer'],headerMedia:{type:'image',link:'https://cdn.example.invalid/order.jpg'}}};await assert.rejects(r.templates.send('tenant-a',input));assert.equal(r.reservations.length,1);const op=r.operations.get('tenant-a:template_send:unknown-template-intent');assert.equal(op.state,'unknown');assert.equal(op.result.details.reservationId,r.reservations[0].reservationId);await assert.rejects(r.templates.send('tenant-a',input),e=>e.status===409);assert.equal(r.reservations.length,1);assert.equal(writes(await state()).filter(r=>r.path==='/inbox/conversations').length,1);assert.equal(r.releases.length,0);});
 
 test('canonical WhatsApp direct recipient and owned-conversation sends enforce CRM veto and current template category',async()=>{for(const params of [{recipient:'+14155550999'},{conversationId:'wa-conversation-a'}]){await fixture();const r=runtime({withdrawn:true});await assert.rejects(r.whatsapp.sendMessage({organizationId:'tenant-a',accountId:'wa-a',text:'Reviewed text',idempotencyKey:'canonical-intent',...params}),e=>e.status===403);assert.equal(r.reservations.length,0);assert.equal(writes(await state()).length,0);}await fixture('marketing-template');const r=runtime({withdrawn:true});await assert.rejects(r.whatsapp.sendMessage({organizationId:'tenant-a',accountId:'wa-a',recipient:'+14155550999',template:{name:'order_update',language:'en_US',parameters:['Customer']},idempotencyKey:'marketing-intent'}),e=>e.status===403);assert.equal(r.reservations.length,0);assert.equal(writes(await state()).length,0);await fixture('invalid-participant');await assert.rejects(runtime().whatsapp.sendMessage({organizationId:'tenant-a',accountId:'wa-a',conversationId:'wa-conversation-a',text:'Reviewed text',idempotencyKey:'invalid-participant-intent'}),e=>e.envelope?.status===400);});
+
+
+const setup=(patch={})=>({channel:'whatsapp',accountId:'wa-a',enabled:true,forwardTo:'tel:+14155550777',maxCallDurationSeconds:180,chargesReviewed:true,intent:'settings-intent-a',...patch});
+const permissionRequest=(patch={})=>({accountId:'wa-a',to:'+14155550999',consentReviewed:true,intent:'permission-intent-a',...patch});
+
+test('canonical call settings resolve the owned account and preserve unknown PSTN duration as unavailable',async()=>{
+ await fixture();const r=runtime();
+ const wa=await r.settings.read('tenant-a',{channel:'whatsapp',accountId:'wa-a',numberId:'foreign-number'});
+ assert.equal(wa.settings.numberId,'number-a');assert.equal(wa.settings.enabled,true);assert.equal(wa.settings.recordingEnabled,true);
+ assert.equal(wa.settings.outboundSupported,true);assert.equal(wa.settings.sipAuthPassword,undefined);
+ const pstn=await r.settings.read('tenant-a',{channel:'pstn',numberId:'number-a'});
+ assert.equal(pstn.settings.maxCallDurationSeconds,null);assert.equal(pstn.settings.outboundSupported,false);
+ await assert.rejects(r.calls.start('tenant-a',call({channel:'pstn'})),e=>e.status===501);
+ await assert.rejects(r.settings.read('tenant-b',{channel:'whatsapp',accountId:'wa-a'}),e=>e.status===403);
+ assert.equal(writes(await state()).length,0);
+ await fixture('settings-null');await assert.rejects(runtime().settings.read('tenant-a',{channel:'whatsapp',accountId:'wa-a'}),e=>e.envelope?.status===502);
+});
+
+test('WhatsApp routing saves PATCH only reviewed fields, verifies readback, and replays one durable intent',async()=>{
+ await fixture();const r=runtime(),saved=await r.settings.save('tenant-a',setup({numberId:'foreign-number'}));
+ assert.equal(saved.confirmed,true);assert.equal(saved.settings.forwardTo,'tel:+14155550777');assert.equal(saved.settings.recordingEnabled,true);
+ await r.settings.save('tenant-a',setup({numberId:'foreign-number'}));
+ const sent=writes(await state());assert.equal(sent.length,1);assert.equal(sent[0].method,'PATCH');assert.equal(sent[0].path,'/phone-numbers/number-a/whatsapp/calling');
+ assert.deepEqual(sent[0].body,{accountId:'wa-a',forwardTo:'tel:+14155550777',maxCallDurationSeconds:180});
+ assert.equal(r.operations.get('tenant-a:call_settings:settings-intent-a').state,'confirmed');
+});
+
+test('WhatsApp disable uses query account and permits incomplete settings, then enable uses POST',async()=>{
+ await fixture('no-duration');const r=runtime();
+ const off=await r.settings.save('tenant-a',setup({enabled:false,forwardTo:'',maxCallDurationSeconds:null,chargesReviewed:false}));
+ assert.equal(off.settings.enabled,false);
+ let sent=writes(await state());assert.equal(sent[0].method,'DELETE');assert.equal(sent[0].query.accountId,'wa-a');assert.deepEqual(sent[0].body,{});
+ await scenario('success');await r.settings.save('tenant-a',setup({intent:'settings-enable-a'}));
+ sent=writes(await state());assert.equal(sent[1].method,'POST');assert.equal(sent[1].body.accountId,'wa-a');
+});
+
+test('PSTN routing sets only the destination and never invents a supported duration-cap field',async()=>{
+ await fixture();const r=runtime();
+ const saved=await r.settings.save('tenant-a',setup({channel:'pstn',numberId:'number-a',maxCallDurationSeconds:999}));
+ assert.equal(saved.confirmed,true);assert.equal(saved.settings.forwardTo,'tel:+14155550777');assert.equal(saved.settings.outboundSupported,false);
+ let sent=writes(await state());assert.deepEqual(sent[0].body,{forwardTo:'tel:+14155550777'});assert.equal(sent[0].path,'/phone-numbers/number-a/voice');
+ await r.settings.save('tenant-a',setup({channel:'pstn',numberId:'number-a',enabled:false,intent:'disable-pstn-a'}));
+ sent=writes(await state());assert.equal(sent[1].method,'DELETE');
+});
+
+test('configuration ownership, review, destination, cap and spending failures never dispatch a write',async()=>{
+ for(const [options,input,status]of [
+  [{},setup({chargesReviewed:false}),400],[{},setup({maxCallDurationSeconds:null}),400],[{},setup({maxCallDurationSeconds:1.5}),400],
+  [{},setup({forwardTo:'tel:+14155550101'}),400],[{},setup({forwardTo:'https://example.invalid'}),400],
+  [{},setup({forwardTo:'sip:new@example.invalid'}),400],[{disabled:true},setup(),403],
+  [{},setup({channel:'pstn',numberId:'foreign-number'}),404],[{storageUnavailable:true},setup(),503],
+ ]){await fixture();await assert.rejects(runtime(options).settings.save('tenant-a',input),e=>e.status===status);assert.equal(writes(await state()).length,0);}
+ await fixture('inactive');await assert.rejects(runtime().settings.save('tenant-a',setup()),e=>e.status===409);assert.equal(writes(await state()).length,0);
+});
+
+test('uncertain or mismatched settings retain their durable intent and cannot write twice',async()=>{
+ for(const name of ['settings-unknown','settings-mismatch']){
+  await fixture(name);const r=runtime();await assert.rejects(r.settings.save('tenant-a',setup()));
+  assert.equal(r.operations.get('tenant-a:call_settings:settings-intent-a').state,'unknown');
+  await assert.rejects(r.settings.save('tenant-a',setup()),e=>e.status===409);assert.equal(writes(await state()).length,1);
+  assert.equal(r.reservations.length,0);
+ }
+ await fixture('outbound-blocked');const r=runtime(),saved=await r.settings.save('tenant-a',setup());
+ assert.equal(saved.settings.enabled,true);assert.equal(saved.settings.outboundSupported,false);
+ await assert.rejects(r.calls.start('tenant-a',call()),e=>e.status===409);assert.equal(writes(await state()).length,1);
+});
+
+test('permission requests use the prompt action and replay acceptance after provider limits change',async()=>{
+ await fixture('permission-required');const r=runtime(),result=await r.settings.requestPermission('tenant-a',permissionRequest());
+ assert.equal(result.accepted,true);assert.equal(result.permissionGranted,false);assert.equal(result.callId,undefined);
+ assert.equal(r.reservations[0].capability,'whatsapp_send');
+ assert.equal((await r.settings.requestPermission('tenant-a',permissionRequest())).accepted,true);
+ const sent=writes(await state());assert.equal(sent.length,1);assert.equal(sent[0].path,'/whatsapp/calls');
+ assert.equal(sent[0].idempotencyKey,'permission-intent-a');assert.deepEqual(sent[0].body,{accountId:'wa-a',to:'+14155550999',action:'send_call_permission_request'});
+ await assert.rejects(r.settings.requestPermission('tenant-a',permissionRequest({to:'+14155550888'})),e=>e.status===409);
+ await assert.rejects(r.settings.requestPermission('tenant-b',permissionRequest()),e=>e.status===403);
+});
+
+test('permission eligibility, consent and ambiguous delivery cannot cause a repeated prompt',async()=>{
+ for(const[name,options,status]of [['permission-denied',{},409],['outbound-blocked',{},409],['permission-required',{withdrawn:true},403],['permission-required',{disabled:true},403]]){
+  await fixture(name);await assert.rejects(runtime(options).settings.requestPermission('tenant-a',permissionRequest()),e=>e.status===status);assert.equal(writes(await state()).length,0);
+ }
+ await fixture('permission-unknown');const r=runtime();await assert.rejects(r.settings.requestPermission('tenant-a',permissionRequest()));
+ await assert.rejects(r.settings.requestPermission('tenant-a',permissionRequest()),e=>e.status===409);
+ assert.equal(r.operations.get('tenant-a:call_permission:permission-intent-a').state,'unknown');assert.equal(writes(await state()).length,1);assert.equal(r.releases.length,0);
+});

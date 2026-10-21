@@ -20,6 +20,31 @@ http.createServer(async(req,res)=>{
   if(s.scenario==='purchase-unknown')return send(502,{error:'Allocation response unavailable',code:'UNKNOWN_OUTCOME'});
   return send(201,{phoneNumber:{id:n._id,profileId:s.scenario==='wrong-profile'?'profile-b':PROFILE,phoneNumber:n.phoneNumber,status:n.status}});
  }
+ // Calling contracts: account-scoped resolution, number-scoped canonical config, partial writes.
+ const calling=()=>({...{phoneNumber:'+14155550101',callingEnabled:true,forwardTo:'tel:+14155550888',maxCallDurationSeconds:120,outboundDisabled:false,recordingEnabled:true,callerIdMode:'business',callerIdVerified:true},...s.callConfig,...(s.scenario==='no-duration'?{maxCallDurationSeconds:null}:{}),...(s.scenario==='outbound-blocked'?{outboundDisabled:true}:{}),...(s.scenario==='settings-null'?{callingEnabled:null}:{})});
+ if(route==='/whatsapp/calling')return send(200,{...calling(),phoneNumberDocId:'number-a'});
+ if(route==='/phone-numbers/number-a/whatsapp/calling'){
+  if(method==='GET')return send(200,calling());
+  if(s.scenario==='settings-rejected')return send(422,{error:'Calling not eligible',code:'invalid_resource_state'});
+  if(s.scenario!=='settings-mismatch')s.callConfig={...calling(),...body,callingEnabled:method!=='DELETE'};
+  await pm.state.set(key,s);
+  if(s.scenario==='settings-unknown')return send(502,{error:'Save response unknown'});
+  return send(200,method==='PATCH'?{success:true}:{success:true,callingEnabled:method!=='DELETE',forwardTo:body.forwardTo});
+ }
+ if(route==='/phone-numbers/number-a/voice'){
+  const n=s.numbers.find(n=>n._id==='number-a');
+  if(s.scenario!=='settings-mismatch'){n.pstnVoiceEnabled=method!=='DELETE';if(body.forwardTo!==undefined)n.pstnForwardTo=body.forwardTo;}
+  await pm.state.set(key,s);
+  if(s.scenario==='settings-unknown')return send(502,{error:'Save response unknown'});
+  return send(200,{enabled:method!=='DELETE',phoneNumber:n.phoneNumber,pstnForwardTo:n.pstnForwardTo});
+ }
+ if(route==='/whatsapp/call-permissions')return send(200,{permission:{status:'no_permission'},actions:[{action_name:'start_call',can_perform_action:!['no-call-permission','permission-required','permission-unknown','permission-denied'].includes(s.scenario)},{action_name:'send_call_permission_request',can_perform_action:!s.permissionRequested&&s.scenario!=='permission-denied'}]});
+ if(route==='/whatsapp/calls'&&method==='POST'&&body.action==='send_call_permission_request'){
+  s.permissionRequested=true;await pm.state.set(key,s);
+  if(s.scenario==='permission-unknown')return send(502,{error:'Prompt acceptance unknown'});
+  // The reference does not specify a prompt-specific payload; only acknowledge the HTTP request.
+  return send(200,{success:true});
+ }
  if(route.startsWith('/phone-numbers/')){const id=route.split('/')[2],n=s.numbers.find(n=>n._id===id);if(!n)return send(404,{error:'Number not found'});if(method==='DELETE'){if(s.scenario==='release-unconfirmed')return send(200,{phoneNumber:{id,status:'released'}});n.status='released';await pm.state.set(key,s);return send(200,{phoneNumber:{id,status:'released',releasedAt:new Date().toISOString()}});}return send(200,{phoneNumber:{...n,id:n._id,...(s.scenario==='sms-unapproved'?{smsSendApproved:false}:{}),...(s.scenario==='no-duration'?{maxCallDurationSeconds:null}:{})}});}
  if(route==='/sms/opt-outs')return send(200,{optOuts:s.scenario==='opt-out'?[{phoneNumber:'+14155550999',from:'+14155550101',optedOutAt:new Date().toISOString()}]:[],count:s.scenario==='opt-out-incomplete'?1001:s.scenario==='opt-out'?1:0});
  if(route==='/sms/messages'){if(s.scenario==='sms-unknown')return send(502,{error:'Receipt unknown'});return send(200,{id:'sms-message-a',conversationId:'conversation-a',status:'sent'});}
@@ -30,8 +55,6 @@ http.createServer(async(req,res)=>{
  if(route==='/inbox/conversations/wa-conversation-a')return send(200,{data:{id:'wa-conversation-a',accountId:WA,platform:'whatsapp',participantId:s.scenario==='invalid-participant'?'not-a-phone':'14155550999'}});
  if(route==='/inbox/conversations/conversation-a')return send(200,{data:{id:'conversation-a',accountId:s.scenario==='foreign-conversation'?'other-sms':SMS,platform:'sms'}});
  if(route==='/inbox/conversations/conversation-a/messages')return send(200,{messages:[{id:'sms-message-a',text:'Receipt',deliveryStatus:'delivered',direction:'outbound'}]});
- if(route==='/whatsapp/calling')return send(200,{callingEnabled:true,phoneNumber:'+14155550101',maxCallDurationSeconds:s.scenario==='no-duration'?null:120});
- if(route==='/whatsapp/call-permissions')return send(200,{actions:[{action_name:'start_call',can_perform_action:s.scenario!=='no-call-permission'}]});
  if(route.endsWith('/calls/estimate'))return send(200,{breakdown:{billableCostUSD:0.12,totalCostUSD:0.18}});
  if((route==='/voice/calls'||route==='/whatsapp/calls')&&method==='POST'){const call={_id:'call-a',accountId:WA,from:body.fromNumber||'+14155550101',to:body.to,status:'ended',durationSeconds:12,billing:{billableCostUSD:0.02,currency:'USD'}};s.calls.push(call);await pm.state.set(key,s);return send(200,{success:true,callId:call._id,status:'dialing'});}
  if((route==='/voice/calls'||route==='/whatsapp/calls')&&method==='GET')return send(200,{calls:s.calls});

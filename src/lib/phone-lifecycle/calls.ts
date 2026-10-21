@@ -1,11 +1,23 @@
 import { provider, ownedNumber, account, identifier, phone, invalid, malformed, profile } from './provider';
 import { acquire, reserve, dispatch, usdMinor } from './paid';
 import { PhoneOperationStore } from './store';
+import { PhoneCallSettings } from './call-settings';
 import { SaasAllowanceService } from '@/lib/saas/allowance';
 import { TenantAccessError } from '@/lib/auth/tenant-access';
 import { assertDestinationConsent } from '@/lib/crm/consent';
 export class PhoneCalls {
- static async context(organizationId:string,input:Record<string,any>) {phone(input.to);if(!['pstn','whatsapp'].includes(input.channel))invalid('Select a supported call channel.');if(input.channel==='whatsapp'){const a=await account(organizationId,input.accountId,['whatsapp'],true),config=await provider({path:'/whatsapp/calling',query:{accountId:input.accountId}});if(config.callingEnabled!==true||!Number.isSafeInteger(config.maxCallDurationSeconds)||config.maxCallDurationSeconds<1)throw new TenantAccessError(409,'Enable provider calling with a finite duration cap before outbound calls.');return {profileId:profile(a.profileId),config,accountId:input.accountId};}const n=await ownedNumber(organizationId,input.numberId);if(n.status!=='active'||n.features?.calls!==true||n.pstnVoiceEnabled!==true||!Number.isSafeInteger(n.maxCallDurationSeconds)||n.maxCallDurationSeconds<1)throw new TenantAccessError(409,'This number needs approved voice service and a finite provider duration cap.');return {profileId:n.profileId,config:n,accountId:n.ownerAccountId};}
+ static async context(organizationId:string,input:Record<string,any>) {
+  phone(input.to);
+  if(input.channel==='pstn') {
+   await ownedNumber(organizationId,input.numberId);
+   throw new TenantAccessError(501,'Outbound phone calls are unavailable until a provider-enforced call duration limit can be verified. Incoming call routing remains available in Call settings.');
+  }
+  if(input.channel!=='whatsapp')invalid('Select a supported call channel.');
+  const a=await account(organizationId,input.accountId,['whatsapp'],true);
+  const {settings:config}=await PhoneCallSettings.read(organizationId,input);
+  if(config.outboundSupported!==true)throw new TenantAccessError(409,'Enable WhatsApp calling with a finite duration limit and an eligible outbound account before calling.');
+  return {profileId:profile(a.profileId),config,accountId:input.accountId};
+ }
  static async estimate(organizationId:string,input:Record<string,any>):Promise<Record<string,any>> {const c=await this.context(organizationId,input),minutes=Math.ceil(c.config.maxCallDurationSeconds/60);const result=await provider({path:input.channel==='whatsapp'?'/whatsapp/calls/estimate':'/voice/calls/estimate',query:{accountId:input.channel==='whatsapp'?input.accountId:undefined,from:input.channel==='whatsapp'?undefined:c.config.phoneNumber,to:input.to,minutes,recording:false,transcription:false}});usdMinor(result.breakdown?.billableCostUSD);return {...result,maxDurationSeconds:c.config.maxCallDurationSeconds};}
  static async permission(organizationId:string,accountId:string,to:string) {await account(organizationId,accountId,['whatsapp']);phone(to);return provider({path:'/whatsapp/call-permissions',query:{accountId,to}});}
  static async start(organizationId:string,input:Record<string,any>) {if(input.consentReviewed!==true)invalid('Review call consent and the maximum estimated charge.');const c=await this.context(organizationId,input);await assertDestinationConsent({organizationId,channel:input.channel==='whatsapp'?'whatsapp':'phone',phone:input.to,purpose:'call'});if(input.channel==='whatsapp'){const p=await this.permission(organizationId,input.accountId,input.to);if(!p.actions?.some((a:any)=>a.action_name==='start_call'&&a.can_perform_action===true))throw new TenantAccessError(403,'The provider has not granted permission to call this recipient.');}
