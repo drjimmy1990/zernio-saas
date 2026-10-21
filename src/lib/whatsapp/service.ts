@@ -64,6 +64,48 @@ async function provider(params: Parameters<typeof zernioClient.request>[0]): Pro
   return { ...data, httpStatus: status };
 }
 
+// Flat values follow Zernio's order: text header, body, then dynamic URL buttons.
+// Replies in an existing conversation instead require Meta's component send shape.
+function templateSendComponents(definition: Record<string, unknown>[] | undefined, values: string[]) {
+  if (!Array.isArray(definition)) invalid('Refresh this template before sending; its variable definitions are unavailable.');
+  let offset = 0;
+  const result: Record<string, unknown>[] = [];
+  const parameters = (text: unknown, named = true) => {
+    const variables = [...new Set(typeof text === 'string' ? [...text.matchAll(/\{\{\s*([a-zA-Z0-9_]+)\s*\}\}/g)].map(match => match[1]) : [])];
+    if (variables.every(value => /^\d+$/.test(value))) variables.sort((a, b) => Number(a) - Number(b));
+    return variables.map(variable => {
+      const value = values[offset++];
+      if (typeof value !== 'string' || !value.trim()) invalid('Enter a value for every template variable, in header, body and link order.');
+      return { type: 'text', text: value, ...(named && !/^\d+$/.test(variable) ? { parameter_name: variable } : {}) };
+    });
+  };
+  for (const type of ['HEADER', 'BODY', 'BUTTONS']) {
+    for (const part of definition.filter(item => String(item.type).toUpperCase() === type)) {
+      if (type === 'HEADER' && part.format && String(part.format).toUpperCase() !== 'TEXT') {
+        invalid('This template needs a media or location header. Supply its template components before sending.');
+      }
+      if (type === 'BUTTONS') {
+        for (const [index, button] of (Array.isArray(part.buttons) ? part.buttons : []).entries()) {
+          if (String(button.type).toUpperCase() === 'URL') {
+            const params = parameters(button.url, false);
+            if (params.length) result.push({ type: 'button', sub_type: 'url', index: String(index), parameters: params });
+          } else if (!['PHONE_NUMBER', 'QUICK_REPLY'].includes(String(button.type).toUpperCase())) {
+            invalid('This template needs specialised button values. Supply its template components before sending.');
+          }
+        }
+      } else {
+        const params = parameters(part.text);
+        if (params.length) result.push({ type: type.toLowerCase(), parameters: params });
+      }
+    }
+  }
+  if (definition.some(part => !['HEADER', 'BODY', 'FOOTER', 'BUTTONS'].includes(String(part.type).toUpperCase()))) {
+    invalid('This template needs specialised content. Supply its template components before sending.');
+  }
+  if (offset !== values.length) invalid('The number of values must match this template’s header, body and link variables.');
+  return result.length ? result : undefined;
+}
+
 /** Provider inbox and Meta template state are canonical; no synthetic receipts or local cache. */
 export class WhatsAppService {
   static async listAccounts(organizationId: string) {
@@ -135,12 +177,14 @@ export class WhatsAppService {
     if (template && (params.text?.trim() || attachment)) invalid('Send a template separately from text or attachments.');
     if (!template && !params.text?.trim() && !attachment) invalid('Message text, attachment, or template is required.');
     let purpose: 'transactional' | 'marketing' = 'transactional';
+    let approvedComponents: Record<string, unknown>[] | undefined;
     if (template) {
       const templates = await this.listTemplates({ organizationId: params.organizationId, accountId: params.accountId, name: template.name, language: template.language });
-      const approved = (templates.templates as { name?: string; language?: string; status?: string; category?: string }[])
+      const approved = (templates.templates as { name?: string; language?: string; status?: string; category?: string; components?: Record<string, unknown>[] }[])
         .find(item => item.name === template.name && item.language === template.language && item.status === 'APPROVED');
       if (!approved || !['MARKETING', 'UTILITY', 'AUTHENTICATION'].includes(approved.category || '')) invalid('This template is not currently approved with a verified category. Refresh templates.');
       purpose = approved.category === 'MARKETING' ? 'marketing' : 'transactional';
+      approvedComponents = approved.components;
     }
     if (params.conversationId) {
       const owned = await this.getConversation({ ...params, conversationId: params.conversationId });
@@ -148,7 +192,7 @@ export class WhatsAppService {
       if (typeof participant !== 'string' || !/^\+?[1-9]\d{7,14}$/.test(participant)) invalid('This owned conversation has no verifiable phone destination. Refresh the provider conversation before sending.');
       await assertDestinationConsent({ organizationId: params.organizationId, channel: 'whatsapp', phone: normalizeCrmPhone(`+${participant.replace(/^\+/, '')}`), purpose });
       if (template?.headerMedia || (template?.parameters?.length && template.components?.length)) invalid('For an existing conversation use send-shape components for template media and variables.');
-      const components = template?.components ?? (template?.parameters?.length ? [{ type: 'body', parameters: template.parameters.map(text => ({ type: 'text', text })) }] : undefined);
+      const components = template ? template.components ?? templateSendComponents(approvedComponents, template.parameters ?? []) : undefined;
       return reservedWhatsAppSend({...params,resource:params.conversationId,fingerprint:[params.text,params.attachments,params.template]},async()=>sentResult(await provider({ method: 'POST', path: `${conversationPath(params.conversationId!)}/messages`, idempotencyKey, retryOnRateLimit: false,
         body: { accountId: params.accountId, message: params.text, attachmentUrl: attachment?.url, attachmentType: attachment?.type, attachmentName: attachment?.name,
           ...(template ? { template: { elements: [{ name: template.name, language: template.language, components }] } } : {}) } })));

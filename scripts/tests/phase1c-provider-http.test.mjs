@@ -132,6 +132,39 @@ test('provider window, template and outage errors never create successful local 
   }
 });
 
+test('existing conversation templates map header, body and link values using the approved definition', async () => {
+  await fixture(); const s = runtime();
+  await s.action('send', { accountId, conversationId, templateName: 'order_tracking', templateLanguage: 'en',
+    templateParams: ['Ana', 'ORD-42', 'Friday', 'secure-token'], idempotencyKey: 'template-components' });
+  const call = (await fixtureState()).requests.find(item => item.method === 'POST');
+  assert.equal(call.path, `/inbox/conversations/${conversationId}/messages`);
+  assert.deepEqual(call.body.template.elements[0].components, [
+    { type: 'header', parameters: [{ type: 'text', text: 'Ana' }] },
+    { type: 'body', parameters: [{ type: 'text', text: 'ORD-42' }, { type: 'text', text: 'Friday' }] },
+    { type: 'button', sub_type: 'url', index: '1', parameters: [{ type: 'text', text: 'secure-token' }] },
+  ]);
+});
+
+test('named template variables preserve Meta parameter names when replying', async () => {
+  await fixture(); const s = runtime();
+  await s.action('send', { accountId, conversationId, templateName: 'named_order', templateLanguage: 'ar',
+    templateParams: ['Ana', 'ORD-42'], idempotencyKey: 'named-template' });
+  const call = (await fixtureState()).requests.find(item => item.method === 'POST');
+  assert.deepEqual(call.body.template.elements[0].components, [{ type: 'body', parameters: [
+    { type: 'text', text: 'Ana', parameter_name: 'customer_name' },
+    { type: 'text', text: 'ORD-42', parameter_name: 'order_id' },
+  ] }]);
+});
+
+test('missing, blank or extra template values never reach the provider send', async () => {
+  for (const templateParams of [[], ['Ana'], ['Ana', '', 'Friday', 'token'], ['Ana', '42', 'Friday', 'token', 'extra']]) {
+    await fixture(); const s = runtime();
+    await assert.rejects(s.action('send', { accountId, conversationId, templateName: 'order_tracking', templateLanguage: 'en',
+      templateParams, idempotencyKey: 'invalid-template-values' }), error => error.envelope?.status === 400);
+    assert.equal((await fixtureState()).requests.filter(item => item.method === 'POST').length, 0);
+  }
+});
+
 test('foreign conversation identity is rejected before any send', async () => {
   await fixture('foreign-conversation'); const s = runtime();
   await assert.rejects(s.action('send', { accountId, conversationId, text: 'hello', idempotencyKey: 'foreign' }), error => error.envelope?.status === 404);

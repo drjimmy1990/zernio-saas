@@ -10,7 +10,15 @@ const BROADCAST = '66d1f0c2a4b9d3e8f1a2b3c4';
 const stateKey = 'zernio-whatsapp:state';
 const seed = () => ({ scenario: 'success', requests: [], intents: {}, broadcast: null, recipients: [], dispatches: 0, messages: [
   { id: 'wamid.inbound', message: 'Customer reply', direction: 'incoming', createdAt: '2026-10-19T10:00:00Z', deliveryStatus: null },
-], templates: [{ id: 'template-approved', name: 'order_update', status: 'APPROVED', language: 'en_US', category: 'UTILITY', components: [{ type: 'BODY', text: 'Order {{1}} updated.' }] }] });
+], templates: [
+  { id: 'template-approved', name: 'order_update', status: 'APPROVED', language: 'en_US', category: 'UTILITY', components: [{ type: 'BODY', text: 'Order {{1}} updated.' }] },
+  { id: 'template-header-link', name: 'order_tracking', status: 'APPROVED', language: 'en', category: 'UTILITY', components: [
+    { type: 'HEADER', format: 'TEXT', text: 'Hello {{1}}' },
+    { type: 'BODY', text: 'Order {{1}} for {{2}} is ready. Order {{1}}.' },
+    { type: 'BUTTONS', buttons: [{ type: 'PHONE_NUMBER', text: 'Call', phone_number: '+14155550100' }, { type: 'URL', text: 'Track', url: 'https://example.invalid/track/{{1}}' }] },
+  ] },
+  { id: 'template-named', name: 'named_order', status: 'APPROVED', language: 'ar', category: 'UTILITY', components: [{ type: 'BODY', text: 'Hello {{customer_name}}, order {{order_id}} is ready.' }] },
+] });
 const conversation = () => ({ id: CONVERSATION, platform: 'whatsapp', accountId: ACCOUNT, participantId: '14155550101', participantName: 'Test customer', lastMessage: 'Customer reply', unreadCount: 1, status: 'active', updatedTime: '2026-10-19T10:00:00Z' });
 
 http.createServer(async (req, res) => {

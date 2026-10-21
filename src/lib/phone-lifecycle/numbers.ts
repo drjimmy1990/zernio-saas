@@ -6,7 +6,21 @@ import { assertSubServiceAllowed } from '@/lib/zernio/policy-engine';
 import { TenantAccessError } from '@/lib/auth/tenant-access';
 export class PhoneNumbersLifecycle {
  static async list(organizationId:string) {return inventory(organizationId);}
- static async offers(organizationId:string,country?:string,numberType?:string) {await tenantProfile(organizationId);const catalog=await provider({path:'/phone-numbers/countries'});if(!Array.isArray(catalog.countries))malformed();if(!country)return catalog;if(!/^[A-Z]{2}$/.test(country)||!['local','mobile','national','toll_free'].includes(numberType??'local'))invalid('Choose a country and number type.');const available=await provider({path:'/phone-numbers/available',query:{country,numberType:numberType??'local',limit:20}});if(!Array.isArray(available.numbers))malformed();return {...available,countries:catalog.countries};}
+ static async offers(organizationId:string,country?:string,numberType?:string) {
+  await tenantProfile(organizationId);
+  const catalog=await provider({path:'/phone-numbers/countries'});
+  if(!Array.isArray(catalog.countries))malformed();
+  if(!country)return catalog;
+  const selectedType=numberType??'local';
+  if(!/^[A-Z]{2}$/.test(country)||!['local','mobile','national','toll_free'].includes(selectedType))invalid('Choose a country and number type.');
+  const offer=catalog.countries.find((c:any)=>(c.code??c.country)===country)?.types?.find((t:any)=>t.numberType===selectedType);
+  if(!offer)invalid('This country and number type are not offered.');
+  // Regulated orders assign the number after identity review, not from an exact-number picker.
+  if(offer.needsKyc===true||offer.fulfilment==='request')return {httpStatus:catalog.httpStatus,country,numberType:selectedType,numbers:[],countries:catalog.countries,availabilityMode:'assigned_after_verification',notice:'The provider assigns this number after identity verification. Exact-number selection is unavailable; carrier sourcing may take additional time.'};
+  const available=await provider({path:'/phone-numbers/available',query:{country,numberType:selectedType,limit:20}});
+  if(!Array.isArray(available.numbers))malformed();
+  return {...available,countries:catalog.countries};
+ }
  static async detail(organizationId:string,numberId:string) {return {phoneNumber:await ownedNumber(organizationId,numberId),httpStatus:200};}
  static async purchase(organizationId:string,input:Record<string,any>) {
   const profileId=await tenantProfile(organizationId);if(!/^[A-Z]{2}$/.test(input.country)||!['local','mobile','national','toll_free'].includes(input.numberType)||!Number.isSafeInteger(input.expectedMonthlyCents)||input.expectedMonthlyCents<0)invalid('Review the current country, type and monthly price.');
