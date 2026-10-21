@@ -574,10 +574,10 @@ export const ENDPOINT_SPECS: Record<string, EndpointSpec> = {
     path: '/v1/account-groups',
     liveApiPath: '/api/v1/account-groups',
     requiredScope: 'read',
-    titleEn: 'Cross-Posting Account Groups CRUD',
-    titleAr: 'مجموعات الحسابات للنشر المتزامن (Account Groups)',
-    descEn: 'Retrieve, create, or modify groups of social accounts to target with a single publishing or campaign request.',
-    descAr: 'إدارة وتجميع الحسابات في باقات (مثل: قنوات الخليج، قنوات الإعلانات) للنشر الموحد.',
+    titleEn: 'Account groups — coming soon',
+    titleAr: 'مجموعات الحسابات — قريباً',
+    descEn: 'Account group operations are unavailable in this release and return HTTP 501. Connect and manage individual accounts from the dashboard.',
+    descAr: 'مجموعات الحسابات غير متاحة في هذا الإصدار وتعيد HTTP 501. يمكنك ربط الحسابات وإدارتها بشكل فردي من لوحة التحكم.',
     subService: 'core_connect',
     action: 'list_groups',
     params: [
@@ -585,10 +585,8 @@ export const ENDPOINT_SPECS: Record<string, EndpointSpec> = {
     ],
     samplePayload: {},
     response: {
-      success: true,
-      data: [
-        { id: 'grp_mena_01', name: 'MENA Flagships', accountIds: ['acc_fb_01', 'acc_ig_01'] },
-      ],
+      success: false,
+      error: { code: 'feature_unavailable', message: 'This operation is not implemented in the current release. Use the supported dashboard workflow.' },
     },
   },
   ep_account_menus: {

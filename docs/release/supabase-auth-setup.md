@@ -15,6 +15,8 @@ Supabase's default email service has recipient restrictions and low sending limi
 
 ## Get a fresh link and sign in
 
+For an already-confirmed user, Supabase intentionally returns a successful signup-resend response without sending another confirmation email. It can also return the same neutral response for an unknown address, so the public response does not establish account existence or mail delivery. The project owner can check **Authentication → Users**, open the exact user, and inspect **Email confirmed at** / confirmation status. If confirmed, use sign-in or password recovery instead of repeatedly requesting signup confirmation. Successful password recovery delivery alone does not establish the user's confirmation status.
+
 1. Open `https://asra3.com/recovery` and enter the email address used for signup.
 2. Select **Resend verification** for an unconfirmed signup, or **Send recovery link** if resetting an existing account's password. Wait if the service reports a rate limit.
 3. Open the newly received email privately. Existing messages retain their old URLs and may have expired; changing project settings does not rewrite them. Do not reuse a link containing access or refresh tokens that was shared publicly.

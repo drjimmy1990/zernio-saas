@@ -86,6 +86,23 @@ test('verification fragment is removed before click and only its access token is
   assert.deepEqual(writes, [{ action: 'verify_email', email: '', password: '', accessToken: 'dummy-access-token' }]);
 }));
 
+test('neutral resend success retains signup-only guidance and offers sign-in without promising delivery', async () => {
+  for (const locale of ['en', 'ar']) await fixture(async (page, context) => {
+    const writes = [];
+    await context.route('**/api/auth', route => { writes.push(route.request().postDataJSON()); return route.fulfill({ json: { ok: true, message: 'If the account is eligible, check your email for the requested link.' } }); });
+    await page.goto(`${origin}/recovery?locale=${locale}`);
+    await page.locator('input[type="email"]').fill('dummy@example.invalid');
+    await page.getByRole('button', { name: locale === 'ar' ? 'إعادة إرسال التأكيد' : 'Resend verification', exact: true }).click();
+    await page.getByRole('status').waitFor();
+    const content = await page.locator('body').innerText();
+    assert.match(content, locale === 'ar' ? /لم تؤكّد بريدها بعد/ : /email is not yet confirmed/);
+    assert.match(content, locale === 'ar' ? /سجّل الدخول أو أعد تعيين كلمة المرور/ : /sign in or reset your password/);
+    assert.doesNotMatch(await page.getByRole('status').innerText(), /has been sent|تم إرسال رسالة/);
+    assert.equal(await page.getByRole('link').getAttribute('href'), '/login');
+    assert.deepEqual(writes, [{ action: 'resend', email: 'dummy@example.invalid', password: '', accessToken: '' }]);
+  });
+});
+
 test('expired error fragments show fixed safe text and never submit embedded tokens', async () => fixture(async (page, context) => {
   const writes = [];
   await context.route('**/api/auth', route => { writes.push(route.request().postDataJSON()); return route.fulfill({ json: { ok: true } }); });

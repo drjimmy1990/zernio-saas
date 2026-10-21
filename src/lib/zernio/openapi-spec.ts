@@ -650,12 +650,12 @@ export function getOpenApiV1Spec(baseUrl: string): OpenApiV1Document {
 
       // 8. Settings & Administration
       '/account-groups': {
-        get: { tags: ['Settings & Administration'], summary: 'List cross-posting account groups', responses: { '200': { description: 'Account groups' } } },
-        post: { tags: ['Settings & Administration'], summary: 'Create cross-posting account group', responses: { '201': { description: 'Group created' } } },
+        get: { tags: ['Settings & Administration'], summary: 'Account groups are coming soon', responses: { '501': { description: 'Account groups are unavailable in this release' } } },
+        post: { tags: ['Settings & Administration'], summary: 'Account groups are coming soon', responses: { '501': { description: 'No group created' } } },
       },
       '/account-groups/{id}': {
-        put: { tags: ['Settings & Administration'], summary: 'Update account group', responses: { '200': { description: 'Group updated' } } },
-        delete: { tags: ['Settings & Administration'], summary: 'Delete account group', responses: { '200': { description: 'Group deleted' } } },
+        put: { tags: ['Settings & Administration'], summary: 'Account groups are coming soon', responses: { '501': { description: 'No group changed' } } },
+        delete: { tags: ['Settings & Administration'], summary: 'Account groups are coming soon', responses: { '501': { description: 'No group deleted' } } },
       },
       '/accounts/{accountId}/messenger-menu': settingOperations('persistent_menu', { type: 'array', minItems: 1, items: { type: 'object', additionalProperties: false, required: ['locale', 'composer_input_disabled', 'call_to_actions'], properties: { locale, composer_input_disabled: { type: 'boolean' }, call_to_actions: { type: 'array', minItems: 1, maxItems: 3, items: menuItem } } } }, 'Facebook Page account only. At most 3 top-level menu items, 5 items in a nested menu, and one nesting level.'),
       '/accounts/{accountId}/messenger-ice-breakers': settingOperations('ice_breakers', { type: 'array', minItems: 1, items: { type: 'object', additionalProperties: false, required: ['locale', 'call_to_actions'], properties: { locale, call_to_actions: questions } } }, 'Facebook Page account only. Localized question/payload groups with up to 4 questions per locale.'),
@@ -1003,9 +1003,10 @@ export function getPostmanV1Collection(baseUrl: string, sampleKey: string) {
           metaExample('Replace Instagram ice breakers', 'PUT', '/accounts/{{instagramAccountId}}/instagram-ice-breakers', 'accounts:write. Instagram professional account; flat list of up to 4 questions.', { ice_breakers: [{ question: 'How can I contact support?', payload: 'SUPPORT' }] }),
           metaExample('Reset Messenger greeting', 'DELETE', '/accounts/{{metaAccountId}}/messenger-greeting', 'accounts:write. GET/DELETE also apply to the other selected canonical setting paths; refresh after uncertainty.'),
           {
-            name: 'List Account Groups (/account-groups)',
+            name: 'Account Groups — unavailable (HTTP 501)',
             request: {
               method: 'GET',
+              description: 'Account groups are coming soon. This release returns HTTP 501 without reading or changing groups.',
               header: [{ key: 'Authorization', value: 'Bearer {{apiKey}}' }],
               url: { raw: '{{baseUrl}}/account-groups', host: ['{{baseUrl}}'], path: ['account-groups'] },
             },
