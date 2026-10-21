@@ -7,6 +7,11 @@ import { fileURLToPath } from 'node:url';
 import ts from 'typescript';
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../..');
+const messagesSource = ts.transpileModule(fs.readFileSync(path.join(root, 'src/lib/auth/messages.ts'), 'utf8'), {
+  compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2022 },
+}).outputText;
+const messages = {};
+vm.runInNewContext(`(function(exports) {\n${messagesSource}\n})`)(messages);
 const source = ts.transpileModule(fs.readFileSync(path.join(root, 'src/app/login/page.tsx'), 'utf8'), {
   compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2022, jsx: ts.JsxEmit.ReactJSX, esModuleInterop: true },
 }).outputText;
@@ -34,6 +39,7 @@ function renderLogin(redirect, role = 'owner') {
     if (specifier === '@/i18n/ThemeAndLocaleProvider') return { useThemeAndLocale: () => ({ t: labels, locale: 'en', dir: 'ltr' }) };
     if (specifier === 'lucide-react') return new Proxy({}, { get: (_, key) => String(key) });
     if (specifier === '@/components/Asra3Logo') return { Asra3Logo: 'logo' };
+    if (specifier === '@/lib/auth/messages') return messages;
     throw new Error(`Unexpected login dependency: ${specifier}`);
   };
   const context = vm.createContext({ URLSearchParams, console, fetch: async (url, options) => {

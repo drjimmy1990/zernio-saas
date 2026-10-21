@@ -1,21 +1,20 @@
 'use client';
 
 import React, { useState, Suspense } from 'react';
-import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { useThemeAndLocale } from '@/i18n/ThemeAndLocaleProvider';
 import {
   UserPlus,
-  Sparkles,
   CheckCircle2,
   ArrowRight,
   Code2,
 } from 'lucide-react';
 import { Asra3Logo } from '@/components/Asra3Logo';
+import { authErrorMessage } from '@/lib/auth/messages';
 
 function SignUpFormContent() {
-  const router = useRouter();
   const { t, locale, dir } = useThemeAndLocale();
+  const ar = locale === 'ar';
 
   const [fullName, setFullName] = useState<string>('');
   const [email, setEmail] = useState<string>('');
@@ -29,6 +28,7 @@ function SignUpFormContent() {
     e.preventDefault();
     setLoading(true);
     setError('');
+    setNotice('');
     try {
       const res = await fetch('/api/auth', {
         method: 'POST',
@@ -45,18 +45,16 @@ function SignUpFormContent() {
       });
       const data = await res.json();
       if (!res.ok) {
-        setError(data.error || 'Could not create account');
+        setError(authErrorMessage(data, locale, ar ? 'تعذّر إنشاء الحساب.' : 'Could not create account.'));
         return;
       }
-      if (data.verificationRequired) {
-        setNotice(locale === 'ar' ? 'راجع بريدك لتأكيد ملكية الحساب ثم سجّل الدخول. لم يتم إنشاء جلسة دخول بعد.' : 'Check your email to verify ownership, then sign in. Your account is awaiting verification.');
+      if (data?.ok === true && data.verificationRequired === true) {
+        setNotice(ar ? 'إذا كان البريد مؤهلاً للتسجيل، ستصلك رسالة تأكيد. راجع بريدك والرسائل غير المرغوبة. إذا كان لديك حساب بالفعل، سجّل الدخول.' : 'If this email is eligible for registration, you will receive a verification link. Check your inbox and spam folder. If you already have an account, sign in.');
         return;
       }
-      router.push(
-        data.redirectTo || `/dashboard?org=${data.tenant.organizationId}`
-      );
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Sign up failed');
+      setError(authErrorMessage({ code: 'registration_unconfirmed' }, locale, 'Registration could not be confirmed.'));
+    } catch {
+      setError(ar ? 'تعذّر الاتصال بخدمة التسجيل. حاول مرة أخرى.' : 'Could not reach the registration service. Try again.');
     } finally {
       setLoading(false);
     }
@@ -75,23 +73,27 @@ function SignUpFormContent() {
             {t.auth.signupTitle}
           </h1>
           <p className="mt-1.5 text-xs text-[var(--text-secondary)]">
-            {t.auth.signupSubtitle}
+            {ar ? 'أنشئ مساحة عمل لنشاطك، ثم أكّد بريدك الإلكتروني لبدء استخدام الخدمات المفعّلة لحسابك.' : 'Create your business workspace, then verify your email to use the services enabled for your account.'}
           </p>
 
           {error && (
-            <div className="mt-4 rounded-xl border border-rose-500/40 bg-rose-500/10 p-3 text-xs text-rose-600">
+            <div role="alert" className="mt-4 rounded-xl border border-rose-500/40 bg-rose-500/10 p-3 text-xs text-rose-600">
               {error}
             </div>
           )}
           {notice && <div role="status" className="mt-4 rounded-xl border border-emerald-500/30 p-3 text-sm">{notice} <Link href="/login" className="underline">{locale === 'ar' ? 'تسجيل الدخول' : 'Sign in'}</Link></div>}
+          {(error || notice) && <Link href="/recovery" className="mt-3 inline-block text-sm underline">{ar ? 'إعادة إرسال التأكيد أو استعادة الحساب' : 'Resend verification or recover your account'}</Link>}
 
           <form onSubmit={handleSubmit} className="mt-6 space-y-4">
             <div className="grid gap-4 sm:grid-cols-2">
               <div>
-                <label className="block text-xs font-bold text-[var(--text-secondary)]">
+                <label htmlFor="signup-name" className="block text-xs font-bold text-[var(--text-secondary)]">
                   {t.auth.nameLabel}
                 </label>
                 <input
+                  id="signup-name"
+                  autoComplete="name"
+                  maxLength={160}
                   type="text"
                   required
                   value={fullName}
@@ -102,10 +104,13 @@ function SignUpFormContent() {
               </div>
 
               <div>
-                <label className="block text-xs font-bold text-[var(--text-secondary)]">
+                <label htmlFor="signup-email" className="block text-xs font-bold text-[var(--text-secondary)]">
                   {t.auth.emailLabel}
                 </label>
                 <input
+                  id="signup-email"
+                  autoComplete="email"
+                  maxLength={254}
                   type="email"
                   required
                   value={email}
@@ -118,10 +123,13 @@ function SignUpFormContent() {
 
             <div className="grid gap-4 sm:grid-cols-2">
               <div>
-                <label className="block text-xs font-bold text-[var(--text-secondary)]">
+                <label htmlFor="signup-company" className="block text-xs font-bold text-[var(--text-secondary)]">
                   {t.auth.companyLabel}
                 </label>
                 <input
+                  id="signup-company"
+                  autoComplete="organization"
+                  maxLength={160}
                   type="text"
                   value={companyName}
                   onChange={(e) => setCompanyName(e.target.value)}
@@ -131,10 +139,13 @@ function SignUpFormContent() {
               </div>
 
               <div>
-                <label className="block text-xs font-bold text-[var(--text-secondary)]">
+                <label htmlFor="signup-password" className="block text-xs font-bold text-[var(--text-secondary)]">
                   {t.auth.passwordLabel}
                 </label>
                 <input
+                  id="signup-password"
+                  autoComplete="new-password"
+                  maxLength={200}
                   type="password"
                   required
                   minLength={10}
@@ -149,7 +160,7 @@ function SignUpFormContent() {
             <div className="rounded-xl border border-[var(--border-subtle)] bg-[var(--bg-subtle)] p-3">
               <p className="text-xs font-bold">{t.pricingSection.plans.starter.name}</p>
               <p className="mt-1 text-xs text-[var(--text-secondary)]">
-                {locale === 'ar' ? 'تبدأ مساحات العمل الجديدة بخطة Starter.' : 'New workspaces start on the Starter plan.'}
+                {ar ? 'تبدأ مساحات العمل الجديدة بخطة Starter. يحدد المسؤول الخدمات المتاحة؛ الدفع الإلكتروني قريباً.' : 'New workspaces start on the Starter plan. An administrator controls service access; online payments are coming soon.'}
               </p>
             </div>
 
@@ -175,30 +186,30 @@ function SignUpFormContent() {
           </div>
         </div>
 
-        {/* Right Column: What You Get Immediately */}
+        {/* Workspace capabilities */}
         <div className="space-y-5 lg:col-span-5">
           <div className="luxury-card p-6 space-y-4">
             <h2 className="text-base font-bold text-[var(--text-primary)]">
-              {t.auth.whatYouGetTitle}
+              {ar ? 'مساحة عمل لنشاطك' : 'Your business workspace'}
             </h2>
 
             <div className="space-y-3 text-xs text-[var(--text-secondary)]">
               <div className="flex items-start gap-2.5">
                 <CheckCircle2 className="h-4 w-4 shrink-0 text-emerald-600 mt-0.5" />
                 <span>
-                  {t.auth.whatYouGet1}
+                  {ar ? 'سجّل جهات الاتصال وبيانات العملاء وتابعها من مكان واحد.' : 'Record and manage your contacts and customer details in one place.'}
                 </span>
               </div>
               <div className="flex items-start gap-2.5">
                 <CheckCircle2 className="h-4 w-4 shrink-0 text-emerald-600 mt-0.5" />
                 <span>
-                  {t.auth.whatYouGet2}
+                  {ar ? 'انشر المحتوى وردّ على العملاء عبر القنوات المتصلة والمفعّلة لحسابك.' : 'Publish content and reply to customers through connected channels enabled for your account.'}
                 </span>
               </div>
               <div className="flex items-start gap-2.5">
                 <CheckCircle2 className="h-4 w-4 shrink-0 text-emerald-600 mt-0.5" />
                 <span>
-                  {t.auth.whatYouGet3}
+                  {ar ? 'الأتمتة والدفع الإلكتروني قريباً.' : 'Automations and online payments are coming soon.'}
                 </span>
               </div>
             </div>

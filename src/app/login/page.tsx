@@ -9,12 +9,12 @@ import {
   ShieldCheck,
   Lock,
   Mail,
-  Sparkles,
   PhoneCall,
   Share2,
   CheckCircle2,
 } from 'lucide-react';
 import { Asra3Logo } from '@/components/Asra3Logo';
+import { authErrorMessage } from '@/lib/auth/messages';
 
 function LoginFormContent() {
   const router = useRouter();
@@ -48,7 +48,7 @@ function LoginFormContent() {
       });
       const data = await res.json();
       if (!res.ok) {
-        setError(data.error || t.auth.signInFailed);
+        setError(authErrorMessage(data, locale, t.auth.signInFailed));
         return;
       }
 
@@ -83,7 +83,7 @@ function LoginFormContent() {
           </p>
 
           {error && (
-            <div className="mt-4 rounded-xl border border-rose-500/40 bg-rose-500/10 p-3 text-xs font-semibold text-rose-600">
+            <div role="alert" className="mt-4 rounded-xl border border-rose-500/40 bg-rose-500/10 p-3 text-xs font-semibold text-rose-600">
               {error}
             </div>
           )}
@@ -243,7 +243,7 @@ function LoginFormContent() {
           </div>
 
           <div className="pt-6 border-t border-[var(--border-subtle)] text-[11px] text-[var(--text-muted)] flex items-center justify-between">
-            <span>Asra3 Platform SLA 99.99%</span>
+            <span>{locale === 'ar' ? 'مساحة عمل لنشاطك' : 'Your business workspace'}</span>
             <span className="font-mono text-[var(--brand-coral)]">asra3.com</span>
           </div>
         </div>

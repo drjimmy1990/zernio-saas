@@ -6,8 +6,9 @@ const sessionId='22222222-2222-4222-8222-222222222222';
 async function environment(options={}) {
  const calls=[];let memberships=options.partial?[]:[{organization_id:org.id,role:'owner',organizations:org}];
  const server=createServer(async(req,res)=>{let raw='';for await(const chunk of req)raw+=chunk;const body=raw?JSON.parse(raw):{};const u=new URL(req.url,'http://localhost');calls.push({path:u.pathname,method:req.method,body});res.setHeader('content-type','application/json');let data;
-  if(options.outage){res.statusCode=503;data={message:'Unavailable'};}
-  else if(u.pathname==='/auth/v1/signup')data={user:{...user,email_confirmed_at:undefined},session:null};
+  if(options.authFailure && u.pathname.startsWith('/auth/v1/')){res.statusCode=options.authFailure.status;res.setHeader('x-supabase-api-version','2024-01-01');data={code:options.authFailure.code,message:'DUMMY PRIVATE PROVIDER DETAIL'};}
+  else if(options.outage){res.statusCode=503;data={message:'Unavailable'};}
+  else if(u.pathname==='/auth/v1/signup')data={user:options.missingSignupUser?null:{...user,email_confirmed_at:undefined,...(options.obfuscatedSignup?{identities:[]}: {})},session:null};
   else if(u.pathname==='/auth/v1/token'){if(options.badPassword){res.statusCode=400;data={error_code:'invalid_credentials',msg:'Invalid'};}else data={access_token:'private-test-token',refresh_token:'private-refresh',expires_in:3600,token_type:'bearer',user:options.unverified?{...user,email_confirmed_at:undefined}:user};}
   else if(u.pathname==='/auth/v1/user')data=user;
   else if(u.pathname.startsWith('/auth/v1/admin/users/'))data={user};
@@ -66,4 +67,34 @@ test('administrator login cannot use its management identity for customer policy
   } finally {
     await e.close();
   }
+});
+
+
+test('actual SDK authentication errors are safe and email failures never claim delivery',async()=>{
+ for(const [action,providerCode,http,status,code] of [
+ ['signup','email_address_not_authorized',400,503,'email_delivery_unavailable'],
+ ['signup','signup_disabled',422,503,'signup_unavailable'],
+ ['signup','weak_password',422,400,'weak_password'],
+ ['signup','captcha_failed',400,503,'auth_verification_unavailable'],
+ ['signup','email_address_invalid',400,400,'invalid_email'],
+ ['signup','user_already_exists',422,400,'registration_unconfirmed'],
+ ['login','unexpected_failure',503,503,'auth_unavailable'],
+ ['login','over_request_rate_limit',429,429,'auth_rate_limited'],
+ ['recover','over_email_send_rate_limit',429,429,'auth_rate_limited'],
+ ['resend','email_provider_disabled',422,503,'email_delivery_unavailable'],
+ ['recover','unknown_failure',400,503,'email_delivery_unavailable'],
+ ['resend','user_not_found',404,200,null],
+ ['complete_recovery','unexpected_failure',503,503,'auth_unavailable'],
+ ['verify_email','unexpected_failure',503,503,'auth_unavailable'],
+ ]){
+  const e=await environment({authFailure:{code:providerCode,status:http}});
+  try{const r=await e.post({action,email:user.email,password:'private-password',fullName:'Owner',accessToken:'local-dummy-token'});assert.equal(r.status,status,action+providerCode);assert.equal(r.body.code??null,code);assert.equal(r.cookie,null);assert.ok(!JSON.stringify(r.body).includes('DUMMY PRIVATE'));assert.ok(!e.calls.some(c=>c.path.endsWith('saas_issue_session')));if(status!==200)assert.equal(r.body.ok,undefined);}finally{await e.close();}
+ }
+});
+
+
+test('signup requires a provider user but preserves obfuscated duplicate verification responses',async()=>{
+ for(const [options,status] of [[{missingSignupUser:true},503],[{obfuscatedSignup:true},200]]){
+  const e=await environment(options);try{const r=await e.post({action:'signup',email:user.email,password:'private-password',fullName:'Owner'});assert.equal(r.status,status);assert.equal(r.cookie,null);assert.equal(r.body.verificationRequired,status===200?true:undefined);assert.ok(!e.calls.some(c=>c.path.endsWith('saas_provision_signup')||c.path.endsWith('saas_issue_session')));}finally{await e.close();}
+ }
 });
