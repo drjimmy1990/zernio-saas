@@ -424,6 +424,7 @@ export function ConnectionWizardModal({
 
   // Step 3 Entity selection state
   const [entities, setEntities] = useState<SelectableEntity[]>([]);
+  const [entitiesTruncated, setEntitiesTruncated] = useState(false);
   const [selectedEntityId, setSelectedEntityId] = useState<string>('');
   const [entitySearch, setEntitySearch] = useState('');
 
@@ -445,6 +446,10 @@ export function ConnectionWizardModal({
   const fetchEntities = async (platform: SocialPlatform, tokenOverride?: string, stepOverride?: string) => {
     setIsSubmitting(true);
     setErrorMessage(null);
+    setEntities([]);
+    setSelectedEntityId('');
+    setEntitySearch('');
+    setEntitiesTruncated(false);
     const tokenToUse = tokenOverride ?? activeTempToken;
     try {
       const res = await fetch('/api/connect', {
@@ -460,9 +465,10 @@ export function ConnectionWizardModal({
       });
 
       const data = await res.json();
-      if (data.error) {
-        throw new Error(data.error);
+      if (!res.ok || data.error) {
+        throw new Error(typeof data.error === 'string' ? data.error : data.error?.message || loc('تعذر جلب الحسابات المتاحة.', 'Failed to retrieve available entities.'));
       }
+      setEntitiesTruncated(data.truncated === true);
       if (data.items && Array.isArray(data.items)) {
         setEntities(data.items);
         if (data.items.length > 0) {
@@ -1657,13 +1663,16 @@ export function ConnectionWizardModal({
               </div>
 
               {/* Search Entities */}
+              <button type="button" disabled={isSubmitting} onClick={() => void fetchEntities(selectedPlatform)} className="rounded-xl border border-[var(--border-subtle)] px-3 py-2 text-xs font-bold disabled:opacity-50">{loc('إعادة تحميل الحسابات', 'Reload accounts')}</button>
+              {entitiesTruncated && <p role="status" className="rounded-xl border border-amber-400/40 p-3 text-sm">{loc('قائمة الصفحات غير مكتملة لدى Meta. يمكنك اختيار صفحة ظاهرة، أو إعادة تحميل القائمة. لا تُلغِ صلاحيات صفحاتك الأخرى لمحاولة إظهار المزيد.', 'Meta returned an incomplete Page list. Select a listed Page or reload the list. Keep your other Page permissions selected when reconnecting.')}</p>}
+              {!isSubmitting && entities.length === 0 && selectedPlatform === 'instagram' && <p role="status" className="text-sm text-[var(--text-secondary)]">{loc('لم تُرجع Meta صفحة مرتبطة بحساب إنستجرام احترافي. راجع ربط الصفحة وصلاحياتك، أو استخدم تسجيل الدخول المباشر بإنستجرام.', 'Meta returned no Page linked to an Instagram professional account. Check Page linkage and permissions, or use direct Instagram Login.')}</p>}
               {entities.length > 2 && (
                 <div className="relative">
                   <Search className="absolute start-3 top-1/2 -translate-y-1/2 h-4 w-4 text-[var(--text-muted)]" />
                   <input
                     type="text"
                     value={entitySearch}
-                    onChange={(e) => setEntitySearch(e.target.value)}
+                    onChange={(e) => { setEntitySearch(e.target.value); setSelectedEntityId(''); }}
                     placeholder={loc('بحث في الحسابات والصفحات...', 'Search available entities...')}
                     className="w-full rounded-xl border border-[var(--border-subtle)] bg-[var(--bg-subtle)] py-2 ps-9 pe-3 text-xs text-[var(--text-primary)] focus:outline-none"
                   />

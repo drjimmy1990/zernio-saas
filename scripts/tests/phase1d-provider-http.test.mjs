@@ -26,7 +26,7 @@ after(() => { if (simulation?.pid) { if (process.platform === 'win32') spawnSync
 async function fixture(scenario = 'success') { assert.equal((await fetch(`${origin}/__fixture/reset`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ scenario }) })).status, 200); }
 async function state() { return (await fetch(`${origin}/__fixture/state`)).json(); }
 function runtime() {
- const files = { instagram: 'src/lib/publishing/instagram.ts', client: 'src/lib/zernio/client.ts', publishing: 'src/lib/services/publishing.service.ts', core: 'src/lib/services/core-connect.service.ts', accounts: 'src/lib/auth/tenant-provider.ts', lifecycle: 'src/lib/accounts/lifecycle.ts' };
+ const files = { facebook: 'src/lib/publishing/facebook.ts', instagram: 'src/lib/publishing/instagram.ts', client: 'src/lib/zernio/client.ts', publishing: 'src/lib/services/publishing.service.ts', core: 'src/lib/services/core-connect.service.ts', accounts: 'src/lib/auth/tenant-provider.ts', lifecycle: 'src/lib/accounts/lifecycle.ts' };
  const sources = Object.fromEntries(Object.entries(files).map(([name, file]) => [name, ts.transpileModule(fs.readFileSync(path.join(root, file), 'utf8'), { compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2022 } }).outputText]));
  const context = vm.createContext({ Buffer, URL, Request, Response, Headers, TextEncoder, TextDecoder, Date, Intl, Set, console, AbortController, setTimeout, clearTimeout,
  process: { env: { ZERNIO_BASE_URL: `${origin}/api/v1`, ZERNIO_API_KEY: 'phase1d_mock_key' } },
@@ -37,7 +37,7 @@ function runtime() {
   const module = { exports: {} }; cache[name] = module.exports; // cycles Core -> lifecycle -> ownership -> Core
   const require = specifier => {
    if (specifier === 'crypto' || specifier === 'node:crypto') return crypto;
-   const alias = { '@/lib/publishing/instagram': 'instagram', '@/lib/zernio/client': 'client', '@/lib/services/publishing.service': 'publishing', '@/lib/services/core-connect.service': 'core', '@/lib/auth/tenant-provider': 'accounts', '@/lib/accounts/lifecycle': 'lifecycle' }[specifier]; if (alias) return load(alias);
+   const alias = { '@/lib/publishing/facebook': 'facebook', '@/lib/publishing/instagram': 'instagram', '@/lib/zernio/client': 'client', '@/lib/services/publishing.service': 'publishing', '@/lib/services/core-connect.service': 'core', '@/lib/auth/tenant-provider': 'accounts', '@/lib/accounts/lifecycle': 'lifecycle' }[specifier]; if (alias) return load(alias);
    if (specifier === '@/lib/auth/tenant-access') return { TenantAccessError: class extends Error { constructor(status, message) { super(message); this.status = status; } } };
    if (specifier === '@/lib/supabase/admin') return { createSupabaseAdminClient: () => null };
    if (specifier === '@/lib/storage/workspace-store') return { WorkspaceStore: { getWorkspace: () => ({ connectedAccounts: [] }), removeConnectedAccount: (...args) => removed.push(args) } };
@@ -102,4 +102,45 @@ test('content-only update preserves writable platform overrides without resendin
  const updated = await service.updatePost('tenant-a', created.post._id, { content: 'Global updated', idempotencyKey: 'preserve-overrides' });
  assert.equal(updated.post.platforms[0].customContent, target.customContent); assert.deepEqual(JSON.parse(JSON.stringify(updated.post.platforms[0].customMedia)), target.customMedia); assert.deepEqual(JSON.parse(JSON.stringify(updated.post.platforms[0].platformSpecificData)), target.platformSpecificData); assert.equal(updated.post.platforms[0].scheduledFor, target.scheduledFor);
  const sent = (await state()).requests.find(c => c.method === 'PUT').body; assert.equal(sent.platforms, undefined);
+});
+
+test('Facebook rejects unsupported effective media before provider create and keeps valid feed/story/reel shapes', async () => {
+ const image = { type: 'image', url: 'https://example.invalid/photo.jpg' }, video = { type: 'video', url: 'https://example.invalid/video.mp4' };
+ const invalid = [
+  { mediaItems: [image, video] }, { mediaItems: [video, video] },
+  { mediaItems: Array.from({ length: 11 }, () => image) },
+  { mediaItems: [{ type: 'document', url: 'https://example.invalid/report.pdf' }] },
+  { mediaItems: [], platformSpecificData: { contentType: 'story' } },
+  { mediaItems: [image, image], platformSpecificData: { contentType: 'story' } },
+  { mediaItems: [image], platformSpecificData: { contentType: 'reel' } },
+  { mediaItems: [image], customMedia: [image, video] },
+ ];
+ for (const { platformSpecificData, customMedia, ...patch } of invalid) {
+  await fixture(); const { service } = runtime();
+  await assert.rejects(service.createPost({ ...input(), ...patch, platforms: [{ platform: 'facebook', accountId, customMedia, platformSpecificData }] }), error => error.status === 400);
+  assert.equal((await state()).requests.filter(call => call.method === 'POST').length, 0);
+ }
+ for (const { platformSpecificData, customMedia, ...patch } of [
+  {}, { mediaItems: Array.from({ length: 10 }, () => image) }, { mediaItems: [video] },
+  { mediaItems: [image], platformSpecificData: { contentType: 'story' } },
+  { mediaItems: [video], platformSpecificData: { contentType: 'reel' } },
+  { mediaItems: [image, video], customMedia: [] },
+ ]) {
+  await fixture(); const { service } = runtime();
+  const created = await service.createPost({ ...input(), ...patch, platforms: [{ platform: 'facebook', accountId, customMedia, platformSpecificData }] });
+  assert.equal(created.post.status, 'draft');
+  assert.equal((await state()).requests.filter(call => call.method === 'POST' && call.path === '/posts').length, 1);
+ }
+});
+
+test('Facebook update validates saved target media overrides and newly supplied global media', async () => {
+ const image = { type: 'image', url: 'https://example.invalid/photo.jpg' }, video = { type: 'video', url: 'https://example.invalid/video.mp4' };
+ await fixture(); const { service } = runtime();
+ const created = await service.createPost({ ...input(), mediaItems: [image] });
+ await assert.rejects(service.updatePost('tenant-a', created.post._id, { mediaItems: [image, video], idempotencyKey: 'bad-update' }), error => error.status === 400);
+ assert.equal((await state()).requests.filter(call => call.method === 'PUT').length, 0);
+ await fixture(); const overridden = await service.createPost({ ...input(), mediaItems: [image], platforms: [{ platform: 'facebook', accountId, customMedia: [] }] });
+ const updated = await service.updatePost('tenant-a', overridden.post._id, { mediaItems: [image, video], idempotencyKey: 'empty-override' });
+ assert.equal(updated.post.status, 'draft');
+ assert.deepEqual(JSON.parse(JSON.stringify(updated.post.platforms[0].customMedia)), []);
 });

@@ -214,3 +214,24 @@ test('purchased number linked account identity must match the canonical callback
   await assert.rejects(s.accept(nonce, { step: '', accountId: 'account-a' }), (error) => error.status === 409);
   assert.equal(s.persisted.length, 0);
 });
+
+test('Facebook incomplete Page lists retain their flag without leaking provider tokens', async () => {
+  const s = sandbox({ resources: { truncated: true, pages: [{ id: 'page-a', name: 'Our Page', access_token: 'private-page-token' }] } });
+  const { oauthSessionId: nonce } = await s.start('facebook');
+  await s.accept(nonce, { platform: 'facebook', step: 'select_page' });
+  const result = await s.listOAuthResources(request(), session(), nonce, 'facebook');
+  assert.equal(result.truncated, true);
+  assert.equal(result.items[0].id, 'page-a');
+  assert.equal(JSON.stringify(result).includes('private-page-token'), false);
+  assert.equal(result.items[0].access_token, undefined);
+});
+
+test('Instagram selector shows the Instagram handle while preserving the Page ID and hiding its token', () => {
+  const s = sandbox();
+  const items = s.normalizeOAuthResources({ pages: [{ id: 'page-a', name: 'Our Page', username: 'page_handle', access_token: 'private-page-token', instagram_business_account: { id: 'instagram-a', username: 'instagram_handle' } }, { id: 'page-without-instagram' }] }, 'instagram');
+  assert.equal(items.length, 1);
+  assert.equal(items[0].id, 'page-a');
+  assert.equal(items[0].instagramAccountId, 'instagram-a');
+  assert.equal(items[0].username, 'instagram_handle');
+  assert.equal(JSON.stringify(items).includes('private-page-token'), false);
+});

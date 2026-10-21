@@ -26,7 +26,7 @@ after(() => { if (simulation?.pid) { if (process.platform === 'win32') spawnSync
 async function fixture(scenario = 'success') { assert.equal((await fetch(`${origin}/__fixture/reset`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ scenario }) })).status, 200); }
 async function state() { return (await fetch(`${origin}/__fixture/state`)).json(); }
 function runtime() {
- const files = { instagram: 'src/lib/publishing/instagram.ts', client: 'src/lib/zernio/client.ts', publishing: 'src/lib/services/publishing.service.ts', core: 'src/lib/services/core-connect.service.ts', accounts: 'src/lib/auth/tenant-provider.ts', lifecycle: 'src/lib/accounts/lifecycle.ts' };
+ const files = { instagram: 'src/lib/publishing/instagram.ts', facebook: 'src/lib/publishing/facebook.ts', client: 'src/lib/zernio/client.ts', publishing: 'src/lib/services/publishing.service.ts', core: 'src/lib/services/core-connect.service.ts', accounts: 'src/lib/auth/tenant-provider.ts', lifecycle: 'src/lib/accounts/lifecycle.ts' };
  const sources = Object.fromEntries(Object.entries(files).map(([name, file]) => [name, ts.transpileModule(fs.readFileSync(path.join(root, file), 'utf8'), { compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2022 } }).outputText]));
  const context = vm.createContext({ Buffer, URL, Request, Response, Headers, TextEncoder, TextDecoder, Date, Intl, Set, console, AbortController, setTimeout, clearTimeout,
  process: { env: { ZERNIO_BASE_URL: `${origin}/api/v1`, ZERNIO_API_KEY: 'phase2c_mock_key' } },
@@ -37,7 +37,7 @@ function runtime() {
   const module = { exports: {} }; cache[name] = module.exports; // cycles Core -> lifecycle -> ownership -> Core
   const require = specifier => {
    if (specifier === 'crypto' || specifier === 'node:crypto') return crypto;
-   const alias = { '@/lib/publishing/instagram': 'instagram', '@/lib/zernio/client': 'client', '@/lib/services/publishing.service': 'publishing', '@/lib/services/core-connect.service': 'core', '@/lib/auth/tenant-provider': 'accounts', '@/lib/accounts/lifecycle': 'lifecycle' }[specifier]; if (alias) return load(alias);
+   const alias = { '@/lib/publishing/instagram': 'instagram', '@/lib/publishing/facebook': 'facebook', '@/lib/zernio/client': 'client', '@/lib/services/publishing.service': 'publishing', '@/lib/services/core-connect.service': 'core', '@/lib/auth/tenant-provider': 'accounts', '@/lib/accounts/lifecycle': 'lifecycle' }[specifier]; if (alias) return load(alias);
    if (specifier === '@/lib/auth/tenant-access') return { TenantAccessError: class extends Error { constructor(status, message) { super(message); this.status = status; } } };
    if (specifier === '@/lib/supabase/admin') return { createSupabaseAdminClient: () => null };
    if (specifier === '@/lib/storage/workspace-store') return { WorkspaceStore: { getWorkspace: () => ({ connectedAccounts: [] }), removeConnectedAccount: (...args) => removed.push(args) } };
@@ -56,8 +56,21 @@ const mutations=data=>data.requests.filter(r=>r.path.startsWith('/posts')&&['POS
 async function scenario(name){assert.equal((await fetch(`${origin}/__fixture/scenario`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({scenario:name})})).status,200);}
 async function seedPost(patch={}){const post={_id:postId,content:'Stored caption',mediaItems:[image()],status:'draft',platforms:[{platform:'instagram',accountId,status:'pending'}],...patch};assert.equal((await fetch(`${origin}/__fixture/seed`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({post})})).status,200);return post;}
 
-test('Instagram feed,20item carousel,Reel and Story use canonical types and real provider IDs',async()=>{
- for(const patch of [{},{mediaItems:Array.from({length:20},(_,i)=>image(i))},{mediaItems:[video()],platforms:[{platform:'instagram',accountId,platformSpecificData:{shareToFeed:false}}]},{mediaItems:[video()],platforms:[{platform:'instagram',accountId,platformSpecificData:{contentType:'story'}}]}]){await fixture();const result=await runtime().service.createPost(input(patch));assert.equal(result.post.status,'draft');assert.match(result.post._id,/^[a-f0-9]{24}$/);assert.equal(result.warnings[0],'Canonical warning');const calls=(await state()).requests;assert.equal(calls.filter(r=>r.path==='/tools/validate/post').length,1);assert.equal(calls.some(r=>r.path.endsWith('/publishing-limit')),false);}
+test('Instagram feed,10item carousel,Reel and Story use canonical types and real provider IDs',async()=>{
+ for(const patch of [{},{mediaItems:Array.from({length:10},(_,i)=>image(i))},{mediaItems:[video()],platforms:[{platform:'instagram',accountId,platformSpecificData:{shareToFeed:false}}]},{mediaItems:[video()],platforms:[{platform:'instagram',accountId,platformSpecificData:{contentType:'story'}}]}]){await fixture();const result=await runtime().service.createPost(input(patch));assert.equal(result.post.status,'draft');assert.match(result.post._id,/^[a-f0-9]{24}$/);assert.equal(result.warnings[0],'Canonical warning');const calls=(await state()).requests;assert.equal(calls.filter(r=>r.path==='/tools/validate/post').length,1);assert.equal(calls.some(r=>r.path.endsWith('/publishing-limit')),false);}
+});
+test('Instagram carousel limit applies to root/custom media, stored updates and retries before provider writes',async()=>{
+ const oversized=Array.from({length:11},(_,i)=>i===10?video():image(i));
+ for(const patch of [{mediaItems:oversized},{platforms:[{platform:'instagram',accountId,customMedia:oversized}]}]){
+  await fixture();await assert.rejects(runtime().service.createPost(input(patch)),e=>e.status===400&&e.message.includes('1–10'));assert.equal(mutations(await state()).length,0);
+ }
+ await fixture();await runtime().service.createPost(input({platforms:[{platform:'instagram',accountId,customMedia:[...oversized.slice(0,9),video()]}]}));assert.equal(mutations(await state()).length,1);
+ for(const retry of [false,true]){
+  await fixture();await seedPost({mediaItems:oversized,status:retry?'failed':'draft',platforms:[{platform:'instagram',accountId,status:retry?'failed':'pending'}]});
+  const service=runtime().service;
+  await assert.rejects(retry?service.retryPost('tenant-a',postId,{idempotencyKey:'oversized-retry'}):service.updatePost('tenant-a',postId,{content:'Changed caption',idempotencyKey:'oversized-update'}),e=>e.status===400&&e.message.includes('1–10'));
+  assert.equal(mutations(await state()).length,0);
+ }
 });
 test('requiredmedia,type/count,caption,privateURL and declaredaccount restrictions block post writes',async()=>{
  const patches=[{mediaItems:[]},{mediaItems:[{type:'document',url:'https://cdn.example.invalid/doc.pdf'}]},{mediaItems:Array.from({length:21},(_,i)=>image(i))},{content:'a'.repeat(2201)},{mediaItems:[{type:'image',url:'https://127.0.0.1/private.jpg'}]},{mediaItems:[{type:'image',url:'https://[::ffff:127.0.0.1]/private.jpg'}]},{platforms:[{platform:'instagram',accountId,platformSpecificData:{contentType:'reel'}}]},{mediaItems:[image(),image(2)],platforms:[{platform:'instagram',accountId,platformSpecificData:{contentType:'story'}}]},{platforms:[{platform:'facebook',accountId}]}];

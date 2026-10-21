@@ -18,7 +18,7 @@ function strings(value: unknown, field: string, max: number) { if (!Array.isArra
 /** @zernio/node InstagramPlatformData (types.gen.ts:7798–7911), not a new contentType dialect. */
 export function validateInstagramTarget(target: InstagramTarget, content: string | undefined, rootMedia: PublishingMedia[] | undefined, account: { metadata?: Record<string, any> }) {
  const items = target.customMedia !== undefined ? target.customMedia : rootMedia ?? [], caption = target.customContent !== undefined ? target.customContent : content ?? '';
- if (!items.length || items.length > 20 || items.some(item => !['image', 'video'].includes(item.type))) bad('Instagram requires 1–20 image or video items; documents are unsupported.');
+ if (!items.length || items.length > 10 || items.some(item => !['image', 'video'].includes(item.type))) bad('Instagram requires 1–10 image or video items; documents are unsupported.');
  if ([...caption].length > 2200) bad('Instagram captions must be at most 2,200 characters.');
  const options = target.platformSpecificData ?? {};
  const allowed = ['contentType','shareToFeed','collaborators','firstComment','trialParams','userTags','audioName','audioConfiguration','muteAudio','thumbOffset','instagramThumbnail','reelCover','isAiGenerated','isPaidPartnership','brandedContentSponsors','commentsEnabled','locationId'];

@@ -137,7 +137,7 @@ test('changing accounts or content discards stale quota/preflight responses and 
   } finally {await context.close();}
 });
 
-test('known uploads inspect local metadata and reject unsupported types; captions and the SDK 20-item carousel cap are checked',async()=>{
+test('known uploads inspect local metadata and reject unsupported types; captions and the documented 10-item carousel cap are checked',async()=>{
   const {context,page,writes}=await fixture();
   try {
     await page.locator('details').evaluate(node=>node.open=true);
@@ -150,14 +150,14 @@ test('known uploads inspect local metadata and reject unsupported types; caption
     await page.getByLabel('Post text').fill('x'.repeat(2201));await page.getByRole('button',{name:'Save draft',exact:true}).click();await page.getByText('Shorten the caption to 2,200 characters or fewer.',{exact:true}).waitFor();assert.equal(mutations(writes).length,0);
     await page.getByLabel('Post text').fill('🙂'.repeat(1200));await page.getByRole('button',{name:'Save draft',exact:true}).click();await page.getByLabel('Publishing result').waitFor();assert.equal([...mutations(writes).at(-1).content].length,1200);
     await addMedia(page);
-    await page.getByLabel('Post text').fill('Twenty views of our new collection');
-    for(let index=1;index<=20;index++)await addMedia(page,`https://media.example/product-${index}.jpg`);
+    await page.getByLabel('Post text').fill('Ten views of our new collection');
+    for(let index=1;index<=10;index++)await addMedia(page,`https://media.example/product-${index}.jpg`);
     await page.getByRole('button',{name:'Save draft',exact:true}).click();await page.getByRole('alert').waitFor();assert.equal(mutations(writes).length,1);
     await page.getByRole('button',{name:'Remove media',exact:true}).last().click();
     await page.getByRole('radio',{name:'Story',exact:true}).check();await page.getByRole('button',{name:'Save draft',exact:true}).click();await page.getByRole('alert').waitFor();assert.equal(mutations(writes).length,1);
     await page.getByRole('radio',{name:'Feed / Reel',exact:true}).check();await page.getByRole('button',{name:'Save draft',exact:true}).click();
     await page.getByText('Request completed. The actual post status is shown below.',{exact:true}).waitFor();
-    assert.equal(mutations(writes).at(-1).mediaItems.length,20);
+    assert.equal(mutations(writes).at(-1).mediaItems.length,10);
   } finally {await context.close();}
 });
 

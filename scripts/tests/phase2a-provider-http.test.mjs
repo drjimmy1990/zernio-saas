@@ -50,6 +50,20 @@ function runtime() {
 }
 const input = () => ({ organizationId: 'tenant-a', content: 'HTTP draft', platforms: [{ platform: 'facebook', accountId, platformSpecificData: { facebookSettings: { draft: false } } }], idempotencyKey: 'draft-one' });
 
+test('Facebook and Instagram Page selectors send OAuth tokens in headers over real HTTP', async () => {
+ for (const [step, path] of [['select_page', '/connect/facebook/select-page'], ['select_account', '/connect/instagram/select-account']]) {
+  await fixture();
+  const result = await runtime().core.listHeadlessSelectableEntities({ organizationId: 'tenant-a', step, tempToken: 'isolated-meta-token', connectToken: 'isolated-connect-token' });
+  assert.equal(result.raw.pages[0].id, 'page-a');
+  assert.equal(result.raw.truncated, true);
+  const calls = (await state()).requests, call = calls.find(c => c.path === path);
+  assert.deepEqual(call.query, { profileId });
+  assert.equal(call.tempToken, 'isolated-meta-token');
+  assert.equal(call.connectToken, 'isolated-connect-token');
+  assert.equal(calls.some(c => c.method !== 'GET'), false);
+ }
+});
+
 test('Meta canonical conversations/messages use verified account/profile and opaque ID', async () => {
  await fixture(); const { service } = runtime(); const params = { organizationId: 'tenant-a', accountId, conversationId: 'opaque-thread-1' };
  const list = await service.listConversations(params); assert.equal(list.data[0].platform, 'facebook'); assert.deepEqual(JSON.parse(JSON.stringify(list.meta.failedAccounts)), []);

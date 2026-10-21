@@ -30,6 +30,8 @@ function sandbox(options = {}) {
   };
   const instagramSource = ts.transpileModule(fs.readFileSync('src/lib/publishing/instagram.ts','utf8'), {compilerOptions:{module:ts.ModuleKind.CommonJS,target:ts.ScriptTarget.ES2022}}).outputText;
   const instagramExports = {}; vm.runInNewContext(`(function(require,exports){${instagramSource}\n})`,{URL}).call(null,name=>modules[name],instagramExports); modules['@/lib/publishing/instagram']=instagramExports;
+  const facebookSource = ts.transpileModule(fs.readFileSync('src/lib/publishing/facebook.ts','utf8'), {compilerOptions:{module:ts.ModuleKind.CommonJS,target:ts.ScriptTarget.ES2022}}).outputText;
+  const facebookExports = {}; vm.runInNewContext(`(function(require,exports){${facebookSource}\n})`,{URL}).call(null,name=>modules[name],facebookExports); modules['@/lib/publishing/facebook']=facebookExports;
   const exports = {};
   vm.runInNewContext(`(function(require,exports){${source}\n})`, { URL, Intl, Date, Set }).call(null, name => { assert.ok(modules[name], name); return modules[name]; }, exports);
   return { service: exports.PublishingService, calls };

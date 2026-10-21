@@ -8,9 +8,13 @@ http.createServer(async (req, res) => {
  let state = await pm.state.get(key) || seed();
  if (url.pathname === '/__fixture/reset') { state = { ...seed(), scenario: body.scenario || 'success' }; await pm.state.set(key, state); return send(200, { ok: true }); }
  if (url.pathname === '/__fixture/state') return send(200, state);
- const route = url.pathname.replace(/^\/api\/v1/, ''); state.requests.push({ method: req.method, path: route, query: Object.fromEntries(url.searchParams), body, idempotencyKey: req.headers['idempotency-key'] }); await pm.state.set(key, state);
+ const route = url.pathname.replace(/^\/api\/v1/, ''); state.requests.push({ method: req.method, path: route, query: Object.fromEntries(url.searchParams), body, idempotencyKey: req.headers['idempotency-key'], tempToken: req.headers['x-temp-token'], connectToken: req.headers['x-connect-token'] }); await pm.state.set(key, state);
  if (req.headers.authorization !== 'Bearer phase2a_mock_key') return send(401, { error: 'Test key required' });
  if (route === '/profiles/' + PROFILE) return send(200, { profile: { _id: PROFILE, externalId: 'tenant-a' } });
+ if (route === '/connect/facebook/select-page' || route === '/connect/instagram/select-account') {
+  if (req.method !== 'GET' || url.searchParams.get('profileId') !== PROFILE || req.headers['x-temp-token'] !== 'isolated-meta-token' || req.headers['x-connect-token'] !== 'isolated-connect-token') return send(400, { error: 'Missing selection context' });
+  return send(200, { pages: [{ id: 'page-a', name: 'Our Page', access_token: 'isolated-page-token', ...(route.includes('instagram') ? { instagram_business_account: { id: 'instagram-a', username: 'our_instagram' } } : {}) }], truncated: true });
+ }
  if (route === '/accounts') return send(200, { accounts: [{ _id: ACCOUNT, platform: 'facebook', profileId: PROFILE, isActive: state.scenario !== 'inactive' }, { _id: IG, platform: 'instagram', profileId: PROFILE, isActive: true }, { _id: 'foreign', platform: 'facebook', profileId: 'foreign-profile', isActive: true }] });
  const accountId = url.searchParams.get('accountId') || body.accountId, platform = accountId === IG ? 'instagram' : 'facebook';
  const conversation = { id: 'opaque-thread-1', accountId: state.scenario === 'foreign-thread' ? 'foreign' : accountId, platform, participantName: 'Customer', folder: 'inbox', threadControl: state.scenario === 'other-owner' ? 'other' : 'app', updatedTime: '2000-01-01T00:00:00Z' };

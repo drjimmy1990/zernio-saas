@@ -299,11 +299,12 @@ export class CoreConnectService {
       select_account: '/connect/instagram/select-account',
     };
 
+    const tokenInHeader = params.step === 'select_page' || params.step === 'select_account';
     const { data } = await zernioClient.request<Record<string, unknown>>({
       method: 'GET',
       path: endpointByStep[params.step],
-      query: { profileId, tempToken: params.tempToken },
-      ...(params.connectToken ? { extraHeaders: { 'X-Connect-Token': params.connectToken } } : {}),
+      query: { profileId, ...(tokenInHeader ? {} : { tempToken: params.tempToken }) },
+      extraHeaders: { ...(tokenInHeader ? { 'X-Temp-Token': params.tempToken } : {}), ...(params.connectToken ? { 'X-Connect-Token': params.connectToken } : {}) },
     });
 
     return {

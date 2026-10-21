@@ -165,7 +165,7 @@ export function normalizeOAuthResources(raw: Record<string, unknown>, platform: 
     ...(platform === 'instagram' && item.instagram_business_account && typeof item.instagram_business_account === 'object' ? { instagramAccountId: String((item.instagram_business_account as Record<string, unknown>).id || '') } : {}),
     id: String(item.phone_number_id || item.phoneNumberId || item.id || item.pageId || item.locationId || item.boardId || item.organizationId || item._id || ''),
     name: String(item.verified_name || item.verifiedName || item.name || item.displayName || item.title || item.username || 'Account'),
-    username: String(item.display_phone_number || item.displayPhoneNumber || item.phoneNumber || item.username || ''),
+    username: String((platform === 'instagram' ? (item.instagram_business_account as Record<string, unknown> | undefined)?.username : undefined) || item.display_phone_number || item.displayPhoneNumber || item.phoneNumber || item.username || ''),
     category: String(item.category || platform.toUpperCase()), details: String(item.wabaName || item.address || item.about || ''),
     ...(typeof (item.wabaId || item.waba_id) === 'string' ? { wabaId: String(item.wabaId || item.waba_id) } : {}),
   })).filter((item) => item.id && (platform !== 'whatsapp' || item.wabaId) && (platform !== 'instagram' || item.instagramAccountId));
@@ -180,7 +180,7 @@ export async function listOAuthResources(request: Request, session: AuthSession,
   const items = normalizeOAuthResources(result.raw || {}, row.platform)
     .filter((item) => !row.expected_phone_number || normalizePhone(item.username) === normalizePhone(row.expected_phone_number));
   await transition(row, 'selecting', { encrypted_context: encryptOAuthContext({ ...context, resources: items }, row.id) });
-  return { items, platform: row.platform, step: row.selection_step, simulated: false };
+  return { items, platform: row.platform, step: row.selection_step, simulated: false, truncated: result.raw?.truncated === true };
 }
 
 export async function completeOAuthSelection(request: Request, session: AuthSession, body: Record<string, unknown>) {

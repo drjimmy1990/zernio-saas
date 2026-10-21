@@ -10,11 +10,11 @@ http.createServer(async(req,res)=>{
  const route=url.pathname.replace(/^\/api\/v1/,''),method=req.method;s.requests.push({path:route,method,query:Object.fromEntries(url.searchParams),body,idempotencyKey:req.headers['idempotency-key']});await pm.state.set(key,s);
  if(req.headers.authorization!=='Bearer launch_phone_mock_key')return send(401,{error:'Test credential required'});
  if(route==='/accounts')return send(200,{accounts:[{_id:WA,profileId:PROFILE,platform:'whatsapp',isActive:s.scenario!=='inactive',needsReconnection:false},{_id:SMS,profileId:PROFILE,platform:'sms',isActive:true},{_id:'other-wa',profileId:'profile-b',platform:'whatsapp',isActive:true}]});
- if(route==='/phone-numbers/countries')return send(200,{countries:[{code:'US',types:[{numberType:'local',monthlyCents:s.scenario==='price-changed'?400:300,whatsappAvailable:true,smsAvailable:true,needsKyc:s.scenario==='kyc'}]}]});
- if(route==='/phone-numbers/available')return send(200,{numbers:[{phoneNumber:'+14155550102'}]});
+ if(route==='/phone-numbers/countries')return send(200,{countries:[{code:s.scenario==='mobile-only'?'GB':'US',types:[{numberType:s.scenario==='mobile-only'?'mobile':'local',monthlyCents:s.scenario==='price-changed'?400:300,whatsappAvailable:true,smsAvailable:s.scenario!=='sms-unavailable',needsKyc:s.scenario==='kyc',...(s.scenario==='out-of-stock'?{inStock:false,preOrderable:false}:{}),...(s.scenario==='request-preorder'?{fulfilment:'request',inStock:false,preOrderable:true}:{})}]}]});
+ if(route==='/phone-numbers/available')return send(200,{country:s.scenario==='wrong-country'?'GB':url.searchParams.get('country'),numberType:s.scenario==='wrong-type'?'mobile':url.searchParams.get('numberType'),numbers:[{phoneNumber:'+14155550102',features:s.scenario==='sms-feature-mismatch'?['voice']:['voice','sms']}]});
  if(route==='/phone-numbers'&&method==='GET'){const nums=s.numbers.map(n=>({...n,...(s.scenario==='sms-unapproved'?{smsSendApproved:false}:{}),...(s.scenario==='no-duration'?{maxCallDurationSeconds:null}:{})}));return send(200,{numbers:[...nums.filter(n=>url.searchParams.get('status')==='released'?n.status==='released':n.status!=='released'),{...number('foreign-number'),profileId:'profile-b'}],connected:[]});}
  if(route==='/phone-numbers/purchase'){
-  if(s.scenario==='kyc')return send(202,{status:'kyc_required',kycUrl:'https://provider.example.invalid/kyc'});
+  if(['kyc','request-preorder'].includes(s.scenario))return send(202,{status:'kyc_required',kycUrl:'https://provider.example.invalid/kyc'});
   if(s.scenario==='purchase-rejected')return send(403,{error:'Carrier permission denied',code:'CARRIER_PERMISSION'});
   const n=number('number-new');s.numbers.push(n);await pm.state.set(key,s);
   if(s.scenario==='purchase-unknown')return send(502,{error:'Allocation response unavailable',code:'UNKNOWN_OUTCOME'});

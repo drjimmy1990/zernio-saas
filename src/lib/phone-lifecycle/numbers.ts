@@ -6,20 +6,27 @@ import { assertSubServiceAllowed } from '@/lib/zernio/policy-engine';
 import { TenantAccessError } from '@/lib/auth/tenant-access';
 export class PhoneNumbersLifecycle {
  static async list(organizationId:string) {return inventory(organizationId);}
- static async offers(organizationId:string,country?:string,numberType?:string) {
+ static async offers(organizationId:string,country?:string,numberType?:string,wantsSms:unknown=false) {
   await tenantProfile(organizationId);
+  if(![true,false,'true','false',undefined].includes(wantsSms as any))invalid('Choose whether SMS support is required.');
+  const requireSms=wantsSms===true||wantsSms==='true';
   const catalog=await provider({path:'/phone-numbers/countries'});
   if(!Array.isArray(catalog.countries))malformed();
   if(!country)return catalog;
-  const selectedType=numberType??'local';
+  const countryOffer=catalog.countries.find((c:any)=>(c.code??c.country)===country);
+  const selectedType=numberType??countryOffer?.types?.[0]?.numberType;
   if(!/^[A-Z]{2}$/.test(country)||!['local','mobile','national','toll_free'].includes(selectedType))invalid('Choose a country and number type.');
-  const offer=catalog.countries.find((c:any)=>(c.code??c.country)===country)?.types?.find((t:any)=>t.numberType===selectedType);
+  const offer=countryOffer?.types?.find((t:any)=>t.numberType===selectedType);
   if(!offer)invalid('This country and number type are not offered.');
+  if(requireSms&&offer.smsAvailable!==true)invalid('This country and number type do not offer SMS-capable numbers.');
+  if(offer.inStock===false&&offer.preOrderable!==true)return {httpStatus:catalog.httpStatus,country,numberType:selectedType,requireSms,numbers:[],countries:catalog.countries,availabilityMode:'out_of_stock',notice:'This country and number type are currently out of stock.'};
   // Regulated orders assign the number after identity review, not from an exact-number picker.
   if(offer.needsKyc===true||offer.fulfilment==='request')return {httpStatus:catalog.httpStatus,country,numberType:selectedType,numbers:[],countries:catalog.countries,availabilityMode:'assigned_after_verification',notice:'The provider assigns this number after identity verification. Exact-number selection is unavailable; carrier sourcing may take additional time.'};
-  const available=await provider({path:'/phone-numbers/available',query:{country,numberType:selectedType,limit:20}});
+  const available=await provider({path:'/phone-numbers/available',query:{country,numberType:selectedType,...(requireSms?{sms:true}:{}),limit:20}});
   if(!Array.isArray(available.numbers))malformed();
-  return {...available,countries:catalog.countries};
+  if(available.country!==undefined&&available.country!==country||available.numberType!==undefined&&available.numberType!==selectedType)malformed('Number availability does not match the selected country and type.');
+  if(requireSms&&available.numbers.some((n:any)=>!Array.isArray(n.features)||!n.features.includes('sms')))malformed('The provider did not confirm SMS support for these numbers.');
+  return {...available,country,numberType:selectedType,requireSms,countries:catalog.countries};
  }
  static async detail(organizationId:string,numberId:string) {return {phoneNumber:await ownedNumber(organizationId,numberId),httpStatus:200};}
  static async purchase(organizationId:string,input:Record<string,any>) {
@@ -29,7 +36,8 @@ export class PhoneNumbersLifecycle {
   const catalog=await provider({path:'/phone-numbers/countries'});const offer=catalog.countries?.find((c:any)=>(c.code??c.country)===input.country)?.types?.find((t:any)=>t.numberType===input.numberType);
   if(!offer||!Number.isSafeInteger(offer.monthlyCents)||offer.monthlyCents!==input.expectedMonthlyCents)throw new TenantAccessError(409,'The monthly offer changed. Review it again.');
   if(input.connectWhatsapp&&offer.whatsappAvailable!==true||input.wantsSms&&offer.smsAvailable!==true)invalid('This number type does not support the requested capability.');
-  if(input.phoneNumber&&offer.needsKyc)invalid('Regulated orders cannot select an exact phone number.');
+  if(input.phoneNumber&&(offer.needsKyc===true||offer.fulfilment==='request'))invalid('Regulated orders cannot select an exact phone number.');
+  if(offer.inStock===false&&offer.preOrderable!==true)throw new TenantAccessError(409,'This country and number type are currently out of stock. Refresh the offers before buying.');
   const current=await inventory(organizationId),policy=await assertSubServiceAllowed(organizationId,'telephony');if(!Number.isInteger(policy.quotas?.maxPhoneNumbers)||current.numbers.filter((n:any)=>n.status!=='released').length>=policy.quotas.maxPhoneNumbers)throw new TenantAccessError(409,'The workspace phone number quota has been reached.');const capability=await SaasAllowanceService.assertCapability({organizationId,capability:'phone_purchase'});if(capability.enabled!==true)throw new TenantAccessError(403,'Phone purchasing needs an administrator spending allocation.');if(current.numbers.some((n:any)=>n.status!=='released')&&!input.allowMultiple)throw new TenantAccessError(409,'Confirm that the additional number and its monthly rental are intentional.');
   const payload={profileId,country:input.country,numberType:input.numberType,phoneNumber:input.phoneNumber||undefined,connectWhatsapp:input.connectWhatsapp,wantsSms:input.wantsSms,allowMultiple:input.allowMultiple,purchaseIntentId:input.intent};
   const opened=await acquire(organizationId,profileId,'purchase',input.intent,{...payload,expectedMonthlyCents:offer.monthlyCents,baseline:current.numbers.map((n:any)=>n._id??n.id)});if(opened.result)return opened.result;const op=opened.operation;

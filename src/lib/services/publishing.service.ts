@@ -6,6 +6,7 @@ import { requireTenantAccounts, type TenantProviderAccount } from '@/lib/auth/te
 import { TenantAccessError } from '@/lib/auth/tenant-access';
 import type { SocialPlatform } from '@/types/platform';
 import { publicMediaUrl, validateInstagramTarget, type PublishingMedia } from '@/lib/publishing/instagram';
+import { validateFacebookTarget } from '@/lib/publishing/facebook';
 
 export interface CreateTenantPostInput {
   organizationId: string;
@@ -127,6 +128,7 @@ async function body(org: string, input: UpdateTenantPostInput, profileId: string
         (target.platformSpecificData.facebookSettings && typeof target.platformSpecificData.facebookSettings === 'object' &&
           'pageId' in target.platformSpecificData.facebookSettings))) bad('Select the Facebook Page through accountId; pageId overrides are not supported.');
       if (target.platform === 'instagram') validateInstagramTarget(target, input.content ?? existing?.content, input.mediaItems ?? existing?.mediaItems, accounts[index] as TenantProviderAccount & { metadata?: Record<string, any> });
+      if (target.platform === 'facebook') validateFacebookTarget(target, input.mediaItems ?? existing?.mediaItems);
     });
     const instagram = input.platforms.filter(target => target.platform === 'instagram');
     if (instagram.length && preflight) {
