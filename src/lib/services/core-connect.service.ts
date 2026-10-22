@@ -6,6 +6,7 @@ import {
   resolveConnectScopesParam,
 } from '@/lib/zernio/policy-engine';
 import { verifyReconnectIdentity } from '@/lib/accounts/lifecycle';
+import { reserveConnectionCapacity } from '@/lib/billing/connections';
 import type {
   OAuthScopeArea,
   SecondarySelectionStep,
@@ -155,6 +156,7 @@ export class CoreConnectService {
     const profileId = await this.ensureTenantProfile(params.organizationId);
     const reconnect = params.reconnectAccountId
       ? await verifyReconnectIdentity(params.organizationId, params.reconnectAccountId, params.platform) : undefined;
+    if (!reconnect) await reserveConnectionCapacity(params.organizationId, profileId, params.platform);
     const scopesParam = resolveConnectScopesParam(
       policy,
       params.platform,
@@ -328,6 +330,7 @@ export class CoreConnectService {
     connectToken?: string;
     wabaId?: string;
     redirectUrl?: string;
+    reconnectAccountId?: string;
   }) {
     if (params.step === 'select_public_profile') {
       throw new ZernioApiException({ status: 501, error: 'Snapchat profile selection is not implemented yet.' });
@@ -375,6 +378,10 @@ export class CoreConnectService {
     }
     const profileId = await this.ensureTenantProfile(params.organizationId);
 
+    const selectionPlatform = target.path.split('/')[2];
+    if (params.reconnectAccountId) await verifyReconnectIdentity(params.organizationId, params.reconnectAccountId, selectionPlatform);
+    else await reserveConnectionCapacity(params.organizationId, profileId, selectionPlatform, true);
+
     const { data } = await zernioClient.request<Record<string, unknown>>({
       method: 'POST',
       path: target.path,
@@ -414,6 +421,8 @@ export class CoreConnectService {
     }
 
     const profileId = await this.ensureTenantProfile(params.organizationId);
+
+    await reserveConnectionCapacity(params.organizationId, profileId, params.platform);
 
     if (!zernioClient.isConfigured()) {
       return {

@@ -36,6 +36,7 @@ function runtime() {
   if (cache[name]) return cache[name];
   const module = { exports: {} }; cache[name] = module.exports; // cycles Core -> lifecycle -> ownership -> Core
   const require = specifier => {
+    if (specifier === '@/lib/billing/connections') return { reserveConnectionCapacity: async () => {} }; // Existing private-beta fixture; commercial capacity has separate SQL/HTTP coverage.
    if (specifier === 'crypto' || specifier === 'node:crypto') return crypto;
    const alias = { '@/lib/publishing/facebook': 'facebook', '@/lib/publishing/instagram': 'instagram', '@/lib/zernio/client': 'client', '@/lib/services/publishing.service': 'publishing', '@/lib/services/core-connect.service': 'core', '@/lib/auth/tenant-provider': 'accounts', '@/lib/accounts/lifecycle': 'lifecycle' }[specifier]; if (alias) return load(alias);
    if (specifier === '@/lib/auth/tenant-access') return { TenantAccessError: class extends Error { constructor(status, message) { super(message); this.status = status; } } };

@@ -18,6 +18,8 @@
     "test:phase2c": "node --test scripts/tests/phase2c-*.test.mjs",
     "test:launch": "node --test --test-concurrency=2 scripts/tests/launch-*.test.mjs",
     "test:launch:database": "node scripts/tests/launch-database-suite.mjs",
+    "test:billing": "node --test scripts/tests/prepaid-*.test.mjs scripts/tests/billing-enrollment.test.mjs scripts/tests/phone-sms-segments.test.mjs",
+    "test:billing:database": "node scripts/tests/customer-wallet-postgres-check.mjs && node scripts/tests/customer-billing-service-check.mjs",
     "test:regression": "node --test --test-concurrency=2 scripts/tests/phase*.test.mjs"
   },
   "dependencies": {

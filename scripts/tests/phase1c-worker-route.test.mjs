@@ -43,8 +43,12 @@ test('worker route returns confirmed counts and preserves retry failure status',
 
 test('Docker worker entrypoint invokes the authenticated route over local HTTP', async () => {
   const secret = 'isolated-worker-secret-32-characters'; const s = runtime(secret);
-  let campaigns = 0;
+  let campaigns = 0, billing = 0;
   const server = http.createServer(async (req, res) => {
+    if (req.url === '/api/internal/billing/drain') {
+      assert.equal(req.headers.authorization, `Bearer ${secret}`); assert.equal(req.method, 'POST'); billing++;
+      res.writeHead(200, { 'Content-Type': 'application/json' }); res.end(JSON.stringify({ processed: 1, paymentDue: 0, failed: 0 })); return;
+    }
     if (req.url === '/api/internal/campaigns/drain') {
       assert.equal(req.headers.authorization, `Bearer ${secret}`); assert.equal(req.method, 'POST'); campaigns++;
       res.writeHead(200, { 'Content-Type': 'application/json' }); res.end(JSON.stringify({ submitted: 1, stopped: 0 })); return;
@@ -58,6 +62,6 @@ test('Docker worker entrypoint invokes the authenticated route over local HTTP',
       windowsHide: true, env: { ...process.env, WEBHOOK_DRAIN_SECRET: secret, WEBHOOK_DRAIN_URL: `http://127.0.0.1:${server.address().port}/api/internal/webhooks/drain` },
     });
     assert.match(stdout, /1 delivered, 2 queued for retry/); assert.equal(s.calls(), 1);
-    assert.equal(campaigns, 1); assert.match(stdout, /1 submitted/);
+    assert.equal(campaigns, 1); assert.match(stdout, /1 submitted/); assert.equal(billing, 1);
   } finally { await new Promise(resolve => server.close(resolve)); }
 });

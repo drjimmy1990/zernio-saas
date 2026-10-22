@@ -4,6 +4,7 @@ import { PhoneOperationStore } from './store';
 import { TenantAccessError } from '@/lib/auth/tenant-access';
 import { SaasAllowanceService } from '@/lib/saas/allowance';
 import { assertDestinationConsent } from '@/lib/crm/consent';
+import { CustomerBillingService } from '@/lib/billing/service';
 
 type Input = Record<string, any>;
 const nullableBoolean = (value: unknown) => typeof value === 'boolean' ? value : null;
@@ -42,7 +43,7 @@ export class PhoneCallSettings {
         enabled: config.callingEnabled, forwardTo: typeof config.forwardTo === 'string' ? config.forwardTo : null,
         maxCallDurationSeconds: config.maxCallDurationSeconds ?? null,
         outboundDisabled: nullableBoolean(config.outboundDisabled),
-        outboundSupported: config.outboundDisabled === false && config.callingEnabled === true && Number.isSafeInteger(config.maxCallDurationSeconds) && config.maxCallDurationSeconds > 0,
+        outboundSupported: false, outboundUnavailableReason: 'Provider-enforced outbound duration limits are unverified.', incomingEnableSupported: false,
         recordingEnabled: nullableBoolean(config.recordingEnabled),
         callerIdMode: ['business', 'platform'].includes(config.callerIdMode) ? config.callerIdMode : null,
         callerIdVerified: nullableBoolean(config.callerIdVerified),
@@ -54,7 +55,7 @@ export class PhoneCallSettings {
       channel: 'pstn', numberId: number._id, phoneNumber: number.phoneNumber,
       enabled: nullableBoolean(number.pstnVoiceEnabled), forwardTo: typeof number.pstnForwardTo === 'string' ? number.pstnForwardTo : null,
       // The shared number field is documented for WhatsApp. It does not establish a PSTN hard cap.
-      maxCallDurationSeconds: null, outboundSupported: false,
+      maxCallDurationSeconds: null, outboundSupported: false, incomingEnableSupported: false,
       recordingEnabled: nullableBoolean(number.recordingEnabled), transcriptionEnabled: nullableBoolean(number.transcriptionEnabled),
       voicemailEnabled: nullableBoolean(number.voicemailEnabled), businessHoursEnabled: nullableBoolean(number.businessHoursEnabled), ivrEnabled: nullableBoolean(number.ivrEnabled),
     } };
@@ -88,6 +89,7 @@ export class PhoneCallSettings {
       }
     } else invalid('Select a supported call channel.');
     if (input.enabled) {
+      await CustomerBillingService.assertIncomingSupported();
       const permission = await SaasAllowanceService.assertCapability({ organizationId, capability: 'voice_call' });
       if (permission.enabled !== true) throw new TenantAccessError(403, 'An administrator must enable the voice spending capability first.');
     }

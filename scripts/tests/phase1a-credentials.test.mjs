@@ -20,6 +20,7 @@ function sandbox(options = {}) {
     fetch: () => { throw new Error('Network denied in credential tests'); },
   });
   const require = (name) => {
+    if (name === '@/lib/billing/connections') return { reserveConnectionCapacity: async () => {} }; // Existing private-beta fixture; commercial capacity has separate SQL/HTTP coverage.
     if (name === '@/lib/accounts/lifecycle') return { verifyReconnectIdentity: async () => { throw new Error('Reconnect is outside this credential fixture'); } };
     if (name === '@/lib/supabase/admin') return { createSupabaseAdminClient: () => { throw new Error('DB denied in credential tests'); } };
     if (name === '@/lib/storage/workspace-store') return { WorkspaceStore: {} };

@@ -185,68 +185,16 @@ async function changeScenario(scenario, activateKyc = false) {
   assert.equal(response.status, 200);
 }
 
-test('actual telephony service searches real HTTP inventory and reconciles a verified purchase without reposting', async () => {
-  await fixture('verifying');
-  const s = runtime();
-  const stock = await s.service.searchAvailableNumbers({ organizationId: 'tenant-a', country: 'US', numberType: 'local', capabilities: { sms: true, whatsapp: true } });
-  assert.equal(stock.results[0].phoneNumber, '+14155550100');
-  assert.equal(stock.results[0].monthlyPriceUsd, 3);
-  const first = await s.service.buyPhoneNumber(servicePurchase);
-  assert.equal(first.phoneNumber.id, numberId);
-  assert.equal(first.phoneNumber.status, 'verifying');
-  assert.equal(first.phoneNumber.whatsappLinked, false);
-  const retry = await s.service.buyPhoneNumber(servicePurchase);
-  assert.equal(retry.status, 'already_purchased');
-  const calls = (await fixtureState()).requests;
-  const purchaseCalls = calls.filter(call => call.pathname.endsWith('/purchase'));
-  assert.equal(purchaseCalls.length, 1);
-  assert.equal(purchaseCalls[0].body.purchaseIntentId, 'tenant-a:service-intent-0001');
-  assert.equal(purchaseCalls[0].body.profileId, profileId);
-  assert.equal(purchaseCalls[0].body.expectedMonthlyCents, undefined);
-  assert.equal(purchaseCalls[0].body.monthlyPriceUsd, undefined);
-  assert.equal(purchaseCalls[0].body.allowMultiple, undefined);
-  assert.equal(calls.find(call => call.pathname.endsWith('/available')).query.requireSms, 'true');
-  assert.ok(calls.some(call => call.pathname.endsWith(`/${numberId}`)));
-  assert.equal(s.ws.wallet.balanceUsd, 50);
+test('legacy telephony keeps real read-only inventory available while purchases require the retail workspace', async () => {
+ await fixture('verifying');const s=runtime();const stock=await s.service.searchAvailableNumbers({organizationId:'tenant-a',country:'US',numberType:'local',capabilities:{sms:true,whatsapp:true}});
+ assert.equal(stock.results[0].phoneNumber,'+14155550100');assert.equal(stock.results[0].monthlyPriceUsd,3);
+ await assert.rejects(s.service.buyPhoneNumber(servicePurchase),error=>error.envelope?.status===501&&error.envelope.code==='RETAIL_QUOTE_REQUIRED');
+ const calls=(await fixtureState()).requests;assert.equal(calls.filter(call=>call.pathname.endsWith('/purchase')).length,0);assert.equal(calls.find(call=>call.pathname.endsWith('/available')).query.requireSms,'true');assert.equal(s.ws.wallet.balanceUsd,50);
 });
 
-test('actual service retains KYC without an ID and resolves asynchronous allocation through HTTP polling', async () => {
-  await fixture('kyc-required');
-  const s = runtime();
-  const input = { ...servicePurchase, country: 'GB', phoneNumber: undefined };
-  const pending = await s.service.buyPhoneNumber(input);
-  assert.equal(pending.httpStatus, 202);
-  assert.equal(pending.phoneNumber, undefined);
-  assert.equal(s.ws.ownedNumbers.length, 0);
-  assert.equal((await s.service.buyPhoneNumber(input)).httpStatus, 202);
-  await changeScenario('success', true);
-  const complete = await s.service.buyPhoneNumber(input);
-  assert.equal(complete.phoneNumber.phoneNumber, '+447400123456');
-  assert.equal(complete.phoneNumber.status, 'active');
-  assert.equal((await fixtureState()).requests.filter(call => call.pathname.endsWith('/purchase')).length, 1);
-});
-
-test('actual service retries payment with the same provider intent and no invented wallet deduction', async () => {
-  await fixture('payment-required');
-  const s = runtime();
-  await assert.rejects(s.service.buyPhoneNumber(servicePurchase), error => error.envelope?.status === 402 && error.envelope.code === 'PAYMENT_REQUIRED');
-  assert.equal(s.ws.ownedNumbers.length, 0);
-  await changeScenario('success');
-  const result = await s.service.buyPhoneNumber(servicePurchase);
-  assert.equal(result.phoneNumber.id, numberId);
-  const calls = (await fixtureState()).requests.filter(call => call.pathname.endsWith('/purchase'));
-  assert.equal(calls.length, 2);
-  assert.equal(calls[0].body.purchaseIntentId, calls[1].body.purchaseIntentId);
-  assert.equal(s.ws.wallet.balanceUsd, 50);
-});
-
-test('actual service rejects provider unavailability and foreign allocation without claiming ownership', async () => {
-  for (const [scenario, status, code] of [['unavailable', 409, 'PHONE_NUMBER_UNAVAILABLE'], ['carrier-unavailable', 503, 'CARRIER_UNAVAILABLE'], ['foreign-profile', 502, 'PHONE_NUMBER_OWNERSHIP_UNVERIFIED']]) {
-    await fixture(scenario);
-    const s = runtime();
-    await assert.rejects(s.service.buyPhoneNumber(servicePurchase), error => error.envelope?.status === status && error.envelope.code === code);
-    assert.equal(s.ws.ownedNumbers.length, 0);
-    assert.equal(s.ws.wallet.balanceUsd, 50);
-    assert.equal((await fixtureState()).requests.filter(call => call.pathname.endsWith('/purchase')).length, 1);
-  }
+test('legacy purchase cannot bypass customer reservation for any supplier scenario or submitted pricing claim',async()=>{
+ for(const scenario of ['success','kyc-required','payment-required','unavailable','carrier-unavailable','foreign-profile']){
+  await fixture(scenario);const s=runtime();await assert.rejects(s.service.buyPhoneNumber({...servicePurchase,quoteId:'invented',expectedMonthlyCents:0}),error=>error.envelope?.status===501&&error.envelope.code==='RETAIL_QUOTE_REQUIRED');
+  assert.equal((await fixtureState()).requests.length,0);assert.equal(s.ws.ownedNumbers.length,0);assert.equal(s.ws.wallet.balanceUsd,50);
+ }
 });

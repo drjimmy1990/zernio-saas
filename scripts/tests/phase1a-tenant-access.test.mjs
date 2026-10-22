@@ -87,6 +87,7 @@ function sandbox(options = {}) {
     if (modules[name]) return modules[name];
     const module = { exports: {} };
     const require = (specifier) => {
+    if (specifier === '@/lib/billing/connections') return { reserveConnectionCapacity: async () => {} }; // Existing private-beta fixture; commercial capacity has separate SQL/HTTP coverage.
       const mapped = { '@/lib/auth/oauth-session': 'oauth', '@/lib/auth/session': 'session', '@/lib/auth/tenant-access': 'access', '@/lib/auth/tenant-provider': 'provider', '@/lib/auth/request-origin': 'origin' }[specifier];
       if (mapped) return load(mapped);
       if (specifier === '@/lib/accounts/lifecycle') return load('lifecycle');

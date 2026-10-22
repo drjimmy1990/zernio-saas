@@ -75,103 +75,30 @@ function fixture(options = {}) {
 const rejectCode = (code, status) => (error) => error instanceof ZernioApiException && error.envelope.code === code && (!status || error.envelope.status === status);
 const mutations = (f) => f.requests.filter((request) => request.method === 'POST');
 
-test('verified purchase and durable replay produce one provider mutation and actual number identity', async () => {
-  const f = fixture();
-  const result = await f.service.purchasePhoneNumber(purchase);
-  assert.equal(result.phoneNumber.id, numberId);
-  assert.equal(result.phoneNumber.profileId, profileId);
-  assert.equal(result.phoneNumber.monthlyPriceUsd, 3);
-  assert.equal(result.phoneNumber.whatsappLinked, false);
-  assert.equal(result.phoneNumber.smsEnabled, false);
-  assert.equal((await f.service.purchasePhoneNumber(purchase)).status, 'already_purchased');
-  assert.equal(mutations(f).length, 1);
-  assert.equal(mutations(f)[0].body.purchaseIntentId, 'tenant-a:intent-one-0001');
-  assert.equal(mutations(f)[0].body.profileId, profileId);
-  assert.equal(mutations(f)[0].body.allowMultiple, undefined);
+test('retired purchase entry point rejects all purchases before provider or durable intent side effects',async()=>{
+ for(const options of [{},{paymentFirst:true},{ambiguousFirst:true},{transportFailure:true},{unavailable:true},{concurrent:true},{storageUnavailable:true}]){
+  const f=fixture(options);for(const input of [purchase,{...purchase,country:'GB',phoneNumber:undefined},{...purchase,quoteId:'invented',expectedMonthlyCents:0}])await assert.rejects(f.service.purchasePhoneNumber(input),rejectCode('RETAIL_QUOTE_REQUIRED',501));
+  assert.equal(f.requests.length,0);assert.equal(f.intents.size,0);assert.equal(f.writes(),0);
+ }
 });
 
-test('payment setup retains the intent and refreshes accepted price before retrying a charge', async () => {
-  const f = fixture({ paymentFirst: true });
-  await assert.rejects(f.service.purchasePhoneNumber(purchase), rejectCode('PAYMENT_REQUIRED', 402));
-  assert.equal([...f.intents.values()][0].attempted, false);
-  f.setPrice(400);
-  await assert.rejects(f.service.purchasePhoneNumber(purchase), rejectCode('PRICE_CHANGED', 409));
-  assert.equal(mutations(f).length, 1);
-  assert.equal(f.writes(), 0);
-});
 
-test('same intent with changed number is rejected before any additional charge', async () => {
-  const f = fixture({ paymentFirst: true });
-  await assert.rejects(f.service.purchasePhoneNumber(purchase), rejectCode('PAYMENT_REQUIRED'));
-  await assert.rejects(f.service.purchasePhoneNumber({ ...purchase, phoneNumber: '+14155550101' }), rejectCode('PURCHASE_INTENT_MISMATCH'));
-  assert.equal(mutations(f).length, 1);
-});
 
-test('unknown charge plus an allocated profile number requires reconciliation and never purchases on another profile', async () => {
-  const f = fixture({ ambiguousFirst: true });
-  await assert.rejects(f.service.purchasePhoneNumber(purchase), rejectCode('PROVIDER_UNAVAILABLE', 503));
-  await assert.rejects(f.service.purchasePhoneNumber(purchase), rejectCode('PURCHASE_RECONCILIATION_REQUIRED', 409));
-  assert.equal(mutations(f).length, 1);
-  assert.equal(f.writes(), 0);
-});
 
-test('transport failure without an allocation retries only the original namespaced provider intent', async () => {
-  const f = fixture({ transportFailure: true });
-  await assert.rejects(f.service.purchasePhoneNumber(purchase), rejectCode('PROVIDER_UNAVAILABLE'));
-  await assert.rejects(f.service.purchasePhoneNumber(purchase), rejectCode('PROVIDER_UNAVAILABLE'));
-  assert.equal(mutations(f).length, 2);
-  assert.equal(mutations(f)[0].body.purchaseIntentId, mutations(f)[1].body.purchaseIntentId);
-  await assert.rejects(f.service.purchasePhoneNumber({ ...purchase, purchaseIntentId: 'fresh-intent-0002' }), rejectCode('PROFILE_PURCHASE_EXISTS'));
-});
 
-test('unknown purchase plus changed price requires reconciliation without releasing the original intent', async () => {
-  const f = fixture({ transportFailure: true });
-  await assert.rejects(f.service.purchasePhoneNumber(purchase), rejectCode('PROVIDER_UNAVAILABLE'));
-  f.setPrice(700);
-  await assert.rejects(f.service.purchasePhoneNumber(purchase), rejectCode('PURCHASE_RECONCILIATION_REQUIRED'));
-  assert.equal(mutations(f).length, 1);
-  assert.equal([...f.intents.values()][0].state, 'pending');
-});
 
-test('confirmed unavailable purchase ends the original intent and permits a new selection', async () => {
-  const f = fixture({ unavailable: true });
-  await assert.rejects(f.service.purchasePhoneNumber(purchase), rejectCode('PHONE_NUMBER_UNAVAILABLE', 409));
-  assert.equal([...f.intents.values()][0].state, 'terminal');
-  await assert.rejects(f.service.purchasePhoneNumber(purchase), rejectCode('PHONE_NUMBER_UNAVAILABLE', 409));
-  assert.equal(mutations(f).length, 1);
-  await assert.rejects(f.service.purchasePhoneNumber({ ...purchase, purchaseIntentId: 'second-intent-002', phoneNumber: '+14155550101' }), rejectCode('PHONE_NUMBER_UNAVAILABLE'));
-  assert.equal(mutations(f).length, 2);
-});
 
-test('concurrent retries do not submit two purchase mutations', async () => {
-  const f = fixture({ concurrent: true });
-  const first = f.service.purchasePhoneNumber(purchase);
-  while (mutations(f).length === 0) await new Promise((resolve) => setTimeout(resolve, 0));
-  await assert.rejects(f.service.purchasePhoneNumber(purchase), rejectCode('PURCHASE_IN_PROGRESS', 503));
-  f.release(); await first;
-  assert.equal(mutations(f).length, 1);
-});
 
-test('regulatory request holds an intent without fabricating a number and resolves asynchronous allocation', async () => {
-  const f = fixture();
-  const params = { ...purchase, country: 'GB', phoneNumber: undefined };
-  const result = await f.service.purchasePhoneNumber(params);
-  assert.equal(result.httpStatus, 202); assert.equal(result.phoneNumber, undefined);
-  assert.equal(result.kycUrl, 'https://provider.invalid/verify/real'); assert.equal(f.writes(), 0);
-  assert.equal((await f.service.purchasePhoneNumber(params)).httpStatus, 202);
-  assert.equal(mutations(f).length, 1);
-  f.setNumbers([{ ...providerNumber(), country: 'GB', status: 'pending_regulatory', verifyUrl: 'https://provider.invalid/verify/allocated' }]);
-  const allocated = await f.service.purchasePhoneNumber(params);
-  assert.equal(allocated.phoneNumber.status, 'pending_regulatory');
-  assert.equal(allocated.phoneNumber.kycUrl, 'https://provider.invalid/verify/allocated');
-  assert.equal(mutations(f).length, 1);
-});
 
-test('profile mismatch in allocation fails without persisting a fake local number', async () => {
-  const f = fixture({ wrongPurchaseProfile: true });
-  await assert.rejects(f.service.purchasePhoneNumber(purchase), rejectCode('PHONE_NUMBER_OWNERSHIP_UNVERIFIED'));
-  assert.equal(f.writes(), 0); assert.equal(f.workspace.ownedNumbers.length, 0);
-});
+
+
+
+
+
+
+
+
+
 
 test('owned listing filters other profiles and preserves provider status and stamped price', async () => {
   const f = fixture({ numbers: [{ ...providerNumber(), status: 'verifying', monthlyCents: 775, socialAccountId: 'actual-whatsapp-account' }, { ...providerNumber(), _id: 'foreign', profileId: 'foreign' }] });
@@ -218,7 +145,7 @@ test('pending regulatory IDs without an allocated phone remain visible and preve
   const result = await f.service.listOwnedPhoneNumbers('tenant-a');
   assert.equal(result.numbers[0].id, numberId); assert.equal(result.numbers[0].phoneNumber, '');
   assert.equal(result.quota.used, 1);
-  await assert.rejects(f.service.purchasePhoneNumber(purchase), rejectCode('PROFILE_PHONE_NUMBER_LIMIT'));
+  await assert.rejects(f.service.purchasePhoneNumber(purchase), rejectCode('RETAIL_QUOTE_REQUIRED',501));
   assert.equal(mutations(f).length, 0);
 });
 
@@ -232,20 +159,9 @@ test('real inventory joins current catalog prices; regulated entries are request
   assert.equal(gb.countries.length, 2);
 });
 
-test('missing durable storage fails closed before provider purchase', async () => {
-  const f = fixture({ storageUnavailable: true });
-  await assert.rejects(f.service.purchasePhoneNumber(purchase), rejectCode('PURCHASE_STORAGE_UNAVAILABLE', 503));
-  assert.equal(mutations(f).length, 0);
-});
 
-test('unsupported offer validation ends only the rejected intent before any financial mutation', async () => {
-  const f = fixture();
-  await assert.rejects(f.service.purchasePhoneNumber({ ...purchase, numberType: 'national' }), rejectCode('COUNTRY_NOT_AVAILABLE', 400));
-  assert.equal([...f.intents.values()][0].state, 'terminal');
-  await assert.rejects(f.service.purchasePhoneNumber({ ...purchase, numberType: 'national' }), rejectCode('COUNTRY_NOT_AVAILABLE', 409));
-  const corrected = await f.service.purchasePhoneNumber({ ...purchase, purchaseIntentId: 'corrected-intent-02' });
-  assert.equal(corrected.phoneNumber.id, numberId); assert.equal(mutations(f).length, 1);
-});
+
+
 
 function durableStore(options = {}) {
   const calls = [], module = { exports: {} };

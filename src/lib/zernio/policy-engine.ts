@@ -100,7 +100,7 @@ const fallbackStore: {
     starter: {
       planKey: 'starter',
       displayName: 'Starter',
-      monthlyPriceUsd: 29,
+      monthlyPriceUsd: 20,
       enabledSubServices: ['core_connect', 'publishing', 'analytics'],
       allowedPlatforms: [
         'instagram',
@@ -115,7 +115,7 @@ const fallbackStore: {
       allowedAdPlatforms: [],
       allowedOAuthScopes: ['posting', 'analytics'],
       disabledZernioResourceGroups: ['ads', 'telephony', 'billing'],
-      maxConnectedAccounts: 5,
+      maxConnectedAccounts: 2,
       maxMonthlyPosts: 300,
       maxMonthlyMessages: 1000,
       maxManagedAds: 0,

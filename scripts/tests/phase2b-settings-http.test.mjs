@@ -35,6 +35,7 @@ function runtime(platforms = ['facebook', 'instagram'], inbox = false) {
  function load(name) {
   if (cache[name]) return cache[name]; const module = { exports: {} }; cache[name] = module.exports;
   const require = specifier => {
+   if (specifier === '@/lib/billing/connections') return { reserveConnectionCapacity: async () => {} }; // Private-beta fixture; commercial capacity has dedicated SQL/HTTP coverage.
    if (specifier === 'crypto' || specifier === 'node:crypto') return crypto;
    const alias = { '@/lib/zernio/client': 'client', '@/lib/meta-settings/service': 'service', '@/lib/meta-inbox/service': 'inbox', '@/lib/services/core-connect.service': 'core', '@/lib/auth/tenant-provider': 'accounts', '@/lib/accounts/lifecycle': 'lifecycle' }[specifier]; if (alias) return load(alias);
    if (specifier === '@/lib/auth/tenant-access') return { TenantAccessError: class extends Error { constructor(status, message) { super(message); this.status = status; } } };

@@ -200,7 +200,7 @@ export async function completeOAuthSelection(request: Request, session: AuthSess
   try {
     const result = await CoreConnectService.completeHeadlessSelection({ organizationId: row.organization_id,
       step: row.selection_step, entityId: chosen.id, wabaId: chosen.wabaId, tempToken: context.tempToken!,
-      userProfile: context.userProfile, connectToken: context.connectToken, redirectUrl: row.redirect_url });
+      userProfile: context.userProfile, connectToken: context.connectToken, redirectUrl: row.redirect_url, reconnectAccountId: context.reconnectAccountId });
     const account = (result as { account?: Record<string, unknown> }).account;
     const returnedId = account?._id || account?.accountId;
     if (typeof returnedId !== 'string' || !returnedId) throw new ZernioApiException({ status: 502, error: 'The provider did not confirm a connected account.' });
