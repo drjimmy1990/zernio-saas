@@ -2,7 +2,7 @@
 
 Applying the SQL migrations creates application tables and functions. Supabase Authentication URL settings, email confirmation and SMTP settings must also be configured in the Supabase dashboard. A confirmation email linking to localhost indicates that the production authentication URL configuration or an email template still points to a development address.
 
-Public registration is closed by default during private testing. Follow [private testing](private-testing.md) to close direct Supabase registration too, grant an existing test workspace access, and reopen registration later. Existing customer login and recovery remain available.
+Public registration is closed by default during private testing. Follow [private testing](private-testing.md) to close direct Supabase registration too, grant an existing test workspace access, and reopen registration only after launch acceptance. Existing customer login and recovery remain available. Follow [current SQL verification](sql-migrations.md) for the application release through10; authentication dashboard settings do not install migrations.
 
 ## Configure the existing production Supabase project
 
@@ -25,6 +25,8 @@ For an already-confirmed user, Supabase intentionally returns a successful signu
 4. Complete confirmation on the production recovery page. If the account is already confirmed, use `https://asra3.com/login` with its existing password instead of creating another account.
 5. When public registration is enabled, customer sign-in provisions or restores the customer's Starter workspace after verification. While registration is closed, only existing workspace memberships can sign in. The platform administrator account belongs to `/admin`; it cannot connect business channels from the customer dashboard.
 
-For WhatsApp entitlement, the administrator can open **Accounts & API Keys**, locate this exact customer workspace, choose an appropriate returned plan such as Agency or Enterprise, and select **Save plan**. Confirm that WhatsApp is enabled globally. Customer messaging may also require administrator spending allocations. This assigns access; it does not collect payment. Sign in with the customer's account to connect its business channels.
+For WhatsApp entitlement, the administrator can open **Accounts & API Keys**, locate this exact customer workspace, review the returned plan and effective permissions, and select **Save plan** if a change is needed. Migration10 updates the Starter template to include WhatsApp, but existing workspace overrides and global restrictions remain effective. Customer messaging may also require administrator spending allocations. Plan assignment grants access; it does not collect payment or credit customer funds. Sign in with the customer's account to connect its business channels.
+
+The gateway is not ready. For customer payment instructions use [support@asra3.com](mailto:support@asra3.com); only an administrator records a wallet credit after verifying the actual receipt. Never send authentication links, passwords or provider secrets in a payment-support request.
 
 After changing deployment environment values, recreate the application and worker as described in `DEPLOYMENT-VPS.md`. Changes to public build-time configuration require rebuilding the image; Supabase dashboard URL/SMTP changes themselves do not require an application rebuild.

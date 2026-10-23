@@ -1,5 +1,7 @@
 # Asra3 — final local release review
 
+> Historical verification report for the 20 October release. Prepaid billing was added later. Use the [current release handoff](../release/README.md) and [SQL instructions](../release/sql-migrations.md) through migration 10; do not rerun migrations based on the old applied/pending assumptions below.
+
 20 October 2026. Target deployment: **https://asra3.com**. The working tree contains the implementation; no production database, deployment, purchase, call, post or message was executed in this pass.
 
 The manual business-owner launch is implemented and locally verified. Deploy to a controlled environment after applying the pending SQL, then complete live acceptance before inviting general customer traffic. Local fixture tests cannot certify Meta permissions, Zernio account eligibility, email delivery or actual customer delivery.

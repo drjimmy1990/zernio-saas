@@ -1943,8 +1943,9 @@ export default function ApiDocumentationPage() {
             </h1>
             <p className="max-w-3xl text-sm sm:text-base text-[var(--text-secondary)] leading-relaxed">
               {isAr
-                ? 'الإطلاق اليدوي الحالي يشمل Facebook وInstagram وWhatsApp والعملاء والتقارير والاتصالات المراجعة. الإعلانات والتجارة والأتمتة وجمع المدفوعات قريباً. الكتالوج التالي لا يعني تفعيل كل مساراته.'
-                : 'Current manual launch: Facebook, Instagram, WhatsApp, durable CRM, activity reports and reviewed phone operations. Advertising, commerce, customer automation and payment collection are Coming soon. Advanced entries below are a resource catalog, not a promise that every endpoint is enabled.'}
+                ? 'الإطلاق اليدوي الحالي يشمل Facebook وInstagram وWhatsApp والعملاء والتقارير والاتصالات المراجعة. الإعلانات والتجارة والأتمتة قريباً. تُرتب المدفوعات مع الإدارة، ويُضاف الرصيد بعد التحقق من استلام الدفعة فقط. الدفع الإلكتروني داخل الموقع غير متاح. الكتالوج التالي لا يعني تفعيل كل مساراته.'
+                : 'Current manual launch: Facebook, Instagram, WhatsApp, durable CRM, activity reports and reviewed phone operations. Advertising, commerce and customer automation are Coming soon. Arrange manual payments with the administrator; balance is credited only after payment receipt is verified. Online checkout is unavailable. Advanced entries below are a resource catalog, not a promise that every endpoint is enabled.'}
+              {' '}<a href="mailto:support@asra3.com" className="font-semibold text-[var(--brand-coral)] underline underline-offset-4">{isAr ? 'تواصل معنا' : 'Contact us'} — <span dir="ltr">support@asra3.com</span></a>
             </p>
           </div>
 

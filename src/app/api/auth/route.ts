@@ -35,6 +35,25 @@ export async function POST(request: Request) {
       if (session?.user.role !== 'super_admin'&&session?.sessionId) await saasRpc('saas_revoke_sessions', { p_user_id: session.user.id, p_session_id: action === 'logout_all' ? null : session.sessionId });
       const response = NextResponse.json({ ok: true }); response.cookies.set(SESSION_COOKIE_NAME, '', { path: '/', httpOnly: true, sameSite: 'lax', maxAge: 0 }); return response;
     }
+    if (action === 'change_password') {
+      const { session } = await requireTenantAccess(request);
+      if (session.user.role === 'super_admin' || !session.user.email) throw new TenantAccessError(403, 'Administrator password is configured in the server environment.');
+      const currentPassword = typeof body.currentPassword === 'string' ? body.currentPassword : '';
+      const newPassword = typeof body.newPassword === 'string' ? body.newPassword : '';
+      if (!currentPassword || currentPassword.length > 200 || newPassword.length < 10 || newPassword.length > 200) throw new TenantAccessError(400, 'Use a password between 10 and 200 characters.');
+      if (currentPassword === newPassword) throw new TenantAccessError(400, 'Choose a new password that differs from your current password.');
+      await throttleAuth(request, action, session.user.email);
+      const db = saasDatabase();
+      const { data: verified, error: verifyError } = await db.auth.signInWithPassword({ email: session.user.email, password: currentPassword });
+      handleAuthProviderError(action, verifyError);
+      if (verifyError || verified.user?.id !== session.user.id || !verified.user?.email_confirmed_at) throw new TenantAccessError(401, 'Current password is incorrect.');
+      await saasRpc('saas_recover_access', { p_user_id: session.user.id });
+      const { error: updateError } = await db.auth.admin.updateUserById(session.user.id, { password: newPassword });
+      handleAuthProviderError(action, updateError);
+      if (updateError) throw new TenantAccessError(503, 'Password change was not confirmed.');
+      await saasRpc('saas_recover_access', { p_user_id: session.user.id });
+      return sessionResponse(await issueUserSession(verified.user, session.tenant.organizationId));
+    }
     if (!['login','signup','recover','resend','complete_recovery','verify_email'].includes(action)) throw new TenantAccessError(400, 'Unsupported authentication action.');
     if (action === 'signup' && !isPublicRegistrationEnabled()) {
       throw new AuthProviderError(403, 'Registration is coming soon. Existing accounts can still sign in.', 'registration_closed');

@@ -19,7 +19,7 @@ test('closed registration blocks signup and new workspace provisioning while exi
  }
 });
 async function environment(options={}) {
- const calls=[];let memberships=options.partial?[]:[{organization_id:org.id,role:'owner',organizations:org}];
+ const calls=[];let memberships=options.partial?[]:[{user_id:user.id,organization_id:org.id,role:'owner',organizations:org}];
  const server=createServer(async(req,res)=>{let raw='';for await(const chunk of req)raw+=chunk;const body=raw?JSON.parse(raw):{};const u=new URL(req.url,'http://localhost');calls.push({path:u.pathname,method:req.method,body});res.setHeader('content-type','application/json');let data;
   if(options.authFailure && u.pathname.startsWith('/auth/v1/')){res.statusCode=options.authFailure.status;res.setHeader('x-supabase-api-version','2024-01-01');data={code:options.authFailure.code,message:'DUMMY PRIVATE PROVIDER DETAIL'};}
   else if(options.outage){res.statusCode=503;data={message:'Unavailable'};}
@@ -28,7 +28,7 @@ async function environment(options={}) {
   else if(u.pathname==='/auth/v1/user')data=user;
   else if(u.pathname.startsWith('/auth/v1/admin/users/'))data={user};
   else if(u.pathname==='/auth/v1/recover'||u.pathname==='/auth/v1/resend')data={};
-  else if(u.pathname==='/rest/v1/org_members')data=memberships;
+  else if(u.pathname==='/rest/v1/org_members')data=req.headers.accept?.includes('object')?(memberships[0]||null):memberships;
   else if(u.pathname==='/rest/v1/organizations')data=org;
   else if(u.pathname==='/rest/v1/saas_sessions')data={user_id:user.id,organization_id:org.id,expires_at:new Date(Date.now()+86400000).toISOString(),revoked_at:options.revoked?'2026-10-20':null};
   else if(u.pathname==='/rest/v1/saas_user_security')data={version:1,disabled:false};
@@ -113,4 +113,30 @@ test('signup requires a provider user but preserves obfuscated duplicate verific
  for(const [options,status] of [[{missingSignupUser:true},503],[{obfuscatedSignup:true},200]]){
   const e=await environment(options);try{const r=await e.post({action:'signup',email:user.email,password:'private-password',fullName:'Owner'});assert.equal(r.status,status);assert.equal(r.cookie,null);assert.equal(r.body.verificationRequired,status===200?true:undefined);assert.ok(!e.calls.some(c=>c.path.endsWith('saas_provision_signup')||c.path.endsWith('saas_issue_session')));}finally{await e.close();}
  }
+});
+
+test('authenticated customer change_password verifies current password, revokes prior sessions and rotates session cookie',async()=>{
+ const e=await environment();
+ try{
+  const login=await e.post({action:'login',email:user.email,password:'private-password'});
+  assert.equal(login.status,200);
+  const cookie=login.cookie.split(';')[0];
+  const postWithCookie=async body=>{
+   const r=await e.route.POST(new Request('https://app.example.invalid/api/auth',{method:'POST',headers:{'content-type':'application/json',origin:'https://app.example.invalid',cookie},body:JSON.stringify(body)}));
+   return{status:r.status,body:await r.json(),cookie:r.headers.get('set-cookie')};
+  };
+  const same=await postWithCookie({action:'change_password',currentPassword:'private-password',newPassword:'private-password'});
+  assert.equal(same.status,400);
+  const short=await postWithCookie({action:'change_password',currentPassword:'private-password',newPassword:'short'});
+  assert.equal(short.status,400);
+  e.calls.length=0;
+  const changed=await postWithCookie({action:'change_password',currentPassword:'private-password',newPassword:'new-private-password'});
+  assert.equal(changed.status,200);
+  assert.ok(changed.cookie);
+  const updateCall=e.calls.find(c=>c.method==='PUT'&&c.path.startsWith('/auth/v1/admin/users/'));
+  assert.ok(updateCall);
+  assert.equal(updateCall.body.password,'new-private-password');
+  assert.equal(e.calls.filter(c=>c.path.endsWith('saas_recover_access')).length,2);
+  assert.equal(e.calls.filter(c=>c.path.endsWith('saas_issue_session')).length,1);
+ }finally{await e.close();}
 });

@@ -1,17 +1,17 @@
 # Private testing and registration
 
-Public registration is closed by default. Existing customer accounts and the platform administrator can still sign in; account recovery remains available.
+Public registration is closed by default. Existing customer accounts and the platform administrator can still sign in; account recovery remains available. This is the controlled pilot through migration10. Verify the [current database release](sql-migrations.md) before rebuilding; the registration switch alone does not establish that required migrations are installed.
 
 ## Deploy the registration closure
 
 ```bash
 cd /www/wwwroot/asra3.com
-git pull origin main
+git pull --ff-only origin main
 docker compose --env-file .env up -d --build --force-recreate asra3-saas asra3-webhook-worker
 docker compose ps
 ```
 
-No new SQL migration is required. The server-only `PUBLIC_REGISTRATION_ENABLED` setting defaults to closed when absent and opens registration only when its value is exactly `true`. During testing, leave it unset or set it to `false` in the deployment environment. If using both `.env` and `.env.local`, keep their values consistent because `.env.local` takes precedence in Compose.
+Changing the registration switch itself requires no SQL. The current application release does require the confirmed schema through10. The server-only `PUBLIC_REGISTRATION_ENABLED` setting defaults to closed when absent and opens registration only when its value is exactly `true`. During testing, leave it unset or set it to `false`. If using both `.env` and `.env.local`, keep their values consistent because `.env.local` takes precedence in Compose.
 
 The `/signup` page shows **Registration coming soon** in English or Arabic. `POST /api/auth` with `action: signup` returns `403` with code `registration_closed` before any provider registration or email call. Confirmed provider users without an existing workspace membership cannot automatically provision a new workspace while registration is closed.
 
@@ -27,7 +27,9 @@ Use the existing customer's confirmed account and owned workspace. Through **Adm
 
 Sign out and back in after changing the plan to refresh the plan displayed in the session. Server capability checks read the current database policy.
 
-Enterprise unlocks implemented features. Coming soon features, provider permissions and availability, tenant isolation, authentication, rate limits, purchase confirmations, and administrator spending allocations still apply. An entitlement grant does not supply provider credit or approve an unlimited spending allocation.
+Enterprise unlocks implemented features permitted by current policy. Coming soon features, provider permissions and availability, tenant isolation, authentication, rate limits, purchase confirmations and administrator spending allocations still apply. An entitlement grant does not supply provider credit, customer wallet funds or an unlimited spending allocation. Existing beta overrides remain until commercial enrollment; review account count and price before enrolling.
+
+The payment gateway is not ready. Customers contact [support@asra3.com](mailto:support@asra3.com) for administrator payment instructions. Credit a wallet only after verifying the received payment and recording its unique receipt/reference. Do not create a fake receipt to test billing; use isolated fixtures for simulated money. Keep customer funds and provider-spending allocations separate. Outbound calls/new paid incoming routes remain blocked, SMS needs verified tariff evidence, and unpaid wallet renewal does not release supplier numbers.
 
 ## Verify after deployment
 

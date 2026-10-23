@@ -14,11 +14,13 @@ export async function GET() {
 - Reports show available provider metrics; missing costs, delivery evidence and timestamps remain unavailable.
 - Provider phone-number purchase, rental, SMS and call operations require current ownership, consent, provider approval and administrator spending allocation.
 - Workspace membership, roles, verified sessions and expiring hashed API keys protect access. Current keys begin with asra3_; legacy local keys are retired.
+- Contact the administrator at support@asra3.com to arrange manual payment details. Customer balance is credited only after payment receipt is verified. Starter is $20/month including two connections; each extra connection is $8/month. Number rental and usage are charged separately. Public registration is currently closed.
 
 ## Coming soon
-Customer automation, automatic replies, provider contact synchronization, payment collection, top-ups, paid upgrades, advertising and commerce are not enabled in this launch. Paid plan prices and future capabilities are not current purchase offers. Provider resource catalog entries and illustrative demos do not establish launch availability. Real production acceptance is a separate owner-operated gate.
+Online checkout is unavailable. Customer automation, automatic replies, provider contact synchronization, advertising and commerce are not enabled in this launch. Provider resource catalog entries and illustrative demos do not establish launch availability. Real production acceptance is a separate owner-operated gate.
 
 ## Key links
+- [Contact us](mailto:support@asra3.com)
 - [Homepage](https://asra3.com/)
 - [English product guide](https://asra3.com/en)
 - [دليل المنتج بالعربية](https://asra3.com/ar)

@@ -55,6 +55,15 @@ export default function GiantBrandFooter() {
           <p className="text-sm text-[var(--text-secondary)]">
             {t.pricingSection.subtitle}
           </p>
+          <div className="space-y-4 pt-4">
+            <p className="text-sm leading-relaxed text-[var(--text-secondary)]">
+              {ar ? 'اتفق مع الإدارة على تفاصيل الدفع. يُضاف رصيدك بعد التحقق من استلام الدفعة فقط. الدفع الإلكتروني داخل الموقع غير متاح حالياً.' : 'Arrange payment details directly with the administrator. Your balance is credited only after payment receipt is verified. Online checkout is currently unavailable.'}
+            </p>
+            <a href="mailto:support@asra3.com" className="inline-flex flex-wrap items-center justify-center gap-x-3 gap-y-1 rounded-xl bg-[var(--brand-coral)] px-5 py-3 text-sm font-bold text-white transition hover:opacity-90 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[var(--brand-coral)]">
+              <span>{ar ? 'تواصل معنا' : 'Contact us'}</span>
+              <span dir="ltr">support@asra3.com</span>
+            </a>
+          </div>
         </div>
 
       </section>
@@ -126,12 +135,16 @@ export default function GiantBrandFooter() {
           ASRA3
         </div>
         <div className="mt-3 text-xs sm:text-sm font-bold tracking-wide text-[var(--text-secondary)]">
-          {locale==='ar'?'عملاء ومحادثات ونشر وحملات واتساب يدوية. الأتمتة والدفع قريباً.':'Manual customers, conversations, publishing and WhatsApp campaigns. Automation and payments are coming soon.'}
+          {locale==='ar'?'عملاء ومحادثات ونشر وحملات واتساب يدوية. الأتمتة قريباً.':'Manual customers, conversations, publishing and WhatsApp campaigns. Automation is coming soon.'}
         </div>
       </section>
 
       {/* 4. STRUCTURED FOOTER WITH SEO / GEO / AEO NAVIGATION */}
       <footer className="border-t border-[var(--border-subtle)] pt-12 pb-8 text-xs text-[var(--text-secondary)] space-y-8">
+        <a href="mailto:support@asra3.com" className="inline-flex flex-wrap items-center gap-x-3 gap-y-1 text-sm font-semibold text-[var(--text-primary)] hover:text-[var(--brand-coral)] focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[var(--brand-coral)]">
+          <span>{ar ? 'تواصل معنا' : 'Contact us'}</span>
+          <span dir="ltr" className="underline underline-offset-4">support@asra3.com</span>
+        </a>
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-8 text-start">
           {/* Column 1 */}
           <div className="space-y-3">

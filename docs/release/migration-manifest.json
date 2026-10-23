@@ -1,39 +1,71 @@
 {
-  "baselineAlreadyApplied": "20261017000001_full_schema_and_super_admin.sql",
-  "pending": [
+  "release": "2026-10-23-through-10",
+  "latestMigration": "20261022000010_customer_wallet.sql",
+  "baselineMigration": "20261017000001_full_schema_and_super_admin.sql",
+  "deploymentState": {
+    "verified": false,
+    "lastReportedAppliedThrough": "20261020000009_campaigns.sql",
+    "latestMigrationApplied": "unverified",
+    "instructions": "Verify actual objects, permissions and SQL Editor history; apply only confirmed missing migrations."
+  },
+  "migrations": [
     {
+      "order": "01",
+      "file": "20261017000001_full_schema_and_super_admin.sql",
+      "transaction": "wrap"
+    },
+    {
+      "order": "02",
       "file": "20261019000002_oauth_sessions.sql",
       "transaction": "wrap"
     },
     {
+      "order": "03",
       "file": "20261019000003_phone_purchase_intents.sql",
       "transaction": "wrap"
     },
     {
+      "order": "04",
       "file": "20261019000004_durable_webhooks.sql",
       "transaction": "wrap"
     },
     {
+      "order": "05",
       "file": "20261019000005_conversation_control_projection.sql",
       "transaction": "wrap"
     },
     {
+      "order": "06",
       "file": "20261020000006_manual_crm.sql",
       "transaction": "self"
     },
     {
+      "order": "07",
       "file": "20261020000007_saas_security.sql",
       "transaction": "self"
     },
     {
+      "order": "08",
       "file": "20261020000008_phone_lifecycle.sql",
       "transaction": "wrap"
     },
     {
+      "order": "09",
       "file": "20261020000009_campaigns.sql",
       "transaction": "wrap"
+    },
+    {
+      "order": "10",
+      "file": "20261022000010_customer_wallet.sql",
+      "transaction": "self"
     }
   ],
+  "objectScope": {
+    "fromMigration": "02",
+    "throughMigration": "10",
+    "includesBaselineObjects": false,
+    "explicitIndexesOnly": true
+  },
   "tables": [
     "oauth_sessions",
     "phone_purchase_intents",
@@ -56,7 +88,15 @@
     "saas_allowance_ledger",
     "phone_lifecycle_operations",
     "phone_rental_obligations",
-    "asra3_campaigns"
+    "asra3_campaigns",
+    "billing_wallets",
+    "billing_wallet_quotes",
+    "billing_wallet_holds",
+    "billing_wallet_ledger",
+    "billing_recurring_agreements",
+    "billing_recurring_invoices",
+    "billing_sms_tariffs",
+    "billing_connection_leases"
   ],
   "functions": [
     "public.acquire_phone_purchase_intent(uuid,text,text,text,text)",
@@ -94,7 +134,16 @@
     "public.saas_member_read(uuid)",
     "public.saas_member_write(uuid)",
     "public.acquire_phone_lifecycle_operation(uuid,text,text,text,text,jsonb)",
-    "public.claim_asra3_campaign(uuid,uuid,text)"
+    "public.claim_asra3_campaign(uuid,uuid,text)",
+    "public.billing_credit_wallet(uuid,bigint,text,text,jsonb)",
+    "public.billing_create_quote(uuid,text,text,bigint,bigint,timestamptz,text,text)",
+    "public.billing_reserve_wallet(uuid,uuid,text,text)",
+    "public.billing_finish_wallet(uuid,uuid,bigint,bigint,text,jsonb,text)",
+    "public.billing_refund_wallet(uuid,uuid,bigint,text,text,jsonb)",
+    "public.billing_set_agreement(uuid,text,text,bigint,text,text,jsonb)",
+    "public.billing_charge_period(uuid,uuid,timestamptz,timestamptz,jsonb)",
+    "public.billing_stop_agreement(uuid,text,text,jsonb)",
+    "public.billing_connection_capacity(uuid,text,text[],integer,boolean,text)"
   ],
   "indexes": [
     "oauth_sessions_expiry_idx",
@@ -106,6 +155,7 @@
     "crm_contacts_tags",
     "saas_sessions_user",
     "asra3_campaigns_due",
-    "asra3_campaigns_tenant"
+    "asra3_campaigns_tenant",
+    "billing_one_settlement_per_provider_reference"
   ]
 }

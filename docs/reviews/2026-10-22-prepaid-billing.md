@@ -1,5 +1,7 @@
 # Prepaid billing: implementation and release steps
 
+> Updated handoff: see the [23 October release baseline](2026-10-23-release-baseline.md) and [current SQL instructions](../release/sql-migrations.md). Payments are arranged with the administrator at [support@asra3.com](mailto:support@asra3.com), then credited only after receipt verification. Online checkout remains unavailable. The deployment steps below reflect the schema reported on 22 October; verify the current database before applying anything.
+
 The commercial pilot now has a separate customer wallet, reviewed retail quotes, atomic reservations, settlement/refunds, and recurring subscription/number agreements. Registration remains closed. Online payment collection remains **Coming soon**; no gateway or cryptocurrency processor has been activated.
 
 ## Prices and charge rules

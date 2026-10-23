@@ -1,5 +1,7 @@
 # SQL timing and deployment handoff
 
+> Historical planning assumptions, not the current production schema inventory. Use the [current SQL instructions](../release/sql-migrations.md) and [migration manifest](../release/migration-manifest.json) through migration 10. Verify installed objects before deciding which migrations remain unapplied.
+
 20 October 2026. The owner reports running only the first main SQL schema. Production schema state has not been queried in this planning pass. These steps assume that file was `20261017000001_full_schema_and_super_admin.sql`; the read-only preflight checks the required baseline objects.
 
 ## Can the SQL wait?

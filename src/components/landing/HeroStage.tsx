@@ -31,7 +31,7 @@ export default function HeroStage() {
 
   const ArrowIcon = dir === 'rtl' ? ArrowLeft : ArrowRight;
 
-  const agentPromptText = 'Read https://asra3.com/docs for reviewed manual REST operations. Use a current asra3_ workspace key. Preserve tenant ownership, consent and idempotency. Automation, payments, advertising and commerce are coming soon.';
+  const agentPromptText = 'Read https://asra3.com/docs for reviewed manual REST operations. Use a current asra3_ workspace key. Preserve tenant ownership, consent and idempotency. Arrange manual payments with the administrator at support@asra3.com; balance is credited only after payment receipt is verified. Online checkout is unavailable. Automation, advertising and commerce are coming soon.';
   const codeSnippet = `const response = await fetch('/api/publishing', {
   method: 'POST', headers: {'Content-Type': 'application/json'},
   body: JSON.stringify({action: 'create', isDraft: true,

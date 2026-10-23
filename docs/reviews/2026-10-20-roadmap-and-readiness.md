@@ -1,5 +1,7 @@
 # Asra3 — current readiness and next phases
 
+> Historical planning checkpoint. The launch modules below were subsequently implemented. Use the [23 October release baseline](2026-10-23-release-baseline.md) and [current release handoff](../release/README.md) for present scope and next steps.
+
 20 October 2026. Current planning checkpoint after Phase 2C, updated to the owner's five launch priorities. This document summarizes the latest phase reports; the original audit's failing capability matrix describes the pre-repair application. The detailed current plan is [consolidated launch implementation and review](2026-10-20-launch-execution-plan.md).
 
 ## Next phases, in order

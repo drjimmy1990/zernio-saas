@@ -22,7 +22,11 @@ jobs:
       - run: npm run typecheck
       - run: npm run test:launch
       - run: npm run test:regression
+      - name: Billing pricing, enrollment, browser and worker checks
+        run: npm run test:billing
       - run: npm run test:launch:database
+      - name: Billing concurrency, access and service integration checks
+        run: npm run test:billing:database
       - run: npm run build
         env:
           NEXT_PUBLIC_APP_URL: https://asra3.com

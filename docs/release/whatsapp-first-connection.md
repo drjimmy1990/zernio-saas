@@ -1,49 +1,34 @@
-# First WhatsApp connection on asra3.com
+# First WhatsApp connection during the private pilot
 
-The platform administrator manages settings, plans and spending. Connections belong to a business account with a persisted workspace. Using the administrator identity as a customer workspace previously produced the misleading error **Tenant policy verification is unavailable** before any WhatsApp authorization request.
+The platform administrator manages settings, plans and spending. Connections belong to a confirmed business user with an existing workspace membership. The administrator identity cannot connect customer channels.
 
-## Deploy the correction
+Before deploying, follow [the current release handoff](README.md) and [SQL verification through10](sql-migrations.md). Rebuilding a correction does not establish that the schema is current. The latest reported01–09 installation and migration10 must be checked against the intended project.
 
-In the VPS terminal, run each command in order. Stop if a command fails.
+## Use an existing business account
 
-```bash
-cd /www/wwwroot/asra3.com
-git pull --ff-only origin main
-docker compose --env-file .env build asra3-saas
-docker compose --env-file .env up -d
-docker compose --env-file .env ps
-```
+1. Keep public registration closed in both the application and Supabase, as described in [private testing](private-testing.md). The signup page intentionally has no registration form.
+2. Sign in with the confirmed existing customer's account and owned workspace. Use an address different from `ADMIN_EMAIL`.
+3. If access needs recovery, follow [email authentication setup](supabase-auth-setup.md). Do not create another unassigned organization to work around missing membership.
 
-The app should be healthy and the worker running. This correction requires no new SQL or environment variables. Existing migrations 01–09 must already be installed.
+Only after explicit public-launch acceptance should registration be reopened and a new verified signup tested. Earlier instructions to create a new business signup during private testing are superseded by this flow.
 
-## Create your business account
+## Review WhatsApp access for that business
 
-1. Open [Sign up](https://asra3.com/signup). Use an email address different from `ADMIN_EMAIL`; that address is reserved for platform administrator sign-in.
-2. Enter your own business details and password, then submit the form.
-3. Open the verification email. Complete verification and open the workspace. If needed, sign in again using the new business email. The verified session creates or recovers the business workspace.
+1. Sign in as the platform administrator and open **Accounts & API Keys**.
+2. Locate the customer's exact workspace and review its plan, global enabled platforms/scopes and tenant overrides.
+3. Save an appropriate returned plan only if needed. Migration10's Starter template includes WhatsApp; existing private-beta overrides are preserved. Agency/Enterprise access is not required solely because an earlier Starter template excluded WhatsApp.
+4. Wait for the confirmed plan state, then use **Business sign-in** and authenticate as the customer. Sign in again after a plan change to refresh displayed session information.
 
-New signups start on Starter. Its default platform list excludes WhatsApp. Assign a plan that includes WhatsApp before attempting the connection.
-
-## Enable WhatsApp access for that business
-
-1. Open [Sign in](https://asra3.com/login) and sign in with the platform administrator credentials. This replaces the current browser session and opens the administrator panel.
-2. Open **3. Accounts & API Keys**.
-3. Find the workspace created by the business signup. Do not create another unassigned organization with the quick-create form.
-4. Under **Workspace plan**, select **Agency Omnichannel + Ads**, then click **Save plan**. Enterprise also includes WhatsApp in the default configuration. Wait for the confirmed plan badge to change. This assigns feature access; payment collection remains coming soon.
-5. Click **Business sign-in** on that workspace and sign in with the business email and password.
-
-Changing the plan preserves per-business overrides. If WhatsApp has been disabled globally or through a custom override, that restriction still applies.
+Plan assignment grants feature access; it does not fund a customer wallet or provider charges. Commercial enrollment checks existing connected-account count and reviewed extras; Facebook Page/Messenger count together, while Instagram and WhatsApp count separately.
 
 ## Connect the existing WhatsApp Business number
 
 1. In the business dashboard, open the connection wizard and choose **WhatsApp Business**.
 2. Choose **Meta Embedded Signup (OAuth)**.
-3. For a number used in the WhatsApp Business app, choose the Business App/coexistence option. For Cloud API onboarding, choose Cloud API.
-4. Click **Launch Meta Embedded Signup (OAuth)** and complete Meta's business, number and permission steps.
-5. Return to Asra3 and complete any required selection. Check the resulting account status; a launched signup alone does not confirm a connection.
+3. For a number used in the WhatsApp Business app, choose the Business App/coexistence option; for Cloud API onboarding, choose Cloud API.
+4. Launch Meta Embedded Signup and complete consent only for the intended business, number and permissions.
+5. Return to Asra3, complete required selection and verify account status. Launching signup alone does not prove connection.
 
-Buying a new number and sending messages have separate provider-spending approvals. Use **Spending allocations** in the administrator panel to review those limits before paid operations. A plan assignment alone does not fund provider charges or purchase a number.
+Number purchase and messages require their own reviewed intents and bounded provider-spending approvals. Customer-paid phone actions also require sufficient wallet funds and valid reviewed prices. The gateway is not ready: contact [support@asra3.com](mailto:support@asra3.com) for administrator payment instructions; only an actual verified receipt permits a manual wallet credit.
 
-## Verification of this correction
-
-Local checks cover administrator/customer routing in the actual React components, explicit per-workspace plan saving and failure recovery, denial of the administrator identity before policy SQL, unchanged customer policy and authentication checks, and PostgreSQL plan changes preserving membership. The production Docker image is rebuilt. No live customer account or WhatsApp connection is created by these checks; the owner completes the signup above.
+Outbound calls/new paid incoming routes remain blocked, and SMS requires verified maximum tariff evidence. No account, number purchase, message or payment is created by this guide. Owner-approved live acceptance must verify provider permissions and actual results.

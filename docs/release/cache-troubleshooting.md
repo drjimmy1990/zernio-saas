@@ -1,5 +1,7 @@
 # aaPanel: old HTML after deployment
 
+For the current source release through migration10, follow [the release handoff](README.md) and verify the database before restarting the app/worker. The observations below describe earlier cached responses; compare them with the exact deployed revision before taking action.
+
 The public bare `/`, `/signup`, and `/login` URLs were observed serving older HTML and JavaScript, while unique `?release=...` requests returned current content. The old signup bundle contains four paid plans; the current bundle contains the Starter notice and email-verification handling. Both bundles returned HTTP 200. HTML reported `CF-Cache-Status: DYNAMIC` and `x-nextjs-cache: HIT`, without `Age`; those headers alone do not identify the layer retaining the older response.
 
 The app now renders signup, login, and recovery at request time. Auth pages and protected API/dashboard/admin routes use private, non-storable responses. This prevents new compliant caches from storing these responses; it does **not** invalidate responses already stored by a proxy. Public marketing pages and hashed static assets retain their normal caching behavior.

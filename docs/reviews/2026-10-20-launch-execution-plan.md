@@ -1,5 +1,7 @@
 # Asra3 — consolidated launch implementation and final review
 
+> Historical implementation plan. For the completed work, administrator-assisted payments and current deployment checks, use the [23 October release baseline](2026-10-23-release-baseline.md) and [current release handoff](../release/README.md).
+
 20 October 2026. This plan supersedes the earlier broad Phase 3 roadmap. It follows the owner's five priorities and uses at most three subagents in total, reused for review. This document plans the work; it does not mark the new phases implemented.
 
 ## Scope decisions

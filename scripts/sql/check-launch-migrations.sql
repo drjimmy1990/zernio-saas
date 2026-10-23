@@ -1,4 +1,4 @@
--- READ ONLY: release02..09 metadata and aggregate operational verification.
+-- READ ONLY: release02..10 metadata and aggregate operational verification.
 -- No migration application, customer rows, keys, tokens or URLs are returned.
 begin transaction read only;
 -- Required objects: every row should be present=true after the full pending pack.
@@ -24,7 +24,15 @@ select name,to_regclass('public.'||name) is not null as present from unnest(arra
  'saas_allowance_ledger',
  'phone_lifecycle_operations',
  'phone_rental_obligations',
- 'asra3_campaigns'
+ 'asra3_campaigns',
+ 'billing_wallets',
+ 'billing_wallet_quotes',
+ 'billing_wallet_holds',
+ 'billing_wallet_ledger',
+ 'billing_recurring_agreements',
+ 'billing_recurring_invoices',
+ 'billing_sms_tariffs',
+ 'billing_connection_leases'
 ]) expected(name);
 select signature,to_regprocedure(signature) is not null as present from unnest(array[
  'public.acquire_phone_purchase_intent(uuid,text,text,text,text)',
@@ -62,7 +70,16 @@ select signature,to_regprocedure(signature) is not null as present from unnest(a
  'public.saas_member_read(uuid)',
  'public.saas_member_write(uuid)',
  'public.acquire_phone_lifecycle_operation(uuid,text,text,text,text,jsonb)',
- 'public.claim_asra3_campaign(uuid,uuid,text)'
+ 'public.claim_asra3_campaign(uuid,uuid,text)',
+ 'public.billing_credit_wallet(uuid,bigint,text,text,jsonb)',
+ 'public.billing_create_quote(uuid,text,text,bigint,bigint,timestamptz,text,text)',
+ 'public.billing_reserve_wallet(uuid,uuid,text,text)',
+ 'public.billing_finish_wallet(uuid,uuid,bigint,bigint,text,jsonb,text)',
+ 'public.billing_refund_wallet(uuid,uuid,bigint,text,text,jsonb)',
+ 'public.billing_set_agreement(uuid,text,text,bigint,text,text,jsonb)',
+ 'public.billing_charge_period(uuid,uuid,timestamptz,timestamptz,jsonb)',
+ 'public.billing_stop_agreement(uuid,text,text,jsonb)',
+ 'public.billing_connection_capacity(uuid,text,text[],integer,boolean,text)'
 ]) expected(signature);
 select name,to_regclass('public.'||name) is not null as present from unnest(array[
  'oauth_sessions_expiry_idx',
@@ -74,7 +91,8 @@ select name,to_regclass('public.'||name) is not null as present from unnest(arra
  'crm_contacts_tags',
  'saas_sessions_user',
  'asra3_campaigns_due',
- 'asra3_campaigns_tenant'
+ 'asra3_campaigns_tenant',
+ 'billing_one_settlement_per_provider_reference'
 ]) expected(name);
 -- All new tables must have RLS=true. contacts is listed separately below.
 select expected.name,c.relrowsecurity as rls_enabled from unnest(array[
@@ -99,7 +117,15 @@ select expected.name,c.relrowsecurity as rls_enabled from unnest(array[
  'saas_allowance_ledger',
  'phone_lifecycle_operations',
  'phone_rental_obligations',
- 'asra3_campaigns'
+ 'asra3_campaigns',
+ 'billing_wallets',
+ 'billing_wallet_quotes',
+ 'billing_wallet_holds',
+ 'billing_wallet_ledger',
+ 'billing_recurring_agreements',
+ 'billing_recurring_invoices',
+ 'billing_sms_tariffs',
+ 'billing_connection_leases'
 ]) expected(name)
 left join pg_class c on c.oid=to_regclass('public.'||expected.name) order by name;
 -- Server-only tables: anon/authenticated false; service_role true for all CRUD.
@@ -128,7 +154,15 @@ from unnest(array[
  'saas_allowance_ledger',
  'phone_lifecycle_operations',
  'phone_rental_obligations',
- 'asra3_campaigns'
+ 'asra3_campaigns',
+ 'billing_wallets',
+ 'billing_wallet_quotes',
+ 'billing_wallet_holds',
+ 'billing_wallet_ledger',
+ 'billing_recurring_agreements',
+ 'billing_recurring_invoices',
+ 'billing_sms_tariffs',
+ 'billing_connection_leases'
 ]) expected(name) left join pg_class c on c.oid=to_regclass('public.'||expected.name)
 cross join (values('anon'),('authenticated'),('service_role'))r(role) order by name,role;
 select relrowsecurity as contacts_rls from pg_class where oid=to_regclass('public.contacts');
@@ -171,7 +205,16 @@ from unnest(array[
  'public.saas_admin_create_workspace(text,text,jsonb,text)',
  'public.saas_archive_workspace(uuid,text)',
  'public.acquire_phone_lifecycle_operation(uuid,text,text,text,text,jsonb)',
- 'public.claim_asra3_campaign(uuid,uuid,text)'
+ 'public.claim_asra3_campaign(uuid,uuid,text)',
+ 'public.billing_credit_wallet(uuid,bigint,text,text,jsonb)',
+ 'public.billing_create_quote(uuid,text,text,bigint,bigint,timestamptz,text,text)',
+ 'public.billing_reserve_wallet(uuid,uuid,text,text)',
+ 'public.billing_finish_wallet(uuid,uuid,bigint,bigint,text,jsonb,text)',
+ 'public.billing_refund_wallet(uuid,uuid,bigint,text,text,jsonb)',
+ 'public.billing_set_agreement(uuid,text,text,bigint,text,text,jsonb)',
+ 'public.billing_charge_period(uuid,uuid,timestamptz,timestamptz,jsonb)',
+ 'public.billing_stop_agreement(uuid,text,text,jsonb)',
+ 'public.billing_connection_capacity(uuid,text,text[],integer,boolean,text)'
 ]) expected(signature) cross join(values('anon'),('authenticated'),('service_role'))r(role) order by signature,role;
 select signature,r.role,case when to_regprocedure(signature) is not null then has_function_privilege(r.role,to_regprocedure(signature)::oid,'EXECUTE') else false end as can_execute
 from unnest(array['public.crm_role(uuid)','public.saas_member_read(uuid)','public.saas_member_write(uuid)']) expected(signature)
@@ -186,7 +229,7 @@ select name,exists(select 1 from information_schema.columns where table_schema='
 select rolname,rolbypassrls from pg_roles where rolname in('anon','authenticated','service_role') order by rolname;
 select extname from pg_extension where extname='pgcrypto';
 -- Presence alone does not prove immutable tenant keys or replay uniqueness: inspect constraints.
-select c.relname,k.conname,pg_get_constraintdef(k.oid) as definition from pg_constraint k join pg_class c on c.oid=k.conrelid where c.oid in(to_regclass('public.phone_lifecycle_operations'),to_regclass('public.phone_rental_obligations'),to_regclass('public.saas_allowance_reservations'),to_regclass('public.asra3_campaigns')) order by c.relname,k.conname;
+select c.relname,k.conname,pg_get_constraintdef(k.oid) as definition from pg_constraint k join pg_class c on c.oid=k.conrelid where c.oid in(to_regclass('public.phone_lifecycle_operations'),to_regclass('public.phone_rental_obligations'),to_regclass('public.saas_allowance_reservations'),to_regclass('public.asra3_campaigns'),to_regclass('public.billing_wallets'),to_regclass('public.billing_wallet_quotes'),to_regclass('public.billing_wallet_holds'),to_regclass('public.billing_wallet_ledger'),to_regclass('public.billing_recurring_agreements'),to_regclass('public.billing_recurring_invoices'),to_regclass('public.billing_sms_tariffs'),to_regclass('public.billing_connection_leases')) order by c.relname,k.conname;
 -- Aggregate job/allowance health only. Nonzero counts require review, not an automatic reset.
 select count(*) filter(where delivered_at is null) as pending,
  count(*) filter(where delivered_at is null and available_at<now()-interval '10 minutes') as overdue,
@@ -194,4 +237,10 @@ select count(*) filter(where delivered_at is null) as pending,
 select status,count(*) from public.asra3_campaigns group by status order by status;
 select state,count(*) from public.phone_lifecycle_operations group by state order by state;
 select state,count(*) from public.saas_allowance_reservations group by state order by state;
+-- Billing status contains counts only; unpaid renewals do not release supplier numbers.
+select plan_key,monthly_price_usd,max_connected_accounts from public.subscription_plan_templates where plan_key='starter';
+select state,count(*) from public.billing_wallet_holds group by state order by state;
+select state,count(*) from public.billing_recurring_invoices group by state order by state;
+select count(*) as renewals_awaiting_funds from public.billing_recurring_invoices where state='dunning';
+select count(*) as unresolved_connection_leases from public.billing_connection_leases;
 commit;

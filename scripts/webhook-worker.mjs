@@ -16,6 +16,7 @@ do {
     if (target === endpoint && (result.delivered || result.failed)) console.log(`Webhook deliveries: ${Number(result.delivered) || 0} delivered, ${Number(result.failed) || 0} queued for retry.`);
     if (result.submitted || result.stopped) console.log(`Campaigns: ${Number(result.submitted) || 0} submitted, ${Number(result.stopped) || 0} stopped for review.`);
     if (target === billingEndpoint && result.processed) console.log(`Billing: ${Number(result.processed)} renewals charged from prepaid funds.`);
+    if (target === billingEndpoint && Number(result.paymentDue) > 0) console.warn(`Billing: ${Number(result.paymentDue)} renewals are unpaid. Administrator review required: check wallet funding and any continuing supplier rental charges.`);
     if (target === billingEndpoint && result.failed) console.error(`Billing: ${Number(result.failed)} workspaces require renewal review.`);
   } catch (error) {
     console.error(error instanceof Error ? error.message : 'Webhook worker unavailable');
