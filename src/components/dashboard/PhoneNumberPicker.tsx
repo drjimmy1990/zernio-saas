@@ -118,14 +118,19 @@ export function PhoneNumberPicker({ selection, onSelect, disabled = false, whats
     </div>
     {error && <p role="alert" className="rounded-xl border border-red-500/40 p-3 text-sm">{error}</p>}
     <input aria-label={t('Search countries', 'ابحث عن دولة')} className={field} placeholder={t('Search by country name or code', 'ابحث باسم الدولة أو رمزها')} value={query} onChange={e => setQuery(e.target.value)} />
-    {loadingCatalog ? <p role="status" className="flex items-center gap-2 text-sm"><Loader2 className="h-4 w-4 animate-spin" />{t('Loading live countries and prices…', 'جارٍ تحميل الدول والأسعار الحالية…')}</p>
-      : <div role="listbox" aria-label={t('Countries', 'الدول')} className="grid max-h-80 gap-2 overflow-y-auto pe-1 sm:grid-cols-2 lg:grid-cols-3">
+    {loadingCatalog ? (
+      <div className="grid max-h-80 gap-2 sm:grid-cols-2 lg:grid-cols-3 animate-pulse" aria-busy="true">
+        {[1, 2, 3, 4, 5, 6].map(i => (
+          <div key={i} className="h-24 rounded-2xl bg-[var(--bg-subtle)]/70 border border-[var(--border-subtle)]/50 p-3" />
+        ))}
+      </div>
+    ) : <div role="listbox" aria-label={t('Countries', 'الدول')} className="grid max-h-80 gap-2 overflow-y-auto pe-1 sm:grid-cols-2 lg:grid-cols-3">
         {visible.map(c => {
           const priced = (c.types || []).map(retail).filter((v: number | null): v is number => v !== null);
           const from = priced.length ? Math.min(...priced) : null, any = (k: string) => c.types?.some((x: Row) => x[k] === true);
           const kyc = c.types?.length && c.types.every((x: Row) => regulatedOffer(x)), stock = c.types?.some((x: Row) => x.inStock !== false || x.preOrderable === true);
           return <button key={c.code} type="button" role="option" aria-selected={c.code === country} disabled={busy}
-            className={`rounded-xl border p-3 text-start transition ${c.code === country ? 'border-[var(--accent-primary)] ring-2 ring-[var(--accent-primary)]' : 'border-[var(--border-subtle)]'}`} onClick={() => chooseCountry(c.code)}>
+            className={`rounded-2xl border p-3.5 text-start transition-all cursor-pointer ${c.code === country ? 'border-[var(--brand-coral)] ring-2 ring-[var(--brand-coral)]/30 bg-[var(--brand-coral-soft)]/20 shadow-sm' : 'border-[var(--border-subtle)] bg-[var(--bg-card)] hover:border-[var(--brand-coral)]/40 hover:bg-[var(--bg-subtle)]/60'}`} onClick={() => chooseCountry(c.code)}>
             <span className="flex items-center justify-between gap-2"><span className="font-semibold"><span aria-hidden="true">{flag(c.code)} </span>{name(c.code, c.name)}</span><span className="text-xs text-[var(--text-secondary)]">{c.code}</span></span>
             <span className="mt-1 block text-sm">{t('From', 'يبدأ من')} <strong dir="ltr">{usd(from)}</strong> / {t('month', 'شهر')}</span>
             <span className="mt-2 flex flex-wrap gap-1">{any('whatsappAvailable') && <span className={chip}>WhatsApp</span>}{any('smsAvailable') && <span className={chip}>SMS</span>}{any('callsAvailable') !== false && <span className={chip}>{t('Calls', 'مكالمات')}</span>}{kyc && <span className={chip}>{t('ID required', 'يتطلب هوية')}</span>}{!stock && <span className={chip}>{t('Out of stock', 'غير متوفر')}</span>}</span>
@@ -138,7 +143,7 @@ export function PhoneNumberPicker({ selection, onSelect, disabled = false, whats
       <h4 className="font-semibold">{t('2. Number type', '٢. نوع الرقم')}</h4>
       <div role="radiogroup" aria-label={t('Number type', 'نوع الرقم')} className="flex flex-wrap gap-2">
         {types.map((x: Row) => <button key={x.numberType} type="button" role="radio" aria-checked={x.numberType === numberType} disabled={busy}
-          className={`rounded-xl border px-3 py-2 text-sm ${x.numberType === numberType ? 'border-[var(--accent-primary)] ring-2 ring-[var(--accent-primary)]' : 'border-[var(--border-subtle)]'}`}
+          className={`rounded-xl border px-3.5 py-2 text-sm font-semibold transition cursor-pointer ${x.numberType === numberType ? 'border-[var(--brand-coral)] ring-2 ring-[var(--brand-coral)]/30 bg-[var(--brand-coral-soft)]/30 text-[var(--text-primary)] shadow-xs' : 'border-[var(--border-subtle)] bg-[var(--bg-card)] hover:bg-[var(--bg-subtle)]'}`}
           onClick={() => { revision.current++; setSearching(false); setAreaCode(''); setContains(''); setNumberType(x.numberType); if (x.smsAvailable !== true) setSms(false); }}>
           <span className="font-semibold">{typeLabel(x.numberType)}</span> · <span dir="ltr">{usd(retail(x))}</span>/{t('mo', 'شهر')}{regulatedOffer(x) ? ` · ${t('ID required', 'يتطلب هوية')}` : ''}{x.inStock === false && x.preOrderable !== true ? ` · ${t('out of stock', 'غير متوفر')}` : ''}
         </button>)}
@@ -146,11 +151,11 @@ export function PhoneNumberPicker({ selection, onSelect, disabled = false, whats
       {offer && <p className="text-xs text-[var(--text-secondary)]">WhatsApp: {offer.whatsappAvailable && numberType !== 'toll_free' ? t('available', 'متاح') : t('unavailable', 'غير متاح')} · SMS: {offer.smsAvailable ? t('available', 'متاح') : t('unavailable', 'غير متاح')} · {t('Price per month, charged on activation and on the 1st of each month.', 'السعر شهرياً، يُحصّل عند التفعيل وفي أول كل شهر.')}</p>}
     </section>}
 
-    {offer && !regulated && <form onSubmit={submit} className="grid gap-3 rounded-xl border border-[var(--border-subtle)] p-3 sm:grid-cols-[1fr_1fr_auto]">
-      <label className="text-sm">{t('Area code or city', 'رمز المنطقة أو المدينة')}<input aria-label={t('Area code or city', 'رمز المنطقة أو المدينة')} list="asra3-area-options" className={`${field} mt-1`} placeholder={t('e.g. 415 or Madrid', 'مثال: 415 أو مدريد')} value={areaCode} onChange={e => setAreaCode(e.target.value)} />
+    {offer && !regulated && <form onSubmit={submit} className="grid gap-3 rounded-2xl border border-[var(--border-subtle)] bg-[var(--bg-subtle)]/40 p-3.5 sm:grid-cols-[1fr_1fr_auto]">
+      <label className="text-sm font-medium">{t('Area code or city', 'رمز المنطقة أو المدينة')}<input aria-label={t('Area code or city', 'رمز المنطقة أو المدينة')} list="asra3-area-options" className={`${field} mt-1`} placeholder={t('e.g. 415 or Madrid', 'مثال: 415 أو مدريد')} value={areaCode} onChange={e => setAreaCode(e.target.value)} />
         <datalist id="asra3-area-options">{areas.map(a => <option key={a.ndc} value={a.ndc}>{a.name}{Number.isSafeInteger(a.count) ? ` (${a.count})` : ''}</option>)}</datalist></label>
-      <label className="text-sm">{t('Number contains digits', 'الرقم يحتوي على أرقام')}<input aria-label={t('Number contains digits', 'الرقم يحتوي على أرقام')} inputMode="numeric" dir="ltr" className={`${field} mt-1`} value={contains} onChange={e => setContains(e.target.value.replace(/\D/g, '').slice(0, 15))} /></label>
-      <button type="submit" disabled={busy} className="flex items-center justify-center gap-2 self-end rounded-xl border border-[var(--border-subtle)] px-4 py-2.5 text-sm font-semibold disabled:opacity-40"><Search className="h-4 w-4" />{t('Search numbers', 'ابحث عن أرقام')}</button>
+      <label className="text-sm font-medium">{t('Number contains digits', 'الرقم يحتوي على أرقام')}<input aria-label={t('Number contains digits', 'الرقم يحتوي على أرقام')} inputMode="numeric" dir="ltr" className={`${field} mt-1`} value={contains} onChange={e => setContains(e.target.value.replace(/\D/g, '').slice(0, 15))} /></label>
+      <button type="submit" disabled={busy} className="btn-premium-secondary flex items-center justify-center gap-2 self-end rounded-xl px-4 py-2.5 text-sm font-semibold disabled:opacity-40"><Search className="h-4 w-4" />{t('Search numbers', 'ابحث عن أرقام')}</button>
       <label className="text-sm sm:col-span-3"><input type="checkbox" className="me-2" checked={sms} disabled={busy || offer.smsAvailable !== true} onChange={e => setSms(e.target.checked)} />{t('SMS-capable numbers only', 'أرقام تدعم SMS فقط')}</label>
       {areas.length > 0 && <div className="flex flex-wrap gap-1 sm:col-span-3">{areas.slice(0, 12).map(a => <button key={a.ndc} type="button" className={chip} disabled={busy} onClick={() => { setAreaCode(a.ndc); void search({ areaCode: a.ndc }); }}>{a.name} · {a.ndc}{Number.isSafeInteger(a.count) ? ` (${a.count})` : ''}</button>)}</div>}
     </form>}

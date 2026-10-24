@@ -14,7 +14,6 @@ import {
   CheckCircle2,
   BookOpen,
   Layers,
-  Radio,
   Cpu,
   PhoneCall,
 } from 'lucide-react';
@@ -23,7 +22,28 @@ import { Asra3Mark } from '@/components/Asra3Logo';
 export default function HeroStage() {
   const { t: dictionary, dir, locale } = useThemeAndLocale();
   const t = launchCopy(dictionary, locale === 'ar');
-  const copy = {...getLandingCopy(locale).heroExtra, agentReadyLabel:locale==='ar'?'REST مع مراجعة يدوية':'REST with manual review', windowConnectedBadge:locale==='ar'?'مثال توضيحي':'Illustrative example',stat1Value:'1',stat2Value:'3',stat2Sub:'Facebook · Instagram · WhatsApp',stat3Value:'Manual',stat3Sub:locale==='ar'?'الأتمتة قريباً':'Automation — Coming soon',stat4Value:'EN / AR',radarCards:{igTitle:'Instagram',igStatus:locale==='ar'?'مراجعة يدوية':'Manual review',ttTitle:'Facebook',ttStatus:locale==='ar'?'مراجعة يدوية':'Manual review',liTitle:locale==='ar'?'العملاء':'Manual CRM',liStatus:locale==='ar'?'بيانات دائمة':'Durable data',waTitle:'WhatsApp',waStatus:locale==='ar'?'موافقة ومراجعة':'Consent and review'},radarFooter:locale==='ar'?'نماذج توضيحية؛ النتائج الفعلية من المزود.':'Illustrative previews; actual results come from the provider.'};
+  const copy = {
+    ...getLandingCopy(locale).heroExtra,
+    agentReadyLabel: locale === 'ar' ? 'REST مع مراجعة يدوية' : 'REST with manual review',
+    windowConnectedBadge: locale === 'ar' ? 'مثال توضيحي' : 'Illustrative example',
+    stat1Value: '1',
+    stat2Value: '4',
+    stat2Sub: 'Facebook · Instagram · TikTok · WhatsApp',
+    stat3Value: 'Manual',
+    stat3Sub: locale === 'ar' ? 'الأتمتة قريباً' : 'Automation — Coming soon',
+    stat4Value: 'EN / AR',
+    radarCards: {
+      igTitle: 'Instagram',
+      igStatus: locale === 'ar' ? 'نشر ووسائط' : 'Publishing & Media',
+      ttTitle: 'TikTok',
+      ttStatus: locale === 'ar' ? 'فيديو وتفاعل' : 'Video & Feed',
+      fbTitle: 'Facebook',
+      fbStatus: locale === 'ar' ? 'صفحات ومجموعات' : 'Pages & Groups',
+      waTitle: 'WhatsApp',
+      waStatus: locale === 'ar' ? 'سحابي معتمد' : 'Cloud API & OTP',
+    },
+    radarFooter: locale === 'ar' ? 'نماذج توضيحية؛ النتائج الفعلية من المزود.' : 'Illustrative previews; actual results come from the provider.',
+  };
 
   const [copiedCode, setCopiedCode] = useState(false);
   const [copiedPrompt, setCopiedPrompt] = useState(false);
@@ -117,7 +137,7 @@ const result = await response.json(); // Review the returned real status`;
         <div className="flex flex-wrap items-center justify-center gap-3.5 pt-1">
           <Link
             href="/signup"
-            className="inline-flex items-center gap-2.5 rounded-2xl bg-[var(--brand-coral)] px-7 py-4 text-sm font-bold text-white shadow-xl shadow-[var(--brand-coral)]/25 transition hover:bg-[var(--accent-hover)] hover:-translate-y-0.5 cursor-pointer"
+            className="btn-premium-primary inline-flex items-center gap-2.5 rounded-2xl px-7 py-4 text-sm font-bold text-white cursor-pointer"
           >
             <span>{t.hero.ctaStart}</span>
             <ArrowIcon className="h-4 w-4" />
@@ -125,7 +145,7 @@ const result = await response.json(); // Review the returned real status`;
 
           <Link
             href="/dashboard"
-            className="inline-flex items-center gap-2 rounded-2xl border border-[var(--border-subtle)] bg-[var(--bg-card)] px-6 py-4 text-sm font-bold text-[var(--text-primary)] shadow-sm transition hover:border-[var(--brand-coral)]/40 hover:text-[var(--brand-coral)] cursor-pointer"
+            className="btn-premium-secondary inline-flex items-center gap-2 rounded-2xl px-6 py-4 text-sm font-bold text-[var(--text-primary)] cursor-pointer"
           >
             <Layers className="h-4 w-4 text-[var(--brand-coral)]" />
             <span>{t.hero.ctaWorkspace}</span>
@@ -133,7 +153,7 @@ const result = await response.json(); // Review the returned real status`;
 
           <a
             href="#telephony"
-            className="inline-flex items-center gap-2 rounded-2xl border border-[var(--border-subtle)] bg-[var(--bg-subtle)] px-5 py-4 text-sm font-bold text-[var(--text-primary)] transition hover:border-[var(--brand-coral)]/40 cursor-pointer"
+            className="btn-premium-secondary inline-flex items-center gap-2 rounded-2xl px-5 py-4 text-sm font-bold text-[var(--text-primary)] cursor-pointer"
           >
             <PhoneCall className="h-4 w-4 text-[var(--brand-coral)]" />
             <span>{getLandingCopy(locale).navAnchors.telephony}</span>
@@ -141,7 +161,7 @@ const result = await response.json(); // Review the returned real status`;
 
           <Link
             href="/docs"
-            className="inline-flex items-center gap-2 rounded-2xl border border-[var(--border-subtle)] bg-[var(--bg-muted)] px-5 py-4 text-sm font-semibold text-[var(--text-secondary)] transition hover:text-[var(--text-primary)] cursor-pointer"
+            className="btn-premium-secondary inline-flex items-center gap-2 rounded-2xl px-5 py-4 text-sm font-semibold text-[var(--text-secondary)] cursor-pointer"
           >
             <BookOpen className="h-4 w-4 text-[var(--brand-coral)]" />
             <span>{t.hero.ctaDocs}</span>
@@ -271,8 +291,8 @@ const result = await response.json(); // Review the returned real status`;
               {/* Clean 2x2 Channel Delivery Status Grid (Zero Overlap) */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 my-2">
                 {/* Instagram Card */}
-                <div className="rounded-2xl border border-[var(--border-subtle)] bg-[var(--bg-card)] p-3 shadow-sm text-start flex items-center gap-3">
-                  <div className="h-9 w-9 shrink-0 rounded-xl bg-gradient-to-tr from-amber-500 via-rose-500 to-purple-600 flex items-center justify-center text-white text-xs font-extrabold">
+                <div className="rounded-2xl border border-[var(--border-subtle)] bg-[var(--bg-card)] p-3 shadow-sm text-start flex items-center gap-3 transition-transform hover:-translate-y-0.5">
+                  <div className="h-9 w-9 shrink-0 rounded-xl bg-gradient-to-tr from-amber-500 via-rose-500 to-purple-600 flex items-center justify-center text-white text-xs font-extrabold shadow-sm">
                     IG
                   </div>
                   <div className="min-w-0">
@@ -287,9 +307,10 @@ const result = await response.json(); // Review the returned real status`;
                 </div>
 
                 {/* TikTok Card */}
-                <div className="rounded-2xl border border-[var(--border-subtle)] bg-[var(--bg-card)] p-3 shadow-sm text-start flex items-center gap-3">
-                  <div className="h-9 w-9 shrink-0 rounded-xl bg-black text-white flex items-center justify-center text-xs font-extrabold border border-white/15">
-                    FB
+                <div className="rounded-2xl border border-[var(--border-subtle)] bg-[var(--bg-card)] p-3 shadow-sm text-start flex items-center gap-3 transition-transform hover:-translate-y-0.5">
+                  <div className="h-9 w-9 shrink-0 rounded-xl bg-black border border-white/20 text-white flex items-center justify-center text-xs font-extrabold shadow-sm relative overflow-hidden">
+                    <span className="absolute -inset-1 bg-gradient-to-tr from-cyan-500/25 to-rose-500/25 pointer-events-none" />
+                    <span className="relative z-10">TT</span>
                   </div>
                   <div className="min-w-0">
                     <div className="truncate text-xs font-bold text-[var(--text-primary)]">
@@ -302,25 +323,25 @@ const result = await response.json(); // Review the returned real status`;
                   </div>
                 </div>
 
-                {/* LinkedIn Card */}
-                <div className="rounded-2xl border border-[var(--border-subtle)] bg-[var(--bg-card)] p-3 shadow-sm text-start flex items-center gap-3">
-                  <div className="h-9 w-9 shrink-0 rounded-xl bg-[#0077b5] text-white flex items-center justify-center text-xs font-extrabold">
-                    CRM
+                {/* Facebook Card */}
+                <div className="rounded-2xl border border-[var(--border-subtle)] bg-[var(--bg-card)] p-3 shadow-sm text-start flex items-center gap-3 transition-transform hover:-translate-y-0.5">
+                  <div className="h-9 w-9 shrink-0 rounded-xl bg-[#1877f2] text-white flex items-center justify-center text-xs font-extrabold shadow-sm">
+                    FB
                   </div>
                   <div className="min-w-0">
                     <div className="truncate text-xs font-bold text-[var(--text-primary)]">
-                      {copy.radarCards.liTitle}
+                      {copy.radarCards.fbTitle}
                     </div>
                     <div className="text-[11px] text-emerald-600 dark:text-emerald-400 font-semibold flex items-center gap-1">
                       <Check className="h-3 w-3 shrink-0" />
-                      <span className="truncate">{copy.radarCards.liStatus}</span>
+                      <span className="truncate">{copy.radarCards.fbStatus}</span>
                     </div>
                   </div>
                 </div>
 
                 {/* WhatsApp Business Card */}
-                <div className="rounded-2xl border border-[var(--border-subtle)] bg-[var(--bg-card)] p-3 shadow-sm text-start flex items-center gap-3">
-                  <div className="h-9 w-9 shrink-0 rounded-xl bg-[#25d366] text-white flex items-center justify-center text-xs font-extrabold">
+                <div className="rounded-2xl border border-[var(--border-subtle)] bg-[var(--bg-card)] p-3 shadow-sm text-start flex items-center gap-3 transition-transform hover:-translate-y-0.5">
+                  <div className="h-9 w-9 shrink-0 rounded-xl bg-[#25d366] text-white flex items-center justify-center text-xs font-extrabold shadow-sm">
                     WA
                   </div>
                   <div className="min-w-0">

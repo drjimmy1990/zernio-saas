@@ -28,8 +28,6 @@ import HeroStage from '@/components/landing/HeroStage';
 import { launchCopy } from '@/components/landing/launch-copy';
 import PlatformShowcase from '@/components/landing/PlatformShowcase';
 import TelephonyBentoShowcase from '@/components/landing/TelephonyBentoShowcase';
-import AdvertisingShowcase from '@/components/landing/AdvertisingShowcase';
-import DeveloperHub from '@/components/landing/DeveloperHub';
 import GiantBrandFooter from '@/components/landing/GiantBrandFooter';
 
 const SUB_SERVICE_ICONS: Record<
@@ -61,13 +59,13 @@ export default function LuxuryLandingPage() {
   const { t: dictionary, dir, locale } = useThemeAndLocale();
   const t = launchCopy(dictionary, locale === 'ar');
   const ar = locale === 'ar';
-  const landingCopy = {...getLandingCopy(locale), howItWorks:{eyebrow:ar?'العمل اليومي':'Daily work',title:ar?'سجّل، راجع، وتابع':'Record, review and follow up',subtitle:ar?'إجراءات يدوية واضحة داخل مساحة عملك.':'Clear manual actions inside your workspace.',steps:[{stepNum:'01',badge:ar?'العملاء':'Customers',title:ar?'سجّل بيانات العملاء':'Record customer data',desc:ar?'أضف الهويات والحقول والملاحظات وموافقة التواصل.':'Add identities, fields, notes and communication consent.',highlights:[],ctaHref:'/dashboard',ctaText:ar?'فتح العملاء':'Open contacts'},{stepNum:'02',badge:ar?'القنوات':'Channels',title:'Facebook · Instagram · WhatsApp',desc:ar?'اربط حساباتك وراجع الردود والمحتوى قبل التنفيذ.':'Connect accounts and review replies and content before execution.',highlights:[],ctaHref:'/dashboard?tab=core_connect',ctaText:ar?'مراجعة الحسابات':'Review accounts'},{stepNum:'03',badge:ar?'المتابعة':'Follow-up',title:ar?'راجع التقارير والحملات':'Review reports and campaigns',desc:ar?'النتائج الفعلية والموافقة الحالية تحدد الإرسال.':'Actual results and current consent guide sending.',highlights:[],ctaHref:'/dashboard?tab=inbox_crm',ctaText:ar?'فتح مساحة العمل':'Open workspace'}]}};
+  const landingCopy = {...getLandingCopy(locale), howItWorks:{eyebrow:ar?'العمل اليومي':'Daily work',title:ar?'سجّل، راجع، وتابع':'Record, review and follow up',subtitle:ar?'إجراءات يدوية واضحة داخل مساحة عملك.':'Clear manual actions inside your workspace.',steps:[{stepNum:'01',badge:ar?'العملاء':'Customers',title:ar?'سجّل بيانات العملاء':'Record customer data',desc:ar?'أضف الهويات والحقول والملاحظات وموافقة التواصل.':'Add identities, fields, notes and communication consent.',highlights:[],ctaHref:'/dashboard',ctaText:ar?'فتح العملاء':'Open contacts'},{stepNum:'02',badge:ar?'القنوات':'Channels',title:'Facebook · Instagram · TikTok · WhatsApp',desc:ar?'اربط حساباتك وراجع الردود والمحتوى قبل التنفيذ.':'Connect accounts and review replies and content before execution.',highlights:[],ctaHref:'/dashboard?tab=core_connect',ctaText:ar?'مراجعة الحسابات':'Review accounts'},{stepNum:'03',badge:ar?'المتابعة':'Follow-up',title:ar?'راجع التقارير والحملات':'Review reports and campaigns',desc:ar?'النتائج الفعلية والموافقة الحالية تحدد الإرسال.':'Actual results and current consent guide sending.',highlights:[],ctaHref:'/dashboard?tab=inbox_crm',ctaText:ar?'فتح مساحة العمل':'Open workspace'}]}};
 
   const [selectedService, setSelectedService] =
     useState<SubServiceKey>('core_connect');
 
   const existingSvc = t.subServicesSection.services[selectedService];
-  const activeSvc = {...existingSvc, tagline: ar ? 'أدوات يدوية للقنوات الحالية؛ الإتاحة حسب صلاحيات المزود.' : 'Manual tools for current channels; availability follows provider permissions.', bullets: selectedService==='core_connect' ? [ar?'ربط Facebook وInstagram وWhatsApp بحسابات مساحة العمل':'Connect Facebook, Instagram and WhatsApp to workspace accounts', ar?'حالة اتصال فعلية وإعادة ربط عند الحاجة':'Actual connection health and reconnection when required'] : selectedService==='analytics' ? [ar?'تقارير النشاط المتاحة؛ البيانات المفقودة غير متاحة':'Available activity reports; missing data remains unavailable'] : existingSvc.bullets};
+  const activeSvc = {...existingSvc, tagline: ar ? 'أدوات يدوية للقنوات الحالية؛ الإتاحة حسب صلاحيات المزود.' : 'Manual tools for current channels; availability follows provider permissions.', bullets: selectedService==='core_connect' ? [ar?'ربط Facebook وInstagram وTikTok وWhatsApp بحسابات مساحة العمل':'Connect Facebook, Instagram, TikTok and WhatsApp to workspace accounts', ar?'حالة اتصال فعلية وإعادة ربط عند الحاجة':'Actual connection health and reconnection when required'] : selectedService==='analytics' ? [ar?'تقارير النشاط المتاحة؛ البيانات المفقودة غير متاحة':'Available activity reports; missing data remains unavailable'] : existingSvc.bullets};
   const ActiveIcon = SUB_SERVICE_ICONS[selectedService];
   const ArrowIcon = dir === 'rtl' ? ArrowLeft : ArrowRight;
 

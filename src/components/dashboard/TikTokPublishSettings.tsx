@@ -123,8 +123,14 @@ export function TikTokPublishSettings({ accountId, kind, isRTL, value, onChange,
       ? t('منشور صور: حتى ٣٥ صورة JPEG أو PNG أو WebP. نص المنشور يصبح عنوان الصور (٩٠ حرفاً)، وضع الوصف الكامل أدناه.', 'Photo post: up to 35 JPEG, PNG or WebP photos. The post text becomes the photo title (90 characters); put the full caption below.')
       : kind === 'video' ? t(`منشور فيديو: فيديو واحد MP4 أو MOV أو WebM${info?.maxVideoDurationSec ? `، حتى ${Math.floor(info.maxVideoDurationSec)} ثانية` : ''}. الأفضل بنسبة ٩:١٦ عمودياً.`, `Video post: one MP4, MOV or WebM video${info?.maxVideoDurationSec ? `, up to ${Math.floor(info.maxVideoDurationSec)} seconds` : ''}. Vertical 9:16 works best.`)
       : t('أضف فيديو واحداً أو حتى ٣٥ صورة. تيك توك لا يقبل منشورات نصية فقط.', 'Add one video or up to 35 photos. TikTok does not accept text-only posts.')}</p>
-    {loading && <p role="status" className="text-sm">{t('جارٍ تحميل إعدادات حساب تيك توك…', 'Loading TikTok account settings…')}</p>}
-    {error && <div role="alert" className="space-y-2 rounded-xl border border-rose-500/30 bg-rose-500/10 p-3 text-sm text-rose-700 dark:text-rose-300"><p className="break-words">{error}</p><button type="button" className="rounded-lg border border-[var(--border-subtle)] px-3 py-1.5 text-xs font-semibold" onClick={() => setAttempt(n => n + 1)} disabled={disabled}>{t('إعادة المحاولة', 'Try again')}</button></div>}
+    {loading && (
+      <div role="status" aria-label={t('جارٍ تحميل إعدادات حساب تيك توك…', 'Loading TikTok account settings…')} className="space-y-3 animate-pulse">
+        <div className="h-4 w-48 rounded bg-[var(--border-subtle)]" />
+        <div className="h-10 w-full rounded-xl bg-[var(--bg-subtle)]" />
+        <div className="h-20 w-full rounded-xl bg-[var(--bg-subtle)]" />
+      </div>
+    )}
+    {error && <div role="alert" className="space-y-2 rounded-xl border border-rose-500/30 bg-rose-500/10 p-3 text-sm text-rose-700 dark:text-rose-300"><p className="break-words">{error}</p><button type="button" className="btn-premium-secondary rounded-lg px-3 py-1.5 text-xs font-semibold cursor-pointer" onClick={() => setAttempt(n => n + 1)} disabled={disabled}>{t('إعادة المحاولة', 'Try again')}</button></div>}
     {info && <fieldset disabled={disabled} className="min-w-0 space-y-4">
       {!info.creator.canPostMore && <p role="status" className="rounded-xl border border-amber-500/40 bg-amber-500/10 p-3 text-sm">{t('تيك توك لا يسمح لهذا الحساب بنشر المزيد الآن. يمكنك إرساله كمسودة إلى صندوق تيك توك.', 'TikTok is not letting this account publish more right now. You can still send it as a draft to your TikTok inbox.')}</p>}
       <label className="block space-y-2"><span className="text-sm font-semibold">{t('من يمكنه مشاهدة هذا المنشور؟', 'Who can view this post?')}</span>

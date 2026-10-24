@@ -386,14 +386,45 @@ function CustomerDashboardContent() {
 
   const policy = workspace?.policy;
 
-  if (authChecking) {
+  if (authChecking || (loading && !workspace)) {
     return (
-      <div className="flex min-h-[60vh] items-center justify-center">
-        <div className="flex flex-col items-center gap-3">
-          <div className="h-8 w-8 animate-spin rounded-full border-2 border-[var(--accent-primary)] border-t-transparent" />
-          <p className="text-sm font-medium text-[var(--text-secondary)]">
-            {loc('جاري التحقق من جلسة تسجيل الدخول...', 'Verifying session...')}
-          </p>
+      <div className="space-y-6 animate-pulse" aria-busy="true">
+        {/* Top Header Card Skeleton */}
+        <div className="luxury-card p-5 rounded-3xl flex flex-wrap items-center justify-between gap-4">
+          <div className="flex items-center gap-3">
+            <div className="h-10 w-10 rounded-2xl bg-[var(--bg-subtle)]" />
+            <div className="space-y-2">
+              <div className="h-4 w-36 rounded-md bg-[var(--bg-subtle)]" />
+              <div className="h-3 w-56 rounded-md bg-[var(--bg-subtle)]" />
+            </div>
+          </div>
+          <div className="flex gap-2.5">
+            <div className="h-9 w-28 rounded-xl bg-[var(--bg-subtle)]" />
+            <div className="h-9 w-20 rounded-xl bg-[var(--bg-subtle)]" />
+          </div>
+        </div>
+
+        {/* Tabs Skeleton */}
+        <div className="tab-pill-container flex gap-2 overflow-hidden p-1.5">
+          {[1, 2, 3, 4, 5, 6].map((i) => (
+            <div key={i} className="h-8 w-24 rounded-xl bg-[var(--bg-card)]/60" />
+          ))}
+        </div>
+
+        {/* Main Workspace Stage Skeleton */}
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+          <div className="lg:col-span-4 luxury-card p-6 rounded-3xl space-y-4">
+            <div className="h-5 w-32 rounded-md bg-[var(--bg-subtle)]" />
+            <div className="space-y-3 pt-2">
+              {[1, 2, 3].map((i) => (
+                <div key={i} className="h-14 w-full rounded-2xl bg-[var(--bg-subtle)]" />
+              ))}
+            </div>
+          </div>
+          <div className="lg:col-span-8 luxury-card p-6 rounded-3xl space-y-4">
+            <div className="h-5 w-48 rounded-md bg-[var(--bg-subtle)]" />
+            <div className="h-56 w-full rounded-2xl bg-[var(--bg-subtle)]" />
+          </div>
         </div>
       </div>
     );
@@ -435,7 +466,7 @@ function CustomerDashboardContent() {
 
             <button
               onClick={() => void loadWorkspace()}
-              className="inline-flex items-center gap-1.5 rounded-xl border border-[var(--border-subtle)] bg-[var(--bg-subtle)] px-3 py-2 text-xs font-semibold text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition cursor-pointer"
+              className="btn-premium-secondary inline-flex items-center gap-1.5 rounded-xl px-3.5 py-2 text-xs font-semibold"
             >
               <RefreshCw
                 className={`h-3.5 w-3.5 ${loading ? 'animate-spin' : ''}`}
@@ -446,9 +477,9 @@ function CustomerDashboardContent() {
             {mode === 'advanced' && (
               <Link
                 href="/docs"
-                className="inline-flex items-center gap-1.5 rounded-xl border border-[var(--border-subtle)] bg-[var(--bg-subtle)] px-3 py-2 text-xs font-semibold text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition"
+                className="btn-premium-secondary inline-flex items-center gap-1.5 rounded-xl px-3.5 py-2 text-xs font-semibold"
               >
-                <Code2 className="h-3.5 w-3.5 text-[var(--accent-primary)]" />
+                <Code2 className="h-3.5 w-3.5 text-[var(--brand-coral)]" />
                 <span>{t.nav.docs}</span>
               </Link>
             )}
@@ -494,56 +525,58 @@ function CustomerDashboardContent() {
         /* Advanced Pro Mode with 5 Modular Visual Hubs + Developer Console */
         <div className="space-y-6">
           {/* 6-Hub Symmetrical Navigation Bar */}
-          <div className="luxury-card rounded-2xl p-2 grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-1.5">
-            {[
-              {
-                id: 'connect',
-                label: loc('الحسابات والربط', 'Connect & Accounts'),
-                icon: Link2,
-              },
-              {
-                id: 'publishing',
-                label: loc('النشر والجدولة', 'Publishing & Queue'),
-                icon: Send,
-              },
-              {
-                id: 'inbox_crm',
-                label: loc('المحادثات والعملاء', 'Inbox and contacts'),
-                icon: MessageSquare,
-              },
-              {
-                id: 'telephony',
-                label: loc('الأرقام وواتساب', 'Phone & WhatsApp'),
-                icon: PhoneCall,
-              },
-              {
-                id: 'ads_commerce',
-                label: loc('التقارير', 'Reports'),
-                icon: BarChart3,
-              },
-              {
-                id: 'developer',
-                label: loc('الفريق والإعدادات', 'Team and settings'),
-                icon: Code2,
-              },
-            ].map((hub) => {
-              const Icon = hub.icon;
-              const isSelected = activeHub === hub.id;
-              return (
-                <button
-                  key={hub.id}
-                  onClick={() => setActiveHub(hub.id as AdvancedHubKey)}
-                  className={`flex items-center justify-center gap-2 rounded-xl px-3 py-2.5 text-xs font-bold transition cursor-pointer whitespace-nowrap ${
-                    isSelected
-                      ? 'bg-[var(--accent-primary)] text-white shadow-sm'
-                      : 'text-[var(--text-secondary)] hover:bg-[var(--bg-subtle)] hover:text-[var(--text-primary)]'
-                  }`}
-                >
-                  <Icon className="h-3.5 w-3.5 shrink-0" />
-                  <span className="truncate">{hub.label}</span>
-                </button>
-              );
-            })}
+          <div className="overflow-x-auto pb-1 scrollbar-hide">
+            <div className="tab-pill-container inline-flex min-w-full lg:min-w-0 justify-between">
+              {[
+                {
+                  id: 'connect',
+                  label: loc('الحسابات والربط', 'Connect & Accounts'),
+                  icon: Link2,
+                },
+                {
+                  id: 'publishing',
+                  label: loc('النشر والجدولة', 'Publishing & Queue'),
+                  icon: Send,
+                },
+                {
+                  id: 'inbox_crm',
+                  label: loc('المحادثات والعملاء', 'Inbox and contacts'),
+                  icon: MessageSquare,
+                },
+                {
+                  id: 'telephony',
+                  label: loc('الأرقام وواتساب', 'Phone & WhatsApp'),
+                  icon: PhoneCall,
+                },
+                {
+                  id: 'ads_commerce',
+                  label: loc('التقارير', 'Reports'),
+                  icon: BarChart3,
+                },
+                {
+                  id: 'developer',
+                  label: loc('الفريق والإعدادات', 'Team and settings'),
+                  icon: Code2,
+                },
+              ].map((hub) => {
+                const Icon = hub.icon;
+                const isSelected = activeHub === hub.id;
+                return (
+                  <button
+                    key={hub.id}
+                    onClick={() => setActiveHub(hub.id as AdvancedHubKey)}
+                    className={`tab-pill-btn flex-1 justify-center ${
+                      isSelected
+                        ? 'tab-pill-btn-active !text-[var(--text-primary)]'
+                        : 'hover:text-[var(--text-primary)]'
+                    }`}
+                  >
+                    <Icon className={`h-4 w-4 shrink-0 transition-colors ${isSelected ? 'text-[var(--brand-coral)]' : 'text-[var(--text-muted)]'}`} />
+                    <span className="truncate">{hub.label}</span>
+                  </button>
+                );
+              })}
+            </div>
           </div>
 
           {/* Active Hub View */}

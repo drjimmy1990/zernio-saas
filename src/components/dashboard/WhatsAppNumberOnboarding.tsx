@@ -178,7 +178,8 @@ export function WhatsAppNumberOnboarding({ organizationId, onNumbersUpdated, sho
   };
 
   const kycUrl = secureLink(result?.kycUrl);
-  const buttonClass = 'rounded-xl bg-[var(--accent-primary)] px-4 py-3 text-sm font-semibold text-white disabled:opacity-50';
+  const buttonClass = 'btn-premium-primary inline-flex items-center justify-center rounded-xl px-4 py-3 text-sm font-bold text-white disabled:opacity-50 cursor-pointer';
+  const secondaryButton = 'btn-premium-secondary inline-flex items-center justify-center rounded-xl px-4 py-3 text-sm font-semibold disabled:opacity-50 cursor-pointer';
   const usd = (minor: number) => `$${(minor / 100).toFixed(2)}`;
   return <div className="space-y-5">
     <p className="text-sm text-[var(--text-secondary)]">{loc('اشترِ رقمًا ثم أكمل ربط واتساب من خلال Meta. قد يلزم التحقق من الهوية أو الانتظار لتفعيل الرقم.', 'Purchase a number, then connect WhatsApp through Meta. Identity checks or activation time may be required.')}</p>
@@ -190,7 +191,7 @@ export function WhatsAppNumberOnboarding({ organizationId, onNumbersUpdated, sho
         <p dir="ltr" className="font-mono">{pending.label} · {usd(pending.amountMinor)} / {loc('شهر', 'month')}</p>
         <div className="flex flex-wrap gap-2">
           <button className={buttonClass} disabled={!!busy} onClick={() => void reconcile()}>{busy === 'reconcile' ? loc('جارٍ التحقق…', 'Checking…') : loc('التحقق من حالة الطلب', 'Check order status')}</button>
-          <button className="rounded-xl border border-[var(--border-subtle)] px-4 py-3 text-sm font-semibold" disabled={!!busy || !storageReady} onClick={() => void purchase(pending)}>{loc('إعادة المحاولة بنفس الطلب', 'Retry saved purchase')}</button>
+          <button className={secondaryButton} disabled={!!busy || !storageReady} onClick={() => void purchase(pending)}>{loc('إعادة المحاولة بنفس الطلب', 'Retry saved purchase')}</button>
         </div>
       </div> : <>
         <PhoneNumberPicker whatsappOnly selection={choice} onSelect={select} disabled={!!busy || !org} />

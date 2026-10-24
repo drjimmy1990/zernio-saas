@@ -6,7 +6,7 @@ import { useThemeAndLocale } from '@/i18n/ThemeAndLocaleProvider';
 type Report = { platform: string; source: string; totals?: Record<string, number | null>; previousTotals?: Record<string, number | null>;
   summary?: Record<string, number | null>; previousSummary?: Record<string, number | null>; responseTime?: Record<string, number | null>;
   unavailable: boolean; stale?: boolean; dataAsOf: string | null; fetchedAt: string; note: string; daily: Record<string, unknown>[] };
-const control = 'rounded-lg border border-[var(--border-subtle)] bg-[var(--bg-card)] px-3 py-2 text-sm text-[var(--text-primary)]';
+const control = 'rounded-xl border border-[var(--border-subtle)] bg-[var(--bg-card)] px-3 py-2 text-sm text-[var(--text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--brand-coral)]';
 const labels: Record<string, [string, string]> = {
   impressions: ['مرات الظهور', 'Impressions'], reach: ['الوصول', 'Reach'], likes: ['الإعجابات', 'Likes'], comments: ['التعليقات', 'Comments'], shares: ['المشاركات', 'Shares'], saves: ['الحفظ', 'Saves'], clicks: ['النقرات', 'Clicks'], views: ['المشاهدات', 'Views'], engagementRate: ['معدل التفاعل', 'Engagement rate'],
   received: ['الرسائل المستلمة', 'Received'], sent: ['الرسائل المرسلة', 'Sent'], read: ['الرسائل المقروءة', 'Read'], failed: ['الرسائل الفاشلة', 'Failed'], uniqueConversations: ['المحادثات الفريدة', 'Unique conversations'], sampleSize: ['حجم العينة', 'Sample size'], medianSeconds: ['الوسيط بالثواني', 'Median seconds'], p90Seconds: ['٩٠٪ بالثواني', '90th percentile seconds'], meanSeconds: ['المتوسط بالثواني', 'Mean seconds'],
@@ -46,7 +46,7 @@ export function CustomerReportsWorkspace() {
       <label className="grid gap-1 text-sm">{loc('من', 'From')}<input className={control} type="date" required value={from} onChange={e => { clear(); setFrom(e.target.value); }} /></label>
       <label className="grid gap-1 text-sm">{loc('إلى', 'To')}<input className={control} type="date" required min={from} value={to} onChange={e => { clear(); setTo(e.target.value); }} /></label>
       <label className="grid gap-1 text-sm">{loc('عرض التوقيت', 'Display timezone')}<select className={control} value={timezone} onChange={e => { clear(); setTimezone(e.target.value); }}><option value="Africa/Cairo">Cairo</option><option value="UTC">UTC</option><option value="Asia/Riyadh">Riyadh</option><option value="Asia/Dubai">Dubai</option></select></label>
-      <button disabled={busy} className="rounded-lg bg-[var(--accent-primary)] px-4 py-2 text-sm font-semibold text-white disabled:opacity-50">{busy ? loc('جاري التحميل…', 'Loading…') : loc('عرض التقرير', 'View report')}</button>
+      <button disabled={busy} className="btn-premium-primary rounded-xl px-5 py-2 text-sm font-semibold">{busy ? loc('جاري التحميل…', 'Loading…') : loc('عرض التقرير', 'View report')}</button>
     </form>
     <p className="text-xs text-[var(--text-muted)]">{loc('حدود الأيام حسب تقويم المنصة؛ اختيار التوقيت يغيّر عرض وقت التحديث فقط.', 'Day boundaries follow the platform reporting calendar; timezone changes the displayed update time only.')}</p>
     {error && <p role="alert" className="rounded-lg border border-rose-400 p-3 text-sm">{error}</p>}

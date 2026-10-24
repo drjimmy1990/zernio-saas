@@ -61,7 +61,7 @@ export default function PlatformShowcase() {
 
       {/* Platform Navigation Pills */}
       <div className="flex flex-wrap items-center justify-center gap-2 px-2">
-        {PLATFORM_IDS.filter(pid=>['instagram','facebook'].includes(pid)).map((pid) => {
+        {PLATFORM_IDS.filter(pid=>['instagram','tiktok','facebook'].includes(pid)).map((pid) => {
           const item = copy.platforms[pid];
           const isActive = activePlatform === pid;
           return (
@@ -69,10 +69,10 @@ export default function PlatformShowcase() {
               key={pid}
               type="button"
               onClick={() => setActivePlatform(pid)}
-              className={`inline-flex items-center gap-2 rounded-2xl border px-4 py-2.5 text-xs font-bold transition cursor-pointer ${
+              className={`inline-flex items-center gap-2 rounded-2xl border px-4 py-2.5 text-xs font-bold transition-all cursor-pointer ${
                 isActive
-                  ? 'border-[var(--brand-coral)] bg-[var(--brand-coral)] text-white shadow-md shadow-[var(--brand-coral)]/20'
-                  : 'border-[var(--border-subtle)] bg-[var(--bg-card)] text-[var(--text-secondary)] hover:border-[var(--brand-coral)]/40 hover:text-[var(--text-primary)]'
+                  ? 'btn-premium-primary text-white border-transparent'
+                  : 'btn-premium-secondary text-[var(--text-secondary)] hover:text-[var(--text-primary)]'
               }`}
             >
               <span>{item.name}</span>
@@ -127,7 +127,7 @@ export default function PlatformShowcase() {
               <div className="pt-2">
                 <Link
                   href="/dashboard?tab=core_connect"
-                  className="inline-flex items-center gap-2 rounded-xl bg-[var(--brand-coral)] px-5 py-3 text-xs font-bold text-white shadow-sm hover:bg-[var(--accent-hover)] transition cursor-pointer"
+                  className="btn-premium-primary inline-flex items-center gap-2 rounded-xl px-5 py-3 text-xs font-bold text-white cursor-pointer"
                 >
                   <span>{copy.connectCta}</span>
                   <ExternalLink className="h-3.5 w-3.5" />
@@ -177,7 +177,7 @@ export default function PlatformShowcase() {
             'Bluesky',
             'Google Business',
             'Shopify & WordPress',
-          ].filter(ch=>['Instagram','Facebook','WhatsApp Business','Messenger'].includes(ch)).map((ch) => (
+          ].filter(ch=>['Instagram','TikTok','Facebook','WhatsApp Business','Messenger'].includes(ch)).map((ch) => (
             <span
               key={ch}
               dir="ltr"

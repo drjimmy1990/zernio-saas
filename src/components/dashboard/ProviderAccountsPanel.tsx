@@ -41,13 +41,19 @@ export function ProviderAccountsPanel({ onOpenConnectionWizard, onRefreshWorkspa
     } catch (failure) { setNotice(failure instanceof Error ? failure.message : 'Disconnection was not confirmed.'); }
     finally { await refresh(); setBusy(false); }
   }
-  const button = 'rounded-lg border border-[var(--border-subtle)] px-3 py-2 text-sm font-semibold disabled:opacity-50 hover:bg-[var(--bg-subtle)]';
+  const button = 'btn-premium-secondary inline-flex items-center justify-center rounded-xl px-3.5 py-2 text-xs font-semibold disabled:opacity-50 cursor-pointer';
+  const primaryButton = 'btn-premium-primary inline-flex items-center justify-center rounded-xl px-4 py-2 text-xs font-bold text-white disabled:opacity-50 cursor-pointer';
   return <section className="space-y-5" aria-label={text('حسابات الأعمال', 'Business accounts')}>
     <div className="flex flex-wrap items-start justify-between gap-4">
       <div><h3 className="text-lg font-bold">{text('حساباتك المتصلة', 'Your connected accounts')}</h3><p className="mt-1 text-sm text-[var(--text-secondary)]">{text('تحقق من حالة الربط وأعد ربط الحساب عند الحاجة.', 'Check connection health and reconnect when needed.')}</p></div>
-      <div className="flex gap-2"><button className={button} disabled={loading || busy} onClick={() => void refresh()}>{text('تحديث الحالة', 'Refresh health')}</button><button className={button} onClick={() => onOpenConnectionWizard()}>{text('ربط حساب', 'Connect account')}</button></div>
+      <div className="flex gap-2"><button className={button} disabled={loading || busy} onClick={() => void refresh()}>{text('تحديث الحالة', 'Refresh health')}</button><button className={primaryButton} onClick={() => onOpenConnectionWizard()}>{text('ربط حساب', 'Connect account')}</button></div>
     </div>
-    {loading && <p role="status">{text('جارٍ التحقق من الحسابات…', 'Checking accounts…')}</p>}
+    {loading && !accounts && (
+      <div className="space-y-3 animate-pulse" role="status" aria-label={text('جارٍ التحقق من الحسابات…', 'Checking accounts…')}>
+        <div className="h-16 w-full rounded-2xl border border-[var(--border-subtle)] bg-[var(--bg-subtle)]/40" />
+        <div className="h-16 w-full rounded-2xl border border-[var(--border-subtle)] bg-[var(--bg-subtle)]/40" />
+      </div>
+    )}
     {error && <div role="alert" className="border border-amber-500/30 bg-amber-500/10 p-4 text-sm"><p>{error}</p>{accounts && <p className="mt-1">{text('القائمة السابقة معروضة للمراجعة فقط. الحالة الحالية غير مؤكدة.', 'Previous results shown for reference. Current health is unconfirmed.')}</p>}</div>}
     {notice && <p role="status" className="text-sm">{notice}</p>}
     {!loading && !error && accounts?.length === 0 && <div className="py-12 text-center"><h4 className="font-semibold">{text('اربط أول حساب لأعمالك', 'Connect your first business account')}</h4><p className="mt-2 text-sm text-[var(--text-secondary)]">{text('ابدأ بصفحة فيسبوك للنشر والتواصل مع العملاء.', 'Start with your Facebook Page to publish and reply to customers.')}</p><button className={`${button} mt-5`} onClick={() => onOpenConnectionWizard('facebook')}>{text('ربط فيسبوك', 'Connect Facebook')}</button></div>}

@@ -1,5 +1,15 @@
 'use client';
 import { useEffect, useState } from 'react';
+import {
+  Users,
+  Link2,
+  MessageSquare,
+  Send,
+  Megaphone,
+  PhoneCall,
+  BarChart3,
+  Settings,
+} from 'lucide-react';
 import { useThemeAndLocale } from '@/i18n/ThemeAndLocaleProvider';
 import { ConnectAndAccountsHub } from './hubs/ConnectAndAccountsHub';
 import { PublishingAndQueueHub } from './hubs/PublishingAndQueueHub';
@@ -21,10 +31,45 @@ export function BusinessWorkspace({ workspace, policy, onRefreshWorkspace, onOpe
     const mapped = ({ core_connect: 'connect', accounts: 'connect', inbox_crm: 'inbox', telephony: 'phone', analytics: 'reports', billing: 'settings' } as Record<string, string>)[requested] || requested;
     if (['contacts', 'connect', 'inbox', 'publishing', 'campaigns', 'phone', 'reports', 'settings'].includes(mapped)) setTab(mapped);
   }, []);
-  const jobs = [['contacts', 'العملاء', 'Contacts'], ['connect', 'الحسابات', 'Accounts'], ['inbox', 'الرسائل', 'Inbox'], ['publishing', 'النشر', 'Publishing'], ['campaigns', 'الحملات', 'Campaigns'], ['phone', 'الأرقام وواتساب', 'Phone and WhatsApp'], ['reports', 'التقارير', 'Reports'], ['settings', 'الفريق والإعدادات', 'Team and settings']];
+  const jobs: [string, string, string, React.ComponentType<{ className?: string }>][] = [
+    ['contacts', 'العملاء', 'Contacts', Users],
+    ['connect', 'الحسابات', 'Accounts', Link2],
+    ['inbox', 'الرسائل', 'Inbox', MessageSquare],
+    ['publishing', 'النشر', 'Publishing', Send],
+    ['campaigns', 'الحملات', 'Campaigns', Megaphone],
+    ['phone', 'الأرقام وواتساب', 'Phone and WhatsApp', PhoneCall],
+    ['reports', 'التقارير', 'Reports', BarChart3],
+    ['settings', 'الفريق والإعدادات', 'Team and settings', Settings],
+  ];
   return <div dir={dir} className="space-y-6">
-    <header><h2 className="text-2xl font-semibold">{ar ? 'مساحة عملك' : 'Your workspace'}</h2><p className="mt-2 text-sm text-[var(--text-secondary)]">{ar ? 'نظّم عملاءك وتابع المحادثات وانشر محتواك من مكان واحد.' : 'Organize customers, follow up on conversations and publish from one place.'}</p></header>
-    <nav className="flex flex-wrap gap-2 border-b border-[var(--border-subtle)] pb-4" aria-label={ar ? 'مهام العمل' : 'Business tasks'}>{jobs.map(([id, arabic, english]) => <button key={id} aria-pressed={tab === id} onClick={() => setTab(id)} className="rounded-lg px-4 py-2 text-sm font-medium hover:bg-[var(--bg-subtle)] aria-pressed:bg-[var(--accent-primary)] aria-pressed:text-white">{ar ? arabic : english}</button>)}</nav>
+    <header className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+      <div>
+        <h2 className="text-2xl font-bold tracking-tight text-[var(--text-primary)]">{ar ? 'مساحة عملك' : 'Your workspace'}</h2>
+        <p className="mt-1 text-sm text-[var(--text-secondary)]">{ar ? 'نظّم عملاءك وتابع المحادثات وانشر محتواك من مكان واحد.' : 'Organize customers, follow up on conversations and publish from one place.'}</p>
+      </div>
+    </header>
+    <div className="overflow-x-auto pb-1 scrollbar-hide">
+      <nav className="tab-pill-container inline-flex min-w-full sm:min-w-0" aria-label={ar ? 'مهام العمل' : 'Business tasks'}>
+        {jobs.map(([id, arabic, english, Icon]) => {
+          const isSelected = tab === id;
+          return (
+            <button
+              key={id}
+              aria-pressed={isSelected}
+              onClick={() => setTab(id)}
+              className={`tab-pill-btn flex-1 sm:flex-initial justify-center ${
+                isSelected
+                  ? 'tab-pill-btn-active !text-[var(--text-primary)]'
+                  : 'hover:text-[var(--text-primary)]'
+              }`}
+            >
+              <Icon className={`h-4 w-4 shrink-0 transition-colors ${isSelected ? 'text-[var(--brand-coral)]' : 'text-[var(--text-muted)]'}`} />
+              <span>{ar ? arabic : english}</span>
+            </button>
+          );
+        })}
+      </nav>
+    </div>
     {tab === 'contacts' && <ManualCrmWorkspace isRTL={ar} />}
     {tab === 'connect' && <ConnectAndAccountsHub workspace={workspace} policy={policy} onRefreshWorkspace={onRefreshWorkspace} onOpenConnectionWizard={onOpenConnectionWizard} />}
     {tab === 'inbox' && <LaunchInboxWorkspace />}

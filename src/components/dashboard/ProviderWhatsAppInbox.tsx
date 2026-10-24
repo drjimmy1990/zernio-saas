@@ -72,8 +72,9 @@ export function ProviderWhatsAppInbox({ initialTab = 'inbox' }: { initialTab?: '
   currentSelection.current = { accountId, conversationId };
   const account = accounts.find(item => item.accountId === accountId);
   const writable = Boolean(profileId && account && account.isActive === true && !account.needsReconnection);
-  const inputClass = 'w-full rounded-xl border border-[var(--border-subtle)] bg-[var(--bg-subtle)] p-2 text-xs text-[var(--text-primary)]';
-  const buttonClass = 'rounded-xl bg-emerald-600 px-4 py-2 text-xs font-bold text-white disabled:opacity-50';
+  const inputClass = 'w-full rounded-xl border border-[var(--border-subtle)] bg-[var(--bg-subtle)] p-2 text-xs text-[var(--text-primary)] focus:border-[var(--brand-coral)] focus:outline-none';
+  const buttonClass = 'btn-premium-primary inline-flex items-center justify-center rounded-xl px-4 py-2 text-xs font-bold text-white transition disabled:opacity-50 cursor-pointer';
+  const secondaryButton = 'btn-premium-secondary inline-flex items-center justify-center rounded-xl px-3.5 py-2 text-xs font-semibold disabled:opacity-50 cursor-pointer';
   const approved = templates.filter(item => item.status === 'APPROVED' && !item.components?.some(part => part.type === 'HEADER' && part.format && part.format !== 'TEXT'));
   const template = approved.find(item => `${item.name}:${item.language}` === selectedTemplate);
 
@@ -187,7 +188,7 @@ export function ProviderWhatsAppInbox({ initialTab = 'inbox' }: { initialTab?: '
           {accounts.map(item => <option key={item.accountId} value={item.accountId}>{item.displayName || item.username || item.accountId}{item.needsReconnection || item.isActive !== true ? loc(' — يحتاج إعادة ربط', ' — reconnect required') : ''}</option>)}
         </select>
       </label>
-      <button className={buttonClass} disabled={!accountId || loading || busy} onClick={() => void refresh()}>{loading ? loc('تحميل…', 'Loading…') : loc('تحديث', 'Refresh')}</button>
+      <button className={secondaryButton} disabled={!accountId || loading || busy} onClick={() => void refresh()}>{loading ? loc('تحميل…', 'Loading…') : loc('تحديث', 'Refresh')}</button>
     </div>
     {error && <p role="alert" className="rounded-xl bg-rose-500/10 p-3 text-xs text-rose-600">{error}</p>}
     {notice && <p role="status" className="text-xs text-emerald-600">{notice}</p>}
@@ -196,7 +197,7 @@ export function ProviderWhatsAppInbox({ initialTab = 'inbox' }: { initialTab?: '
       <p>{loc('راجع المحادثة في واتساب قبل إرسال رسالة أخرى. قد تكون الرسالة وصلت حتى إذا لم تظهر هنا بعد؛ إعادة الإرسال قد تكررها.', 'Review the conversation in WhatsApp before another send. The message may have arrived even if it is not visible here yet; resending could duplicate it.')}</p>
       <p className="break-words whitespace-pre-wrap">{String(pending.payload.text || pending.payload.templateName || pending.payload.attachmentUrl || '')}</p>
       <p className="break-all text-xs">{String(pending.payload.recipient || pending.payload.conversationId || '')}</p>
-      <button className={buttonClass} onClick={async () => {
+      <button className={secondaryButton} onClick={async () => {
         setAccountId(String(pending.payload.accountId)); setConversationId(String(pending.payload.conversationId || ''));
         try {
           if (pending.payload.conversationId) {
@@ -215,7 +216,7 @@ export function ProviderWhatsAppInbox({ initialTab = 'inbox' }: { initialTab?: '
     {!accountId && <p className="text-xs text-[var(--text-secondary)]">{loc('اختر حساباً متصلاً من رقمك الحالي أو المشترى. شراء الرقم وحده لا يفعّل واتساب.', 'Choose the connected account for your existing or purchased number. Purchasing a number alone does not activate WhatsApp.')}</p>}
     {accountId && <>
       {!writable && <p className="text-xs text-amber-600">{loc('أعد اتصال الحساب قبل الإرسال أو إنشاء القوالب.', 'Reconnect this account before sending or creating templates.')}</p>}
-      <div className="flex gap-2">{(['inbox', 'templates'] as const).map(value => <button key={value} className={`${buttonClass} ${tab !== value ? 'opacity-60' : ''}`} onClick={() => setTab(value)}>{value === 'inbox' ? loc('المحادثات', 'Inbox') : loc('القوالب', 'Templates')}</button>)}</div>
+      <div className="tab-pill-container inline-flex">{(['inbox', 'templates'] as const).map(value => <button key={value} type="button" className={`tab-pill-btn ${tab === value ? 'tab-pill-btn-active' : ''}`} onClick={() => setTab(value)}>{value === 'inbox' ? loc('المحادثات', 'Inbox') : loc('القوالب', 'Templates')}</button>)}</div>
       {tab === 'templates' ? <div className="space-y-3">
         <p className="text-xs">{loc('الحالة تأتي من Meta؛ إنشاء قالب لا يعني اعتماده.', 'Meta supplies approval status; creating a template does not approve it.')}</p>
         {!loading && !templates.length && <p className="text-xs">{loc('لا توجد قوالب لهذا الحساب.', 'No templates on this account.')}</p>}

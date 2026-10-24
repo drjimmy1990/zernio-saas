@@ -6,11 +6,8 @@ import Link from 'next/link';
 import { useThemeAndLocale } from '@/i18n/ThemeAndLocaleProvider';
 import { getLandingCopy } from '@/i18n/landingTranslations';
 import {
-  CheckCircle2,
   HelpCircle,
   ChevronDown,
-  ArrowRight,
-  ArrowLeft,
   Sparkles,
 } from 'lucide-react';
 import { Asra3Logo } from '@/components/Asra3Logo';
@@ -23,7 +20,7 @@ export default function GiantBrandFooter() {
   const copy = {
     ...originalCopy,
     col1Title: ar ? 'أدوات العمل الحالية' : 'Current workspace tools',
-    col1Links: [ar ? 'ربط Facebook وInstagram وWhatsApp' : 'Connect Facebook, Instagram and WhatsApp', ar ? 'النشر والجدولة المدعومان' : 'Supported publishing and scheduling', ar ? 'العملاء والمحادثات اليدوية' : 'Manual customers and conversations', ar ? 'الإعلانات — قريباً' : 'Advertising — Coming soon'],
+    col1Links: [ar ? 'ربط Facebook وInstagram وTikTok وWhatsApp' : 'Connect Facebook, Instagram, TikTok and WhatsApp', ar ? 'النشر والجدولة المدعومان' : 'Supported publishing and scheduling', ar ? 'العملاء والمحادثات اليدوية' : 'Manual customers and conversations', ar ? 'الإعلانات — قريباً' : 'Advertising — Coming soon'],
     col2Title: ar ? 'الأرقام والمراسلة' : 'Numbers and messaging',
     col2Links: [ar ? 'أرقام المزود حسب التوافر والموافقة' : 'Provider numbers subject to availability and approval', ar ? 'ربط واتساب للأرقام المؤهلة' : 'WhatsApp connection for eligible numbers', ar ? 'المكالمات اليدوية المدعومة' : 'Supported manual calls', ar ? 'رسائل SMS مع المراجعة والموافقة' : 'Reviewed SMS with consent'],
     col3Title: ar ? 'الوثائق ومساحة العمل' : 'Documentation and workspace',
@@ -33,8 +30,6 @@ export default function GiantBrandFooter() {
     statusText: ar ? 'الأدوات اليدوية الحالية؛ الإتاحة حسب المزود' : 'Current manual tools; availability depends on the provider',
   };
   const [openFaqIndex, setOpenFaqIndex] = useState<number | null>(0);
-
-  const ArrowIcon = dir === 'rtl' ? ArrowLeft : ArrowRight;
 
   const toggleFaq = (index: number) => {
     setOpenFaqIndex((prev) => (prev === index ? null : index));
@@ -59,7 +54,7 @@ export default function GiantBrandFooter() {
             <p className="text-sm leading-relaxed text-[var(--text-secondary)]">
               {ar ? 'اتفق مع الإدارة على تفاصيل الدفع. يُضاف رصيدك بعد التحقق من استلام الدفعة فقط. الدفع الإلكتروني داخل الموقع غير متاح حالياً.' : 'Arrange payment details directly with the administrator. Your balance is credited only after payment receipt is verified. Online checkout is currently unavailable.'}
             </p>
-            <a href="mailto:support@asra3.com" className="inline-flex flex-wrap items-center justify-center gap-x-3 gap-y-1 rounded-xl bg-[var(--brand-coral)] px-5 py-3 text-sm font-bold text-white transition hover:opacity-90 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[var(--brand-coral)]">
+            <a href="mailto:support@asra3.com" className="btn-premium-primary inline-flex flex-wrap items-center justify-center gap-x-3 gap-y-1 rounded-xl px-5 py-3 text-sm font-bold text-white cursor-pointer">
               <span>{ar ? 'تواصل معنا' : 'Contact us'}</span>
               <span dir="ltr">support@asra3.com</span>
             </a>

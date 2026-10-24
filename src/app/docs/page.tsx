@@ -2152,8 +2152,8 @@ export default function ApiDocumentationPage() {
               </div>
               <p className="text-sm text-[var(--text-secondary)] leading-relaxed">
                 {isAr
-                  ? 'دليل موارد المنصات؛ لا يعني ظهور المورد أن جميع عملياته متاحة. راجع وصف الواجهة حسب المرحلة.'
-                  : 'Manual Facebook, Instagram and WhatsApp tools are supported for eligible connected accounts. Other entries below are catalog resources; their presence does not establish availability.'}
+                  ? 'أدوات فيسبوك وإنستغرام وتيك توك وواتساب اليدوية مدعومة للحسابات المتصلة المؤهلة. لا يعني ظهور الموارد الأخرى في الكتالوج إتاحة كامل عملياتها حالياً.'
+                  : 'Manual Facebook, Instagram, TikTok and WhatsApp tools are supported for eligible connected accounts. Other entries below are catalog resources; their presence does not establish availability.'}
               </p>
 
               <div className="grid gap-3 sm:grid-cols-3">

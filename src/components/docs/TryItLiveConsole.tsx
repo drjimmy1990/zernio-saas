@@ -653,7 +653,7 @@ export default function TryItLiveConsole({ spec, isAr }: TryItLiveConsoleProps) 
                 type="button"
                 disabled={executing || !!jsonError}
                 onClick={handleExecuteRequest}
-                className="w-full sm:w-auto inline-flex items-center justify-center gap-2 rounded-xl bg-[var(--accent-primary)] px-6 py-3 text-sm font-extrabold text-white shadow-lg hover:bg-[var(--accent-hover)] disabled:opacity-50 transition-all cursor-pointer"
+                className="w-full sm:w-auto inline-flex items-center justify-center gap-2 rounded-xl btn-premium-primary px-6 py-3 text-sm font-extrabold text-white shadow-lg disabled:opacity-50 cursor-pointer"
               >
                 <Play className="h-4 w-4 fill-white" />
                 <span>
