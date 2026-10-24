@@ -25,6 +25,13 @@ http.createServer(async (req, res) => {
   if (state.scenario === 'post-read-error' && state.requests.some(call => call.path.endsWith('/thread-control'))) return send(503, { error: 'Canonical read unavailable', code: 'UPSTREAM_FAILED' });
   return send(200, { data: { id: state.scenario === 'wrong-thread-id' ? 'other-thread' : 'thread-1', accountId: state.scenario === 'foreign-thread' ? 'foreign' : accountId, platform: accountId === FB ? 'facebook' : 'instagram', threadControl: state.scenario === 'unknown-owner' ? undefined : state.owner } });
  }
+ const getStarted = route.match(/^\/accounts\/([^/]+)\/messenger-get-started$/);
+ if (getStarted) {
+  const stored = state.settings[getStarted[1] + ':get-started'];
+  if (req.method === 'GET') return send(200, { data: stored ? { payload: stored } : state.scenario === 'get-started-missing' ? null : { payload: 'GET_STARTED' } });
+  if (req.method === 'PUT' && typeof body.payload === 'string' && body.payload) { if (state.scenario !== 'get-started-missing') { state.settings[getStarted[1] + ':get-started'] = body.payload; await pm.state.set(key, state); } return send(200, { success: true }); }
+  return send(400, { error: 'SDK body required', code: 'invalid_request' });
+ }
  const match = route.match(/^\/accounts\/([^/]+)\/(messenger-greeting|messenger-menu|messenger-ice-breakers|instagram-ice-breakers)$/), control = route === '/inbox/conversations/thread-1/thread-control';
  if (!match && !control) return send(501, { error: 'Fixture endpoint not defined' });
  if (match && req.method === 'GET') {

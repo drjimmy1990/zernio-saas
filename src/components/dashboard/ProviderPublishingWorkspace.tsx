@@ -3,6 +3,8 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { Calendar, RefreshCw, Send, Upload, X } from 'lucide-react';
 import { publishingScheduleInstant, publishingWallTime } from '@/lib/publishing/schedule';
+import { TikTokPublishSettings, emptyTikTokState, tiktokComposerProblem, tiktokSettingsFrom, type TikTokComposerState, type TikTokCreatorInfoView } from './TikTokPublishSettings';
+import { explainTikTokError } from '@/lib/publishing/tiktok-errors';
 
 interface PublishingAccount { _id: string; platform: string; username?: string; displayName?: string; isActive?: boolean; enabled?: boolean; needsReconnection?: boolean; metadata?: { loginMethod?: string } }
 interface PublishingPost { _id: string; content?: string; status?: string; scheduledFor?: string; timezone?: string; queuedFromProfile?: unknown; mediaItems?: PublishingMedia[]; platforms?: { platform: string; accountId?: string | { _id?: string }; status?: string; platformPostUrl?: string; error?: unknown; errorMessage?: string; platformError?: { message?: string }; customContent?: string; customMedia?: unknown; scheduledFor?: string; platformSpecificData?: unknown }[] }
@@ -91,21 +93,25 @@ export function ProviderPublishingWorkspace({ isRTL = false, onPublished }: { is
   const [reviewed, setReviewed] = useState(false);
   const [validationWarnings, setValidationWarnings] = useState<string[]>([]);
   const [inspections, setInspections] = useState<Record<string, MediaInspection>>({});
+  const [tiktokState, setTiktokState] = useState<TikTokComposerState>(emptyTikTokState);
+  const [tiktokInfo, setTiktokInfo] = useState<TikTokCreatorInfoView | null>(null);
   const lock = useRef(false);
   const checkLock = useRef(false);
   const scope = useRef<string | null>(null);
   const revision = useRef(0);
   const refreshRevision = useRef(0);
   const reviewPanel = useRef<HTMLElement | null>(null);
-  const pages = accounts.filter(a => ['facebook', 'instagram'].includes(a.platform));
+  const pages = accounts.filter(a => ['facebook', 'instagram', 'tiktok'].includes(a.platform));
   const selected = pages.find(a => a._id === accountId);
   const instagram = selected?.platform === 'instagram';
+  const tiktok = selected?.platform === 'tiktok';
+  const tiktokKind: 'video' | 'photo' | null = media.length ? (media.some(item => item.type === 'video') ? 'video' : 'photo') : null;
   const usable = selected && selected.isActive === true && selected.enabled !== false && !selected.needsReconnection;
   const isReel = instagram && !story && media.length === 1 && media[0]?.type === 'video';
   const platformSpecificData = instagram ? { ...(story ? { contentType: 'story' } : {}), ...(isReel && shareToFeed !== undefined ? { shareToFeed } : {}) } : undefined;
   const captionLength = [...content].length;
   const format = story ? t('قصة', 'Story') : media.length > 1 ? t('منشور متعدد الوسائط', 'Carousel') : media[0]?.type === 'video' ? 'Reel' : t('منشور صورة', 'Feed image');
-  const fingerprint = JSON.stringify({ accountId, content, media, mode, scheduledFor, timezone, editingId, story, shareToFeed });
+  const fingerprint = JSON.stringify({ accountId, content, media, mode, scheduledFor, timezone, editingId, story, shareToFeed, tiktokState });
   const currentFingerprint = useRef(fingerprint);
   if (currentFingerprint.current !== fingerprint) { currentFingerprint.current = fingerprint; revision.current += 1; }
   useEffect(() => { setReviewed(false); setValidationWarnings([]); setChecking(false); }, [fingerprint]);
@@ -175,6 +181,7 @@ export function ProviderPublishingWorkspace({ isRTL = false, onPublished }: { is
       try { if (Date.parse(publishingScheduleInstant(scheduledFor, timezone)) <= Date.now()) throw new Error(t('اختر موعداً في المستقبل.', 'Choose a publishing time in the future.')); }
       catch (failure) { setError(failure instanceof Error ? failure.message : 'Choose a valid publishing time.'); return false; }
     }
+    if (tiktok) { const problem = tiktokComposerProblem(tiktokState, tiktokInfo, tiktokKind, isRTL, tiktokKind === 'video' ? inspections[media[0]?.url]?.duration ?? undefined : undefined); if (problem) { setError(problem); return false; } }
     checkLock.current = true; setChecking(true);
     try {
       if (instagram) {
@@ -208,6 +215,11 @@ export function ProviderPublishingWorkspace({ isRTL = false, onPublished }: { is
         }
         setValidationWarnings([...new Set(warnings)]);
       }
+      if (tiktok && tiktokKind) {
+        const validation = await publishingRequest('validate_tiktok', { accountId, content, mediaItems: media, tiktokSettings: tiktokSettingsFrom(tiktokState, tiktokKind) });
+        if (revision.current !== requestRevision || scope.current !== requestScope) return false;
+        if (!validation.ok || validation.data.valid !== true) { const help = explainTikTokError(validation.data.error?.message, validation.status); throw new Error(help ? (isRTL ? help.ar : help.en) : validation.data.error?.message || t('تعذر التحقق من منشور تيك توك.', 'The TikTok post could not be validated.')); }
+      }
       if (revision.current !== requestRevision || scope.current !== requestScope) return false;
       setReviewed(true); return true;
     } catch (failure) { if (revision.current === requestRevision && scope.current === requestScope) setError(failure instanceof Error ? failure.message : 'Validation could not be completed.'); return false; }
@@ -226,7 +238,7 @@ export function ProviderPublishingWorkspace({ isRTL = false, onPublished }: { is
     if (!scope.current || (retrying && retrying.scope !== scope.current)) { setError(t('تعذر التحقق من هوية مساحة العمل. حدّث الصفحة أولاً.', 'The workspace identity could not be verified. Refresh first.')); return; }
     if (!retrying && (!usable || (!content.trim() && media.length === 0))) { setError(t('اختر حساباً متصلاً وأضف نصاً أو وسائط.', 'Choose a connected account and add text or media.')); return; }
     if (!retrying && mode !== 'draft' && !reviewed) { await checkComposer(); return; }
-    if (!retrying && instagram && mode === 'draft' && !await checkComposer()) return;
+    if (!retrying && (instagram || tiktok) && mode === 'draft' && !await checkComposer()) return;
     if (!retrying && submitFingerprint !== currentFingerprint.current) return;
     if (!retrying && mode === 'scheduled' && (!scheduledFor || !timezone.trim())) { setError(t('حدد موعد النشر والمنطقة الزمنية.', 'Enter a publishing time and timezone.')); return; }
     let scheduledInstant: string | undefined;
@@ -234,7 +246,7 @@ export function ProviderPublishingWorkspace({ isRTL = false, onPublished }: { is
       try { scheduledInstant = publishingScheduleInstant(scheduledFor, timezone); }
       catch (failure) { setError(failure instanceof Error ? failure.message : 'Choose a valid publishing time.'); return; }
     }
-    const next = retrying || { key: crypto.randomUUID(), scope: scope.current, createdAt: Date.now(), body: { action: editingId ? 'update' : 'create', ...(editingId ? { postId: editingId } : {}), content, platforms: [{ platform: selected!.platform, accountId, ...(instagram ? { platformSpecificData } : {}) }], mediaItems: media, ...(mode === 'now' ? { publishNow: true } : mode === 'draft' ? { isDraft: true } : { scheduledFor: scheduledInstant, timezone }) } };
+    const next = retrying || { key: crypto.randomUUID(), scope: scope.current, createdAt: Date.now(), body: { action: editingId ? 'update' : 'create', ...(editingId ? { postId: editingId } : {}), content, platforms: [{ platform: selected!.platform, accountId, ...(instagram ? { platformSpecificData } : {}) }], mediaItems: media, ...(tiktok && tiktokKind ? { tiktokSettings: tiktokSettingsFrom(tiktokState, tiktokKind) } : {}), ...(mode === 'now' ? { publishNow: true } : mode === 'draft' ? { isDraft: true } : { scheduledFor: scheduledInstant, timezone }) } };
     // Only creation has documented 24-hour replay protection; other uncertain writes need review.
     setReviewedPending(false);
     saveIntent(next); lock.current = true; setBusy(true);
@@ -243,7 +255,8 @@ export function ProviderPublishingWorkspace({ isRTL = false, onPublished }: { is
       if (scope.current !== next.scope) return;
       if (!ok) {
         if (!replayingUncertainCreate && status < 500 && status !== 408 && status !== 429 && !(status === 409 && data.error?.code === 'idempotency_conflict')) saveIntent(null);
-        throw new Error(data.error?.message || `Request failed (${status}).`);
+        const help = explainTikTokError(data.error?.message, status);
+        throw new Error(help ? `${isRTL ? help.ar : help.en} ${data.error?.message || ''}`.trim() : data.error?.message || `Request failed (${status}).`);
       }
       if (!data.post?._id) throw new Error(t('لم يتم تأكيد نتيجة الطلب. أعد التحقق بنفس الطلب.', 'The result is unconfirmed. Check again using the same request.'));
       setResult(data.post); saveIntent(null); setEditingId(null);
@@ -252,7 +265,11 @@ export function ProviderPublishingWorkspace({ isRTL = false, onPublished }: { is
         return details.map(detail => `${channel.platform || t('قناة', 'Channel')}${channel.status ? ` · ${channel.status}` : ''}: ${detail}`);
       }) : [])]);
       setNotice(status === 207 || data.httpStatus === 207 ? t('لم يكتمل النشر. راجع نتيجة كل قناة أدناه.', 'Publishing did not fully complete. Review each channel result below.') + (data.error?.message ? ` ${data.error.message}` : '') : t('تم استلام نتيجة الطلب. الحالة الفعلية موضحة أدناه.', 'Request completed. The actual post status is shown below.'));
-      setContent(''); setMedia([]); setStory(false); setShareToFeed(undefined); setReviewed(false); await refresh(); onPublished?.();
+      const tiktokFailures = (Array.isArray(data.post.platforms) ? data.post.platforms : []).filter((target: { platform?: string; errorMessage?: unknown }) => target.platform === 'tiktok' && typeof target.errorMessage === 'string');
+      const tiktokHelp = [data.error?.message, ...tiktokFailures.map((target: { errorMessage?: unknown }) => target.errorMessage)].map(message => explainTikTokError(message, status)).filter(Boolean) as Array<{ en: string; ar: string }>;
+      if (tiktokFailures.length || tiktokHelp.length) setOutcomeDetails(current => [...new Set([...current, ...tiktokFailures.map((target: { status?: string; errorMessage?: unknown }) => `TikTok${target.status ? ` · ${target.status}` : ''}: ${target.errorMessage}`), ...tiktokHelp.map(help => isRTL ? help.ar : help.en)])]);
+      if ((next.body as Record<string, any>).tiktokSettings?.draft === true && !(status === 207 || data.httpStatus === 207)) setNotice(t('تم التسليم إلى صندوق تيك توك. أكمل النشر من تطبيق تيك توك.', 'Delivered to your TikTok inbox. Finish and post it in the TikTok app.'));
+      setContent(''); setMedia([]); setStory(false); setShareToFeed(undefined); setReviewed(false); setTiktokState(emptyTikTokState); await refresh(); onPublished?.();
     } catch (e) { setError(e instanceof Error ? e.message : 'The result is unconfirmed.'); }
     finally { setBusy(false); lock.current = false; }
   }
@@ -324,7 +341,7 @@ export function ProviderPublishingWorkspace({ isRTL = false, onPublished }: { is
     })}</div>;
   }
   return <section dir={isRTL ? 'rtl' : 'ltr'} data-testid="publishing-workspace" className="space-y-8 text-[var(--text-primary)]">
-    <header className="flex flex-wrap items-start justify-between gap-4 border-b border-[var(--border-subtle)] pb-5"><div><div className="mb-2 text-sm font-semibold text-[var(--accent-primary)]">Facebook · Instagram</div><h2 className="text-2xl font-bold">{t('منشورك القادم يبدأ هنا', 'Your next post starts here')}</h2><p className="mt-2 text-sm text-[var(--text-secondary)]">{t('اختر حسابك، جهّز رسالتك، وانشر في الوقت المناسب.', 'Choose your account, prepare your message, and publish when it matters.')}</p></div><button type="button" className={secondary} onClick={() => { setError(''); void refresh(); }} disabled={loading || busy}><RefreshCw className="me-2 inline" size={14} />{t('تحديث', 'Refresh')}</button></header>
+    <header className="flex flex-wrap items-start justify-between gap-4 border-b border-[var(--border-subtle)] pb-5"><div><div className="mb-2 text-sm font-semibold text-[var(--accent-primary)]">Facebook · Instagram · TikTok</div><h2 className="text-2xl font-bold">{t('منشورك القادم يبدأ هنا', 'Your next post starts here')}</h2><p className="mt-2 text-sm text-[var(--text-secondary)]">{t('اختر حسابك، جهّز رسالتك، وانشر في الوقت المناسب.', 'Choose your account, prepare your message, and publish when it matters.')}</p></div><button type="button" className={secondary} onClick={() => { setError(''); void refresh(); }} disabled={loading || busy}><RefreshCw className="me-2 inline" size={14} />{t('تحديث', 'Refresh')}</button></header>
     {error && <div role="alert" className="rounded-xl border border-rose-500/30 bg-rose-500/10 p-4 text-sm text-rose-600 dark:text-rose-300">{error}</div>}
     {notice && <div role="status" className="rounded-xl border border-[var(--border-subtle)] bg-[var(--accent-soft)] p-4 text-sm">{notice}</div>}
     {pending && <div role="status" className="space-y-3 rounded-xl border border-amber-500/40 bg-amber-500/10 p-4">
@@ -338,7 +355,7 @@ export function ProviderPublishingWorkspace({ isRTL = false, onPublished }: { is
     <div className="grid min-w-0 gap-8 xl:grid-cols-[minmax(0,1.35fr)_minmax(260px,.65fr)]">
       <form onSubmit={e => { e.preventDefault(); void submit(); }} className="space-y-5">
         <fieldset disabled={busy || !!pending} className="space-y-5 disabled:opacity-60">
-          <label className="block space-y-2"><span className="text-sm font-semibold">{t('حساب النشر', 'Publishing account')}</span><select aria-label={t('حساب النشر', 'Publishing account')} className={field} value={accountId} disabled={!!editingId} onChange={e => { setAccountId(e.target.value); setStory(false); setShareToFeed(undefined); setError(''); }}><option value="">{t('اختر حساب Facebook أو Instagram', 'Choose a Facebook or Instagram account')}</option>{pages.map(a => <option key={a._id} value={a._id} disabled={a.isActive !== true || a.enabled === false || a.needsReconnection}>{a.displayName || a.username || a._id}{a.platform === 'instagram' ? ' · Instagram' : ''}{a.needsReconnection ? t(' — تحتاج إعادة اتصال', ' — reconnect required') : a.enabled === false ? t(' — غير مفعل للنشر', ' — publishing disabled') : a.isActive !== true ? t(' — غير نشطة', ' — inactive') : ''}</option>)}</select></label>
+          <label className="block space-y-2"><span className="text-sm font-semibold">{t('حساب النشر', 'Publishing account')}</span><select aria-label={t('حساب النشر', 'Publishing account')} className={field} value={accountId} disabled={!!editingId} onChange={e => { setAccountId(e.target.value); setStory(false); setShareToFeed(undefined); setError(''); setTiktokState(emptyTikTokState); setTiktokInfo(null); }}><option value="">{t('اختر حساب Facebook أو Instagram أو TikTok', 'Choose a Facebook, Instagram or TikTok account')}</option>{pages.map(a => <option key={a._id} value={a._id} disabled={a.isActive !== true || a.enabled === false || a.needsReconnection}>{a.displayName || a.username || a._id}{a.platform === 'instagram' ? ' · Instagram' : a.platform === 'tiktok' ? ' · TikTok' : ''}{a.needsReconnection ? t(' — تحتاج إعادة اتصال', ' — reconnect required') : a.enabled === false ? t(' — غير مفعل للنشر', ' — publishing disabled') : a.isActive !== true ? t(' — غير نشطة', ' — inactive') : ''}</option>)}</select></label>
           {!loading && pages.length === 0 && <p className="text-sm text-[var(--text-secondary)]">{t('اربط صفحة Facebook أو حساب Instagram احترافياً من قسم الحسابات للبدء.', 'Connect a Facebook Page or professional Instagram account in Accounts to get started.')} <a href="/dashboard?tab=core_connect" className="text-[var(--accent-primary)] underline">{t('الحسابات', 'Accounts')}</a></p>}
           {selected?.enabled === false && <p role="status" className="text-sm text-amber-700">{t('الحساب متصل لكنه غير مفعل للنشر. راجع إعداداته في الحسابات.', 'This account is connected but is not enabled for publishing. Review its settings in Accounts.')}</p>}
           {instagram && <div className="space-y-3 border-b border-[var(--border-subtle)] pb-4">
@@ -348,6 +365,7 @@ export function ProviderPublishingWorkspace({ isRTL = false, onPublished }: { is
             <p role="status" className="text-sm">{quota ? t(`حد Instagram الحالي: ${quota.quotaUsage} من ${quota.quotaTotal} مستخدم${quota.quotaDurationSeconds ? ` خلال ${Math.round(quota.quotaDurationSeconds / 3600)} ساعة` : ''}.`, `Instagram publishing limit: ${quota.quotaUsage} of ${quota.quotaTotal} used${quota.quotaDurationSeconds ? ` over ${Math.round(quota.quotaDurationSeconds / 3600)} hours` : ''}.`) : quotaError || t('جارٍ التحقق من حد النشر…', 'Checking the publishing limit…')}</p>
             {quota && quota.quotaUsage >= quota.quotaTotal && <p className="text-xs text-amber-700 dark:text-amber-300">{t('تم الوصول إلى الحد الحالي. يمكنك حفظ مسودة أو جدولة المنشور لاحقاً.', 'The current limit is reached. You can save a draft or schedule for later.')}</p>}
           </div>}
+          {tiktok && <TikTokPublishSettings accountId={accountId} kind={tiktokKind} isRTL={isRTL} value={tiktokState} onChange={setTiktokState} onInfo={setTiktokInfo} disabled={busy || !!pending} />}
           <label className="block space-y-2"><span className="text-sm font-semibold">{editingId ? t('تعديل الرسالة', 'Edit message') : t('ماذا تريد أن تخبر عملاءك؟', 'What would you like your customers to know?')}</span><textarea aria-label={t('نص المنشور', 'Post text')} rows={7} className={`${field} resize-y leading-relaxed`} value={content} onChange={e => setContent(e.target.value)} placeholder={t('اكتب رسالتك هنا…', 'Write your message here…')} /></label>
           {instagram && <p className={`text-end text-xs ${captionLength > 2200 ? 'text-rose-600' : 'text-[var(--text-muted)]'}`}>{captionLength.toLocaleString(isRTL ? 'ar' : 'en')} / {isRTL ? '٢٬٢٠٠' : '2,200'}</p>}
           <details className="rounded-xl border border-[var(--border-subtle)] p-4" open={media.length > 0 || undefined}><summary className="cursor-pointer text-sm font-semibold">{t('إضافة صورة أو فيديو', 'Add an image or video')}{media.length > 0 && ` (${media.length})`}</summary><div className="mt-4 space-y-3"><label className={`${secondary} inline-flex cursor-pointer items-center gap-2`}><Upload size={15} />{t('رفع ملف', 'Upload file')}<input aria-label="Upload media" type="file" accept="image/*,video/*" className="sr-only" onChange={e => { void upload(e.target.files?.[0]); e.target.value = ''; }} /></label><p className="text-xs text-[var(--text-secondary)]">{t('أو أضف رابط HTTPS عاماً يمكن الوصول إليه.', 'Or add a publicly accessible HTTPS URL.')}</p><div className="flex flex-wrap gap-2"><select aria-label="Media type" className={secondary} value={mediaType} onChange={e => setMediaType(e.target.value as 'image' | 'video')}><option value="image">{t('صورة', 'Image')}</option><option value="video">{t('فيديو', 'Video')}</option></select><input aria-label="Media URL" type="url" dir="ltr" className={`${field} min-w-0 flex-1`} value={mediaUrl} onChange={e => setMediaUrl(e.target.value)} placeholder="https://…" /><button className={secondary} type="button" onClick={() => { if (!publishingHttps(mediaUrl)) { setError(t('استخدم رابط HTTPS صالحاً.', 'Use a valid HTTPS URL.')); return; } setMedia(m => [...m, { type: mediaType, url: mediaUrl }]); setMediaUrl(''); setError(''); }}>{t('إضافة', 'Add')}</button></div>{media.map((m, i) => <div key={`${m.url}-${i}`} className="flex min-w-0 items-center gap-3 border-t border-[var(--border-subtle)] pt-3"><span className="text-xs uppercase">{m.type}</span><span dir="ltr" className="min-w-0 flex-1 truncate text-xs">{m.url}</span><button type="button" aria-label={t('إزالة الوسائط', 'Remove media')} onClick={() => setMedia(items => items.filter((_, n) => n !== i))}><X size={16} /></button></div>)}</div></details>

@@ -122,6 +122,13 @@ export class MetaSettingsService {
  }
  static async setSetting(params: MetaSettingParams & { value: unknown }): Promise<Result> {
   const body = settingBody(params.setting, params.value); await owned(params, params.setting);
+  // Meta shows a persistent menu only on Pages that have a Get Started button; add one when it is missing.
+  if (params.setting === 'messenger-menu') {
+   const path = `/accounts/${encodeURIComponent(params.accountId)}/messenger-get-started`;
+   const current = await provider({ path });
+   if (current.data !== null && current.data !== undefined && (typeof current.data !== 'object' || Array.isArray(current.data))) malformed();
+   if (typeof current.data?.payload !== 'string' || !current.data.payload) await provider({ method: 'PUT', path, body: { payload: 'GET_STARTED' } });
+  }
   return provider({ method: 'PUT', path: settingPath(params), body });
  }
  static async deleteSetting(params: MetaSettingParams): Promise<Result> {

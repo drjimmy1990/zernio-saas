@@ -1,5 +1,5 @@
 'use client';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useThemeAndLocale } from '@/i18n/ThemeAndLocaleProvider';
 import { ConnectAndAccountsHub } from './hubs/ConnectAndAccountsHub';
 import { PublishingAndQueueHub } from './hubs/PublishingAndQueueHub';
@@ -15,6 +15,12 @@ export function BusinessWorkspace({ workspace, policy, onRefreshWorkspace, onOpe
   workspace: any; policy: any; onRefreshWorkspace?: () => void; onOpenConnectionWizard: (platform?: string, account?: ConnectedAccountData) => void;
 }) {
   const { dir } = useThemeAndLocale(), ar = dir === 'rtl'; const [tab, setTab] = useState('contacts');
+  // Deep links such as /dashboard?tab=core_connect (used by "Reconnect → Accounts") open the matching task.
+  useEffect(() => {
+    const requested = new URLSearchParams(window.location.search).get('tab') || '';
+    const mapped = ({ core_connect: 'connect', accounts: 'connect', inbox_crm: 'inbox', telephony: 'phone', analytics: 'reports', billing: 'settings' } as Record<string, string>)[requested] || requested;
+    if (['contacts', 'connect', 'inbox', 'publishing', 'campaigns', 'phone', 'reports', 'settings'].includes(mapped)) setTab(mapped);
+  }, []);
   const jobs = [['contacts', 'العملاء', 'Contacts'], ['connect', 'الحسابات', 'Accounts'], ['inbox', 'الرسائل', 'Inbox'], ['publishing', 'النشر', 'Publishing'], ['campaigns', 'الحملات', 'Campaigns'], ['phone', 'الأرقام وواتساب', 'Phone and WhatsApp'], ['reports', 'التقارير', 'Reports'], ['settings', 'الفريق والإعدادات', 'Team and settings']];
   return <div dir={dir} className="space-y-6">
     <header><h2 className="text-2xl font-semibold">{ar ? 'مساحة عملك' : 'Your workspace'}</h2><p className="mt-2 text-sm text-[var(--text-secondary)]">{ar ? 'نظّم عملاءك وتابع المحادثات وانشر محتواك من مكان واحد.' : 'Organize customers, follow up on conversations and publish from one place.'}</p></header>

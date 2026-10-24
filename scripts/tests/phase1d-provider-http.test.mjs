@@ -26,7 +26,7 @@ after(() => { if (simulation?.pid) { if (process.platform === 'win32') spawnSync
 async function fixture(scenario = 'success') { assert.equal((await fetch(`${origin}/__fixture/reset`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ scenario }) })).status, 200); }
 async function state() { return (await fetch(`${origin}/__fixture/state`)).json(); }
 function runtime() {
- const files = { facebook: 'src/lib/publishing/facebook.ts', instagram: 'src/lib/publishing/instagram.ts', client: 'src/lib/zernio/client.ts', publishing: 'src/lib/services/publishing.service.ts', core: 'src/lib/services/core-connect.service.ts', accounts: 'src/lib/auth/tenant-provider.ts', lifecycle: 'src/lib/accounts/lifecycle.ts' };
+ const files = { facebook: 'src/lib/publishing/facebook.ts', instagram: 'src/lib/publishing/instagram.ts', tiktok: 'src/lib/publishing/tiktok.ts', client: 'src/lib/zernio/client.ts', publishing: 'src/lib/services/publishing.service.ts', core: 'src/lib/services/core-connect.service.ts', accounts: 'src/lib/auth/tenant-provider.ts', lifecycle: 'src/lib/accounts/lifecycle.ts' };
  const sources = Object.fromEntries(Object.entries(files).map(([name, file]) => [name, ts.transpileModule(fs.readFileSync(path.join(root, file), 'utf8'), { compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2022 } }).outputText]));
  const context = vm.createContext({ Buffer, URL, Request, Response, Headers, TextEncoder, TextDecoder, Date, Intl, Set, console, AbortController, setTimeout, clearTimeout,
  process: { env: { ZERNIO_BASE_URL: `${origin}/api/v1`, ZERNIO_API_KEY: 'phase1d_mock_key' } },
@@ -38,7 +38,7 @@ function runtime() {
   const require = specifier => {
     if (specifier === '@/lib/billing/connections') return { reserveConnectionCapacity: async () => {} }; // Existing private-beta fixture; commercial capacity has separate SQL/HTTP coverage.
    if (specifier === 'crypto' || specifier === 'node:crypto') return crypto;
-   const alias = { '@/lib/publishing/facebook': 'facebook', '@/lib/publishing/instagram': 'instagram', '@/lib/zernio/client': 'client', '@/lib/services/publishing.service': 'publishing', '@/lib/services/core-connect.service': 'core', '@/lib/auth/tenant-provider': 'accounts', '@/lib/accounts/lifecycle': 'lifecycle' }[specifier]; if (alias) return load(alias);
+   const alias = { '@/lib/publishing/facebook': 'facebook', '@/lib/publishing/instagram': 'instagram', '@/lib/publishing/tiktok': 'tiktok', './instagram': 'instagram', '@/lib/zernio/client': 'client', '@/lib/services/publishing.service': 'publishing', '@/lib/services/core-connect.service': 'core', '@/lib/auth/tenant-provider': 'accounts', '@/lib/accounts/lifecycle': 'lifecycle' }[specifier]; if (alias) return load(alias);
    if (specifier === '@/lib/auth/tenant-access') return { TenantAccessError: class extends Error { constructor(status, message) { super(message); this.status = status; } } };
    if (specifier === '@/lib/supabase/admin') return { createSupabaseAdminClient: () => null };
    if (specifier === '@/lib/storage/workspace-store') return { WorkspaceStore: { getWorkspace: () => ({ connectedAccounts: [] }), removeConnectedAccount: (...args) => removed.push(args) } };

@@ -8,6 +8,12 @@ type Conversation = { id?: string; participantName?: string; participantId?: str
 type Message = { id?: string; message?: string; direction?: string; createdAt?: string; deliveryStatus?: string | null; deliveryError?: { title?: string; message?: string }; attachments?: { url?: string; filename?: string; type?: string }[] };
 type Template = { id?: string; name?: string; language?: string; category?: string; status?: string; components?: Record<string, unknown>[] };
 type Payload = { accounts?: Account[]; profileId?: string; data?: Conversation[]; messages?: Message[]; templates?: Template[]; pagination?: { nextCursor?: string | null }; error?: string | { message?: string; code?: string }; message?: string; success?: boolean; status?: string };
+function mergeMessages(previous: Message[], incoming: Message[]): Message[] {
+  const byId = new Map<string, Message>(), loose: Message[] = [];
+  for (const item of [...previous, ...incoming]) { if (item.id) byId.set(item.id, { ...byId.get(item.id), ...item }); else loose.push(item); }
+  const time = (item: Message) => { const value = item.createdAt ? Date.parse(item.createdAt) : NaN; return Number.isFinite(value) ? value : Number.POSITIVE_INFINITY; };
+  return [...byId.values(), ...loose].map((item, index) => ({ item, index })).sort((a, b) => time(a.item) - time(b.item) || a.index - b.index).map(entry => entry.item);
+}
 type PendingSend = { signature: string; key: string; createdAt: number; payload: Record<string, unknown> };
 
 async function request(params: Record<string, unknown>, post = false): Promise<Payload> {
@@ -107,8 +113,9 @@ export function ProviderWhatsAppInbox({ initialTab = 'inbox' }: { initialTab?: '
     if (!accountId || !conversationId) return;
     let cancelled = false;
     setMessages([]); setMessageCursor(null);
+    let first = true;
     const load = async () => {
-      try { const data = await request({ action: 'messages', accountId, conversationId }); if (!cancelled) { setMessages(data.messages || []); setMessageCursor(data.pagination?.nextCursor || null); } }
+      try { const data = await request({ action: 'messages', accountId, conversationId }); if (!cancelled) { setMessages(previous => mergeMessages(previous, data.messages || [])); if (first) { setMessageCursor(data.pagination?.nextCursor || null); first = false; } } }
       catch (err) { if (!cancelled) setError(err instanceof Error ? err.message : 'Could not load messages'); }
     };
     void load(); const timer = window.setInterval(() => void load(), 15000);
@@ -165,7 +172,7 @@ export function ProviderWhatsAppInbox({ initialTab = 'inbox' }: { initialTab?: '
     try {
       const data = await request({ action: kind, accountId, ...(kind === 'messages' ? { conversationId } : {}), cursor: kind === 'messages' ? messageCursor : cursor });
       if (currentSelection.current.accountId !== accountId || (kind === 'messages' && currentSelection.current.conversationId !== conversationId)) return;
-      if (kind === 'messages') { setMessages(previous => [...previous, ...(data.messages || [])].filter((item, index, list) => list.findIndex(other => other.id === item.id) === index)); setMessageCursor(data.pagination?.nextCursor || null); }
+      if (kind === 'messages') { setMessages(previous => mergeMessages(previous, data.messages || [])); setMessageCursor(data.pagination?.nextCursor || null); }
       else { setConversations(previous => [...previous, ...(data.data || [])]); setCursor(data.pagination?.nextCursor || null); }
     } catch (err) { setError(err instanceof Error ? err.message : 'Could not load page'); }
     finally { setLoading(false); }
@@ -177,7 +184,7 @@ export function ProviderWhatsAppInbox({ initialTab = 'inbox' }: { initialTab?: '
       <label className="min-w-56 flex-1 text-xs">{loc('حساب واتساب المتصل', 'Connected WhatsApp account')}
         <select className={inputClass} value={accountId} disabled={busy} onChange={event => setAccountId(event.target.value)}>
           <option value="">{loc('اختر حساباً', 'Select an account')}</option>
-          {accounts.map(item => <option key={item.accountId} value={item.accountId}>{item.displayName || item.username || item.accountId}{item.needsReconnection || item.isActive !== true ? ' — reconnect required' : ''}</option>)}
+          {accounts.map(item => <option key={item.accountId} value={item.accountId}>{item.displayName || item.username || item.accountId}{item.needsReconnection || item.isActive !== true ? loc(' — يحتاج إعادة ربط', ' — reconnect required') : ''}</option>)}
         </select>
       </label>
       <button className={buttonClass} disabled={!accountId || loading || busy} onClick={() => void refresh()}>{loading ? loc('تحميل…', 'Loading…') : loc('تحديث', 'Refresh')}</button>
@@ -237,7 +244,7 @@ export function ProviderWhatsAppInbox({ initialTab = 'inbox' }: { initialTab?: '
             finally { sending.current = false; setBusy(false); }
           }}>{loc('وضع علامة مقروءة', 'Mark read')}</button>}
           <div className="max-h-96 space-y-2 overflow-auto" aria-live="polite">
-            {messages.map((item, index) => <div key={item.id || index} className={`rounded-xl p-3 text-xs ${item.direction === 'outgoing' ? 'bg-emerald-500/10' : 'bg-[var(--bg-subtle)]'}`}><p className="whitespace-pre-wrap">{item.message}</p>{item.attachments?.map((media, mediaIndex) => media.url && attachmentHref(media.url, accountId, conversationId, item.id || '', mediaIndex) ? <a key={mediaIndex} className="block underline" target="_blank" rel="noopener noreferrer" href={attachmentHref(media.url!, accountId, conversationId, item.id || '', mediaIndex)!}>{media.filename || media.type || 'Media'}</a> : <span key={mediaIndex}>{media.type || 'Media'}</span>)}<small>{item.createdAt ? new Date(item.createdAt).toLocaleString(locale) : ''} {item.direction === 'outgoing' ? ` · ${item.deliveryStatus || loc('الحالة غير مؤكدة', 'Status unconfirmed')}` : ''}</small>{item.deliveryError && <p className="text-rose-600">{item.deliveryError.title || item.deliveryError.message}</p>}</div>)}
+            {messages.map((item, index) => <div key={item.id || index} className={`rounded-xl p-3 text-xs ${item.direction === 'outgoing' ? 'bg-emerald-500/10' : 'bg-[var(--bg-subtle)]'}`}><p className="whitespace-pre-wrap">{item.message}</p>{item.attachments?.map((media, mediaIndex) => media.url && attachmentHref(media.url, accountId, conversationId, item.id || '', mediaIndex) ? <a key={mediaIndex} className="block underline" target="_blank" rel="noopener noreferrer" href={attachmentHref(media.url!, accountId, conversationId, item.id || '', mediaIndex)!}>{media.filename || media.type || loc('وسائط', 'Media')}</a> : <span key={mediaIndex}>{media.type || loc('وسائط', 'Media')}</span>)}<small>{item.createdAt ? new Date(item.createdAt).toLocaleString(locale) : ''} {item.direction === 'outgoing' ? ` · ${item.deliveryStatus || loc('الحالة غير مؤكدة', 'Status unconfirmed')}` : ''}</small>{item.deliveryError && <p className="text-rose-600">{item.deliveryError.title || item.deliveryError.message}</p>}</div>)}
             {messageCursor && <button className={buttonClass} disabled={loading} onClick={() => void loadMore('messages')}>{loc('المزيد من الرسائل', 'More messages')}</button>}
           </div>
           <p className="text-xs text-[var(--text-secondary)]">{loc('النص والوسائط داخل نافذة خدمة العميل ٢٤ ساعة. خارجها استخدم قالباً معتمداً. المزود يتحقق من النافذة والصلاحيات عند الإرسال.', 'Text and media require the 24-hour customer service window. Outside it, use an approved template. The provider checks window eligibility and permissions when sending.')}</p>

@@ -16,6 +16,7 @@
     "test:phase2a": "node --test scripts/tests/phase2a-*.test.mjs",
     "test:phase2b": "node --test scripts/tests/phase2b-*.test.mjs",
     "test:phase2c": "node --test scripts/tests/phase2c-*.test.mjs",
+    "test:phase3a": "node --test scripts/tests/phase3a-*.test.mjs",
     "test:launch": "node --test --test-concurrency=2 scripts/tests/launch-*.test.mjs",
     "test:launch:database": "node scripts/tests/launch-database-suite.mjs",
     "test:billing": "node --test scripts/tests/prepaid-*.test.mjs scripts/tests/billing-enrollment.test.mjs scripts/tests/phone-sms-segments.test.mjs",

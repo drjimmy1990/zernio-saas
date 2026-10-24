@@ -424,16 +424,9 @@ export class CoreConnectService {
 
     await reserveConnectionCapacity(params.organizationId, profileId, params.platform);
 
+    // Never fabricate a connected account: an unconfigured provider is an outage, not a success.
     if (!zernioClient.isConfigured()) {
-      return {
-        simulated: true,
-        account: {
-          accountId: `acc_cred_${params.platform}_${Date.now().toString(36)}`,
-          platform: params.platform,
-          profileId,
-          isActive: true,
-        },
-      };
+      throw new ZernioApiException({ status: 503, code: 'provider_not_configured', error: 'The connection provider is not configured. Contact your administrator.' });
     }
 
     const pathMap = {
@@ -467,12 +460,21 @@ export class CoreConnectService {
       },
     };
 
+    // Bluesky identifies the destination with state = {currentUserId}-{profileId} (no profileId field).
+    let destination: Record<string, string> = { profileId };
+    if (params.platform === 'bluesky') {
+      const { data: users } = await zernioClient.request<{ currentUserId?: unknown }>({ method: 'GET', path: '/users' });
+      if (typeof users.currentUserId !== 'string' || !users.currentUserId) {
+        throw new ZernioApiException({ status: 502, code: 'invalid_provider_response', error: 'The provider did not confirm the current user for this Bluesky connection.' });
+      }
+      destination = { state: `${users.currentUserId}-${profileId}` };
+    }
     const { data } = await zernioClient.request({
       method: 'POST',
       path: pathMap[params.platform],
       body: {
         ...credentialFields[params.platform],
-        profileId,
+        ...destination,
       },
     });
 

@@ -34,9 +34,14 @@ export async function verifyReconnectIdentity(organizationId: string, accountId:
   const [account] = await requireTenantAccounts(organizationId, [accountId]);
   if (account.platform !== platform) throw new TenantAccessError(400, 'Reconnect the account using its original platform.');
   const canonical = account as typeof account & { platformUserId?: string; metadata?: { instagramScopedId?: string; loginMethod?: string } };
-  const platformUserId = platform === 'instagram' ? canonical.metadata?.instagramScopedId || canonical.platformUserId : canonical.platformUserId;
+  // TikTok open_id is per TikTok app, so it changes when a reconnect moves the account to the
+  // Business app lane; Zernio matches TikTok accounts by @handle instead (zernio.txt "Connection lanes").
+  const platformUserId = platform === 'instagram' ? canonical.metadata?.instagramScopedId || canonical.platformUserId : platform === 'tiktok' ? undefined : canonical.platformUserId;
   if (['facebook', 'instagram'].includes(platform) && !platformUserId) {
     throw new TenantAccessError(409, platform === 'facebook' ? 'The provider did not return the Facebook Page identity. Refresh accounts before reconnecting.' : 'The provider did not return the Instagram professional account identity. Refresh accounts before reconnecting.');
+  }
+  if (platform === 'tiktok' && !account.username?.trim()) {
+    throw new TenantAccessError(409, 'The provider did not return the TikTok @handle. Refresh accounts before reconnecting.');
   }
   return { reconnectAccountId: account._id, expectedPlatformUserId: platformUserId,
     ...(platform === 'instagram' ? { loginMethod: canonical.metadata?.loginMethod === 'facebook_login' ? 'facebook_login' as const : 'instagram_login' as const } : {}) };

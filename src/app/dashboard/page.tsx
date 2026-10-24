@@ -280,7 +280,7 @@ function CustomerDashboardContent() {
         setStatusBanner({ type: 'error', message: error instanceof Error ? error.message : 'Restart the connection and try again.' });
       } finally {
         const clean = new URL(window.location.href);
-        for (const key of ['asra3_oauth_state', 'oauth_callback', 'tempToken', 'userProfile', 'connect_token', 'profileId', 'accountId', 'connected', 'platform', 'step', 'username', 'error', 'error_description', 'state', 'request_id', 'stage']) clean.searchParams.delete(key);
+        for (const key of ['asra3_oauth_state', 'oauth_callback', 'reconnectAccountId', 'simulated', 'tempToken', 'userProfile', 'connect_token', 'profileId', 'accountId', 'connected', 'platform', 'step', 'username', 'error', 'error_description', 'state', 'request_id', 'stage']) clean.searchParams.delete(key);
         window.history.replaceState(null, '', clean.pathname + clean.search + clean.hash);
       }
     })();
@@ -382,32 +382,6 @@ function CustomerDashboardContent() {
         `Connected and verified ${newAccount.displayName} (${newAccount.username}) successfully!`
       ),
     });
-  };
-
-  const runServiceAction = async (
-    subService: SubServiceKey,
-    action: string,
-    payload: Record<string, unknown>,
-    successMsg: string
-  ) => {
-    const res = await fetch('/api/services', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        organizationId,
-        subService,
-        action,
-        ...payload,
-      }),
-    });
-    const data = await res.json();
-    if (data.error) {
-      setStatusBanner({ type: 'error', message: data.error });
-    } else {
-      setStatusBanner({ type: 'success', message: successMsg });
-      await loadWorkspace();
-    }
-    return data;
   };
 
   const policy = workspace?.policy;
@@ -539,7 +513,7 @@ function CustomerDashboardContent() {
               },
               {
                 id: 'telephony',
-                label: loc('الأرقام والواتساب', 'Telephony & Voice'),
+                label: loc('الأرقام وواتساب', 'Phone & WhatsApp'),
                 icon: PhoneCall,
               },
               {
@@ -626,8 +600,8 @@ function CustomerDashboardContent() {
         onAccountDisconnected={handleAccountDisconnected}
         onOpenBuyNumberWizard={() => {
           setIsWizardOpen(false);
-          setActiveHub('telephony');
-          setMode('advanced');
+          if (mode === 'advanced') setActiveHub('telephony');
+          else window.location.assign('/dashboard?tab=telephony');
         }}
       />
     </div>

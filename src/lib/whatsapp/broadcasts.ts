@@ -24,7 +24,7 @@ async function provider(params: Parameters<typeof zernioClient.request>[0]): Pro
   return { ...data, httpStatus: status };
 }
 async function owned(params: AccountParams, mutation = false) {
-  await assertSubServiceAllowed(params.organizationId, 'telephony');
+  await assertSubServiceAllowed(params.organizationId, 'inbox_crm');
   const [account] = await requireTenantAccounts(params.organizationId, [params.accountId]);
   if (account.platform !== 'whatsapp') invalid('Select a connected WhatsApp account.');
   if (mutation && (!account.isActive || account.needsReconnection)) invalid('Reconnect this WhatsApp account before changing a broadcast.');

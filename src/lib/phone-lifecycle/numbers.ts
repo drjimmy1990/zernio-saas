@@ -6,14 +6,32 @@ import { assertSubServiceAllowed } from '@/lib/zernio/policy-engine';
 import { TenantAccessError } from '@/lib/auth/tenant-access';
 import { CustomerBillingService } from '@/lib/billing/service';
 import { reserveConnectionCapacity } from '@/lib/billing/connections';
+import { retailAmountMinor } from '@/lib/billing/pricing';
+
+const numberTypes=['local','mobile','national','toll_free'];
+/** Customer prices are derived on the server from the live provider catalog, never supplied by the browser. */
+function withRetail(countries:any[]) {
+ return countries.map((c:any)=>({...c,types:Array.isArray(c.types)?c.types.map((t:any)=>({...t,...(Number.isSafeInteger(t.monthlyCents)&&t.monthlyCents>=0?{retailMonthlyCents:retailAmountMinor(t.monthlyCents)}:{})})):c.types}));
+}
+/** Search filters use Zernio's documented parameter names; invalid values are refused instead of forwarded. */
+function searchFilters(input:Record<string,any>={}) {
+ const text=(value:any,field:string)=>{if(value===undefined||value===null||value==='')return undefined;if(typeof value!=='string'||value.trim().length>40||!/^[\p{L}\p{M}0-9 .'-]+$/u.test(value.trim()))invalid(`Use a valid ${field}.`);return value.trim();};
+ const areaCode=text(input.areaCode,'area code or city'),locality=text(input.locality,'city');
+ const contains=input.contains===undefined||input.contains===null||input.contains===''?undefined:typeof input.contains==='string'&&/^[0-9]{1,15}$/.test(input.contains)?input.contains:invalid('Digits to match must be 1 to 15 digits.');
+ const limit=input.limit===undefined||input.limit===null||input.limit===''?50:Number(input.limit);
+ if(!Number.isInteger(limit)||limit<1||limit>100)invalid('Choose between 1 and 100 results.');
+ return {areaCode,locality,contains,limit};
+}
 
 function purchaseBinding(profileId:string,input:Record<string,any>) {
- if(!/^[A-Z]{2}$/.test(input.country)||!['local','mobile','national','toll_free'].includes(input.numberType))invalid('Review the country and number type.');
+ if(!/^[A-Z]{2}$/.test(input.country)||!numberTypes.includes(input.numberType))invalid('Review the country and number type.');
  if(input.phoneNumber)phone(input.phoneNumber);
  for(const field of ['connectWhatsapp','wantsSms','allowMultiple'])if(typeof input[field]!=='boolean')invalid(`${field} must be explicitly selected.`);
  if(typeof input.intent!=='string'||!/^[A-Za-z0-9_-]{8,128}$/.test(input.intent))invalid('Use the original purchase request identifier.');
  if(input.numberType==='toll_free'&&input.connectWhatsapp)invalid('Toll-free numbers cannot connect WhatsApp.');
- return {profileId,country:input.country,numberType:input.numberType,phoneNumber:input.phoneNumber||null,connectWhatsapp:input.connectWhatsapp,wantsSms:input.wantsSms,allowMultiple:input.allowMultiple,purchaseIntentId:input.intent};
+ const areaCode=input.areaCode===undefined||input.areaCode===null||input.areaCode===''?undefined:typeof input.areaCode==='string'&&/^[0-9]{1,4}$/.test(input.areaCode)?input.areaCode:invalid('An area code must be 1 to 4 digits.');
+ if(areaCode&&input.phoneNumber)invalid('Choose either an exact number or an area code.');
+ return {profileId,country:input.country,numberType:input.numberType,phoneNumber:input.phoneNumber||null,connectWhatsapp:input.connectWhatsapp,wantsSms:input.wantsSms,allowMultiple:input.allowMultiple,purchaseIntentId:input.intent,...(areaCode?{areaCode}:{})};
 }
 async function purchaseOffer(organizationId:string,input:Record<string,any>) {
  const catalog=await provider({path:'/phone-numbers/countries'});
@@ -23,7 +41,9 @@ async function purchaseOffer(organizationId:string,input:Record<string,any>) {
  const regulated=offer.needsKyc===true||offer.fulfilment==='request';
  if(input.phoneNumber&&regulated)invalid('Regulated orders cannot select an exact phone number.');
  if(regulated&&offer.inStock===false&&offer.preOrderable!==true)throw new TenantAccessError(409,'This regulated number type is not currently orderable.');
- if(!regulated){const fresh=await PhoneNumbersLifecycle.offers(organizationId,input.country,input.numberType,input.wantsSms);if(!fresh.numbers?.length||input.phoneNumber&&!fresh.numbers.some((number:any)=>number.phoneNumber===input.phoneNumber))throw new TenantAccessError(409,'The selected number is no longer available. Refresh the offers.');}
+ // An exact phoneNumber is a hard constraint at the provider (409 PHONE_NUMBER_UNAVAILABLE), so a filtered
+ // search result must not be re-checked against an unfiltered first page. Auto-assigned orders still need stock.
+ if(!regulated&&!input.phoneNumber){const fresh=await PhoneNumbersLifecycle.offers(organizationId,input.country,input.numberType,input.wantsSms,{areaCode:input.areaCode,limit:1}) as Record<string,any>;if(!fresh.numbers?.length)throw new TenantAccessError(409,'No numbers are currently available for this selection. Refresh the offers.');}
  return offer;
 }
 async function bindCustomerRental(organizationId:string,operation:any,number:any) {
@@ -34,28 +54,43 @@ async function bindCustomerRental(organizationId:string,operation:any,number:any
 }
 export class PhoneNumbersLifecycle {
  static async list(organizationId:string) {return inventory(organizationId);}
- static async offers(organizationId:string,country?:string,numberType?:string,wantsSms:unknown=false) {
+ static async offers(organizationId:string,country?:string,numberType?:string,wantsSms:unknown=false,filterInput:Record<string,any>={}) {
   await tenantProfile(organizationId);
   if(![true,false,'true','false',undefined].includes(wantsSms as any))invalid('Choose whether SMS support is required.');
   const requireSms=wantsSms===true||wantsSms==='true';
+  const filters=searchFilters(filterInput);
   const catalog=await provider({path:'/phone-numbers/countries'});
   if(!Array.isArray(catalog.countries))malformed();
-  if(!country)return catalog;
-  const countryOffer=catalog.countries.find((c:any)=>(c.code??c.country)===country);
-  const selectedType=numberType??countryOffer?.types?.[0]?.numberType;
-  if(!/^[A-Z]{2}$/.test(country)||!['local','mobile','national','toll_free'].includes(selectedType))invalid('Choose a country and number type.');
+  const countries=withRetail(catalog.countries);
+  if(!country)return {...catalog,countries};
+  const countryOffer=countries.find((c:any)=>(c.code??c.country)===country);
+  const selectedType=numberType||countryOffer?.types?.[0]?.numberType;
+  if(!/^[A-Z]{2}$/.test(country)||!numberTypes.includes(selectedType))invalid('Choose a country and number type.');
   const offer=countryOffer?.types?.find((t:any)=>t.numberType===selectedType);
   if(!offer)invalid('This country and number type are not offered.');
   if(requireSms&&offer.smsAvailable!==true)invalid('This country and number type do not offer SMS-capable numbers.');
+  const priced={retailMonthlyCents:offer.retailMonthlyCents,monthlyCents:offer.monthlyCents};
   const regulated=offer.needsKyc===true||offer.fulfilment==='request';
-  if(regulated&&offer.inStock===false&&offer.preOrderable!==true)return {httpStatus:catalog.httpStatus,country,numberType:selectedType,requireSms,numbers:[],countries:catalog.countries,availabilityMode:'out_of_stock',notice:'This country and number type are currently out of stock.'};
+  if(regulated&&offer.inStock===false&&offer.preOrderable!==true)return {httpStatus:catalog.httpStatus,country,numberType:selectedType,requireSms,numbers:[],countries,...priced,availabilityMode:'out_of_stock',notice:'This country and number type are currently out of stock.'};
   // Regulated orders assign the number after identity review, not from an exact-number picker.
-  if(regulated)return {httpStatus:catalog.httpStatus,country,numberType:selectedType,numbers:[],countries:catalog.countries,availabilityMode:'assigned_after_verification',notice:'The provider assigns this number after identity verification. Exact-number selection is unavailable; carrier sourcing may take additional time.'};
-  const available=await provider({path:'/phone-numbers/available',query:{country,numberType:selectedType,...(requireSms?{sms:true}:{}),limit:20}});
+  if(regulated)return {httpStatus:catalog.httpStatus,country,numberType:selectedType,numbers:[],countries,...priced,availabilityMode:'assigned_after_verification',notice:'The provider assigns this number after identity verification. Exact-number selection is unavailable; carrier sourcing may take additional time.'};
+  const available=await provider({path:'/phone-numbers/available',query:{country,numberType:selectedType,...(requireSms?{sms:true}:{}),...(filters.areaCode?{areaCode:filters.areaCode}:{}),...(filters.locality?{locality:filters.locality}:{}),...(filters.contains?{contains:filters.contains}:{}),limit:filters.limit}});
   if(!Array.isArray(available.numbers))malformed();
   if(available.country!==undefined&&available.country!==country||available.numberType!==undefined&&available.numberType!==selectedType)malformed('Number availability does not match the selected country and type.');
   if(requireSms&&available.numbers.some((n:any)=>!Array.isArray(n.features)||!n.features.includes('sms')))malformed('The provider did not confirm SMS support for these numbers.');
-  return {...available,country,numberType:selectedType,requireSms,countries:catalog.countries,...(!available.numbers.length?{availabilityMode:'out_of_stock',notice:'No numbers currently match this country, type and capability search. Refresh to check live availability.'}:{})};
+  const numbers=available.numbers.filter((n:any)=>typeof n?.phoneNumber==='string'&&/^\+[1-9]\d{6,14}$/.test(n.phoneNumber)).map((n:any)=>({phoneNumber:n.phoneNumber,features:Array.isArray(n.features)?n.features.filter((f:any)=>typeof f==='string'):[],locality:typeof n.locality==='string'?n.locality:'',bestEffort:n.bestEffort===true}));
+  return {...available,numbers,country,numberType:selectedType,requireSms,countries,...priced,filters,...(!numbers.length?{availabilityMode:'out_of_stock',notice:'No numbers currently match this country, type and capability search. Refresh to check live availability.'}:{availabilityMode:'instant'})};
+ }
+ /** One country's live stock, address rule and area codes (GET /v1/phone-numbers/availability). */
+ static async availability(organizationId:string,country:string,numberType?:string,wantsSms:unknown=false) {
+  await tenantProfile(organizationId);
+  if(typeof country!=='string'||!/^[A-Z]{2}$/.test(country))invalid('Choose a country.');
+  if(numberType!==undefined&&numberType!==''&&!numberTypes.includes(numberType))invalid('Choose a valid number type.');
+  if(![true,false,'true','false',undefined].includes(wantsSms as any))invalid('Choose whether SMS support is required.');
+  const result=await provider({path:'/phone-numbers/availability',query:{country,...(numberType?{numberType}:{}),...(wantsSms===true||wantsSms==='true'?{sms:true}:{})}});
+  const area=(a:any)=>a&&typeof a.ndc==='string'?{ndc:a.ndc,name:typeof a.name==='string'?a.name:a.ndc,count:Number.isSafeInteger(a.count)?a.count:undefined}:null;
+  const list=(v:any)=>Array.isArray(v)?v.map(area).filter(Boolean):[];
+  return {httpStatus:result.httpStatus,country,numberType:typeof result.numberType==='string'?result.numberType:numberType,available:result.available===true,preOrderable:result.preOrderable===true,addressConstraint:['geo','country','none'].includes(result.addressConstraint)?result.addressConstraint:undefined,areaOptions:list(result.areaOptions),preOrderAreas:list(result.areaAvailability?.preOrder)};
  }
  static async detail(organizationId:string,numberId:string) {return {phoneNumber:await ownedNumber(organizationId,numberId),httpStatus:200};}
  static async quote(organizationId:string,input:Record<string,any>) {

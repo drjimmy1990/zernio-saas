@@ -49,7 +49,7 @@ function conversationPath(conversationId: string) {
 }
 
 async function ownedAccount(params: AccountParams, mutation = false) {
-  await assertSubServiceAllowed(params.organizationId, 'telephony');
+  await assertSubServiceAllowed(params.organizationId, 'inbox_crm');
   const [account] = await requireTenantAccounts(params.organizationId, [params.accountId]);
   if (account.platform !== 'whatsapp') invalid('Select a connected WhatsApp account.');
   if (mutation && (!account.isActive || account.needsReconnection)) {
@@ -109,7 +109,7 @@ function templateSendComponents(definition: Record<string, unknown>[] | undefine
 /** Provider inbox and Meta template state are canonical; no synthetic receipts or local cache. */
 export class WhatsAppService {
   static async listAccounts(organizationId: string) {
-    await assertSubServiceAllowed(organizationId, 'telephony');
+    await assertSubServiceAllowed(organizationId, 'inbox_crm');
     const profileId = await CoreConnectService.ensureTenantProfile(organizationId);
     const { data, status } = await zernioClient.request<{ accounts?: TenantProviderAccount[] }>({ path: '/accounts', query: { profileId } });
     if (!Array.isArray(data.accounts)) throw new ZernioApiException({ status: 502, error: 'Zernio did not return an account list.' });
@@ -121,7 +121,7 @@ export class WhatsAppService {
   }
 
   static async listConversations(params: { organizationId: string; accountId?: string; status?: 'active' | 'archived' } & PageParams) {
-    await assertSubServiceAllowed(params.organizationId, 'telephony');
+    await assertSubServiceAllowed(params.organizationId, 'inbox_crm');
     const profileId = await CoreConnectService.ensureTenantProfile(params.organizationId);
     if (params.accountId) await ownedAccount({ ...params, accountId: params.accountId });
     const result = await provider({ path: '/inbox/conversations', query: { ...page(params), profileId, accountId: params.accountId, platform: 'whatsapp', status: params.status } });

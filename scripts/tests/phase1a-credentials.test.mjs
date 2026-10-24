@@ -35,6 +35,7 @@ function sandbox(options = {}) {
       ZernioApiException, ZernioClient: {},
       zernioClient: { isConfigured: () => true, request: async (request) => {
         calls.push({ type: 'provider', request });
+    if (request.path === '/users') return { data: { currentUserId: 'user-a' } };
         return { data: { account: { _id: 'verified-account', profileId }, authUrl: 'https://provider.invalid/auth' } };
       } },
     };
@@ -79,13 +80,13 @@ test('other platform credential payloads preserve UI fields while excluding rout
   ]) {
     const s = sandbox();
     await s.connect(platform, { ...controlClaims, ...credentials, secretOrToken: 'unused-ui-field' });
-    const request = s.calls.find((call) => call.type === 'provider').request;
-    assert.deepEqual(JSON.parse(JSON.stringify(request.body)), { ...expected, profileId });
+    const request = s.calls.find((call) => call.type === 'provider' && call.request.method === 'POST').request;
+    assert.deepEqual(JSON.parse(JSON.stringify(request.body)), { ...expected, ...(platform === 'bluesky' ? { state: `user-a-${profileId}` } : { profileId }) });
     assert.equal(request.method, 'POST');
     assert.equal(Object.hasOwn(request, 'apiKeyOverride'), false);
     assert.equal(Object.hasOwn(request, 'extraHeaders'), false);
-    assert.equal(Object.hasOwn(request.body, 'state'), false);
-    assert.equal(s.calls.filter((call) => call.type === 'provider').length, 1);
+    assert.equal(Object.hasOwn(request.body, 'state'), platform === 'bluesky');
+    assert.equal(s.calls.filter((call) => call.type === 'provider').length, platform === 'bluesky' ? 2 : 1);
   }
 });
 
@@ -97,7 +98,7 @@ test('legacy credential aliases and optional WhatsApp PIN preserve supported inp
   ]) {
     const s = sandbox();
     await s.connect(platform, credentials);
-    assert.deepEqual(JSON.parse(JSON.stringify(s.calls.find((call) => call.type === 'provider').request.body)), { ...expected, profileId });
+    assert.deepEqual(JSON.parse(JSON.stringify(s.calls.find((call) => call.type === 'provider' && call.request.method === 'POST').request.body)), { ...expected, ...(platform === 'bluesky' ? { state: `user-a-${profileId}` } : { profileId }) });
   }
 });
 

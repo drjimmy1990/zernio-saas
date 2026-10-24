@@ -7,6 +7,7 @@ import { TenantAccessError } from '@/lib/auth/tenant-access';
 import type { SocialPlatform } from '@/types/platform';
 import { publicMediaUrl, validateInstagramTarget, type PublishingMedia } from '@/lib/publishing/instagram';
 import { validateFacebookTarget } from '@/lib/publishing/facebook';
+import { assertTikTokMediaCheck, assertTikTokSettingsAllowed, normalizeTikTokCreatorInfo, validateTikTokTarget, type TikTokSettings, type TikTokCreatorInfo, type TikTokMediaKind } from '@/lib/publishing/tiktok';
 
 export interface CreateTenantPostInput {
   organizationId: string;
@@ -20,6 +21,8 @@ export interface CreateTenantPostInput {
   useProfileQueue?: boolean;
   queueId?: string;
   idempotencyKey?: string;
+  /** Top-level TikTok settings (zernio.txt "# TikTok" → Platform fields); validated against live creator-info. */
+  tiktokSettings?: Record<string, unknown>;
 }
 type Media = PublishingMedia;
 export type UpdateTenantPostInput = Partial<Omit<CreateTenantPostInput, 'organizationId'>>;
@@ -78,6 +81,39 @@ async function ownedPreflightAccount(organizationId: string, accountId: string, 
   if (!policy.allowedPlatforms.includes(account.platform as SocialPlatform)) throw new TenantAccessError(403, 'Publishing on this platform is disabled.');
   if (!account.isActive || account.needsReconnection || (account as TenantProviderAccount & { enabled?: boolean }).enabled === false) throw new TenantAccessError(409, 'Activate or reconnect this account before publishing.'); return account;
 }
+async function tiktokCreatorInfo(accountId: string, mediaType: TikTokMediaKind): Promise<TikTokCreatorInfo & { httpStatus: number }> {
+  const { data, status } = await zernioClient.request<ProviderPost>({ path: `/accounts/${encodeURIComponent(accountId)}/tiktok/creator-info`, query: { mediaType } });
+  const info = normalizeTikTokCreatorInfo(data, mediaType);
+  if (!info) throw new ZernioApiException({ status: 502, code: 'invalid_provider_response', error: 'TikTok creator settings could not be verified. Refresh and try again.' });
+  return { ...info, httpStatus: status };
+}
+async function ownedTikTokAccount(organizationId: string, accountId: string) {
+  const policy = await assertSubServiceAllowed(organizationId, 'publishing'); configured();
+  const [account] = await requireTenantAccounts(organizationId, [accountId]);
+  if (account.platform !== 'tiktok') bad('Select a connected TikTok account.');
+  if (!policy.allowedPlatforms.includes('tiktok')) throw new TenantAccessError(403, 'Publishing on TikTok is disabled by your plan or administrator.');
+  if (!account.isActive || account.needsReconnection || (account as TenantProviderAccount & { enabled?: boolean }).enabled === false) throw new TenantAccessError(409, 'Activate or reconnect this TikTok account before publishing.');
+  return account;
+}
+/**
+ * Authoritative TikTok preflight for one target: structural rules, then the creator's live
+ * capabilities (privacy, interactions, commercial disclosure, posting availability), then
+ * provider media checks. Nothing is written; any failure stops the post before creation.
+ */
+async function tiktokPreflight(target: CreateTenantPostInput['platforms'][number], content: string | undefined, rootMedia: Media[] | undefined, rootSettings: unknown, checks?: Map<string, ProviderPost>) {
+  const details = validateTikTokTarget(target, content, rootMedia, rootSettings);
+  const info = await tiktokCreatorInfo(target.accountId, details.kind);
+  assertTikTokSettingsAllowed(details.settings, info);
+  if (checks) {
+    const urls = [...details.items, ...(typeof details.settings.video_cover_image_url === 'string' ? [{ type: 'image' as const, url: details.settings.video_cover_image_url }] : [])];
+    for (const item of urls) {
+      let check = checks.get(item.url); if (!check) { check = await mediaPreflight(item.url); checks.set(item.url, check); }
+      if (!check.valid) throw new ZernioApiException({ status: 400, code: 'media_validation_failed', error: check.error || 'TikTok cannot download this media. Use a direct public file link.', details: check });
+      assertTikTokMediaCheck(item, check);
+    }
+  }
+  return { ...details, info };
+}
 function storedTarget(target: ProviderPost) {
   return { platform: target.platform as SocialPlatform, accountId: reference(target.accountId), ...(target.customContent !== undefined ? { customContent: target.customContent } : {}), ...(target.customMedia !== undefined ? { customMedia: target.customMedia } : {}), ...(target.platformSpecificData !== undefined ? { platformSpecificData: target.platformSpecificData } : {}) };
 }
@@ -108,14 +144,16 @@ async function body(org: string, input: UpdateTenantPostInput, profileId: string
     if (!Array.isArray(data.queues)) malformed();
     if (!data.queues.some(queue => queue._id === input.queueId)) throw new TenantAccessError(403, 'This queue is not owned by your workspace.');
   }
-  if (create && (!Array.isArray(input.platforms) || !input.platforms.length)) bad('Select at least one connected Facebook or Instagram account.');
+  if (create && (!Array.isArray(input.platforms) || !input.platforms.length)) bad('Select at least one connected Facebook, Instagram or TikTok account.');
+  let tiktokEffective: TikTokSettings | undefined;
+  const tiktokByAccount = new Map<string, TikTokSettings>();
   if (input.platforms !== undefined) {
     if (!Array.isArray(input.platforms) || !input.platforms.length || input.platforms.some(target => !target || typeof target.accountId !== 'string')) bad('Select a connected Facebook or Instagram account.');
     const policy = await assertSubServiceAllowed(org, 'publishing');
     const accounts = await requireTenantAccounts(org, input.platforms.map(target => target.accountId));
     if (new Set(input.platforms.map(target => target.accountId)).size !== input.platforms.length) bad('Duplicate account targets are not allowed.');
     input.platforms.forEach((target, index) => {
-      if (!['facebook', 'instagram'].includes(target.platform)) throw new TenantAccessError(501, 'This publishing phase supports Facebook and Instagram.');
+      if (!['facebook', 'instagram', 'tiktok'].includes(target.platform)) throw new TenantAccessError(501, 'Publishing currently supports Facebook, Instagram and TikTok.');
       if (!policy.allowedPlatforms.includes(target.platform)) throw new TenantAccessError(403, 'Publishing on this platform is disabled by your plan or administrator.');
       if (accounts[index].platform !== target.platform) throw new TenantAccessError(403, 'The account does not match the target platform.');
       if (!accounts[index].isActive || accounts[index].needsReconnection) throw new TenantAccessError(409, 'Reconnect this account before publishing.');
@@ -129,6 +167,7 @@ async function body(org: string, input: UpdateTenantPostInput, profileId: string
           'pageId' in target.platformSpecificData.facebookSettings))) bad('Select the Facebook Page through accountId; pageId overrides are not supported.');
       if (target.platform === 'instagram') validateInstagramTarget(target, input.content ?? existing?.content, input.mediaItems ?? existing?.mediaItems, accounts[index] as TenantProviderAccount & { metadata?: Record<string, any> });
       if (target.platform === 'facebook') validateFacebookTarget(target, input.mediaItems ?? existing?.mediaItems);
+      if (target.platform === 'tiktok') validateTikTokTarget(target, input.content ?? existing?.content, input.mediaItems ?? existing?.mediaItems, input.tiktokSettings ?? existing?.tiktokSettings);
     });
     const instagram = input.platforms.filter(target => target.platform === 'instagram');
     if (instagram.length && preflight) {
@@ -148,11 +187,23 @@ async function body(org: string, input: UpdateTenantPostInput, profileId: string
         if (input.publishNow === true) { const quota = await publishingQuota(target.accountId); if (quota.quotaUsage >= quota.quotaTotal) throw new ZernioApiException({ status: 429, code: 'instagram_publishing_limit', error: 'This Instagram account has reached its current publishing limit.', details: quota }); }
       }
     }
+    // TikTok: every target is checked against the creator's live capabilities before anything is written.
+    const tiktokChecks = new Map<string, ProviderPost>();
+    for (const target of input.platforms.filter(entry => entry.platform === 'tiktok')) {
+      const checked = await tiktokPreflight(target, input.content ?? existing?.content, input.mediaItems ?? existing?.mediaItems, input.tiktokSettings ?? existing?.tiktokSettings, preflight ? tiktokChecks : undefined);
+      tiktokEffective ??= checked.settings;
+      tiktokByAccount.set(target.accountId, checked.settings);
+    }
   }
   if (create && !input.content?.trim() && !input.mediaItems?.length && !input.platforms?.every(target => target.customContent?.trim() || target.customMedia?.length)) bad('Add content or media.');
   const result: Record<string, unknown> = {};
   for (const field of ['content', 'mediaItems', 'scheduledFor', 'timezone', 'publishNow', 'isDraft'] as const) if (input[field] !== undefined) result[field] = input[field];
   if (input.platforms) result.platforms = input.platforms.map(serializeTarget);
+  // Zernio reads TikTok options from a top-level tiktokSettings object (canonical, validated above).
+  if (tiktokEffective) result.tiktokSettings = tiktokEffective;
+  // Zernio stores TikTok options per entry; each TikTok target carries its own validated settings.
+  if (tiktokByAccount.size && Array.isArray(result.platforms)) result.platforms = (result.platforms as Array<Record<string, any>>).map(target => target.platform === 'tiktok' && tiktokByAccount.has(target.accountId)
+    ? { ...target, platformSpecificData: { ...(target.platformSpecificData || {}), tiktokSettings: tiktokByAccount.get(target.accountId) } } : target);
   if (input.useProfileQueue) { result.queuedFromProfile = profileId; if (input.queueId) result.queueId = input.queueId; }
   if (create && !input.publishNow && !input.scheduledFor && !input.useProfileQueue) result.isDraft = true;
   return result;
@@ -170,6 +221,22 @@ export class PublishingService {
   }
   static async getInstagramPublishingLimit(params: { organizationId: string; accountId: string }) {
     await ownedPreflightAccount(params.organizationId, params.accountId, true); return publishingQuota(params.accountId);
+  }
+  /** Live TikTok capabilities for one tenant-owned account; the composer renders only these options. */
+  static async getTikTokCreatorInfo(params: { organizationId: string; accountId: string; mediaType?: string }) {
+    if (params.mediaType !== 'video' && params.mediaType !== 'photo') bad('Choose video or photo to load TikTok settings.');
+    const account = await ownedTikTokAccount(params.organizationId, params.accountId);
+    return { ...await tiktokCreatorInfo(account._id, params.mediaType), accountId: account._id, simulated: false };
+  }
+  /** Composer review for one TikTok account: the same checks a create runs, without creating anything. */
+  static async validateTikTokPost(input: { organizationId: string; accountId: string; content?: string; mediaItems?: Media[]; tiktokSettings?: Record<string, unknown> }) {
+    const account = await ownedTikTokAccount(input.organizationId, input.accountId);
+    if (input.content !== undefined && typeof input.content !== 'string') bad('content must be text.');
+    media(input.mediaItems);
+    const checks = new Map<string, ProviderPost>();
+    const result = await tiktokPreflight({ platform: 'tiktok', accountId: account._id }, input.content, input.mediaItems, input.tiktokSettings, checks);
+    return { valid: true, kind: result.kind, settings: result.settings, creator: result.info.creator,
+      media: [...checks.values()].map(check => ({ url: check.url, type: check.type, contentType: check.contentType, size: check.size ?? null })), simulated: false, httpStatus: 200 };
   }
   static async createPost(input: CreateTenantPostInput) {
     const idempotencyKey = key(input.organizationId, 'create', input.idempotencyKey), tenant = await scope(input.organizationId);

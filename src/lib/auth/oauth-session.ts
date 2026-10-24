@@ -16,7 +16,7 @@ const STEP_PLATFORM: Record<string, SocialPlatform> = {
   select_phone_number: 'whatsapp', select_account: 'instagram',
 };
 type Resource = { id: string; name: string; username: string; category: string; details: string; instagramAccountId?: string; wabaId?: string };
-type Context = { loginMethod?: 'instagram_login' | 'facebook_login'; reconnectAccountId?: string; expectedPlatformUserId?: string; tempToken?: string; userProfile?: Record<string, unknown>; connectToken?: string; accountId?: string; resources?: Resource[] };
+type Context = { loginMethod?: 'instagram_login' | 'facebook_login'; reconnectAccountId?: string; expectedPlatformUserId?: string; expectedUsername?: string; tempToken?: string; userProfile?: Record<string, unknown>; connectToken?: string; accountId?: string; resources?: Resource[] };
 type OAuthRow = {
   id: string; organization_id: string; user_id: string; session_hash: string;
   platform: SocialPlatform; profile_id: string; redirect_url: string; expires_at: string;
@@ -97,11 +97,17 @@ export async function startOAuthSession(request: Request, session: AuthSession,
   const callback = new URL('/dashboard', process.env.NEXT_PUBLIC_APP_URL || request.url);
   callback.searchParams.set('asra3_oauth_state', nonce);
   if (reconnect) callback.searchParams.set('reconnectAccountId', reconnect.reconnectAccountId);
+  // TikTok error redirects may omit `connected`; the platform keeps the callback bound to this session.
+  if (params.platform === 'tiktok') callback.searchParams.set('platform', 'tiktok');
+  // Zernio matches TikTok reconnects by @handle; remember the original handle server-side only.
+  const expectedUsername = reconnect && params.platform === 'tiktok'
+    ? tiktokHandle((await requireTenantAccounts(session.tenant.organizationId, [reconnect.reconnectAccountId]))[0].username) : undefined;
+  if (reconnect && params.platform === 'tiktok' && !expectedUsername) throw new TenantAccessError(409, 'The provider did not return the TikTok @handle. Refresh accounts before reconnecting.');
   const row: OAuthRow = {
     id: nonce, organization_id: session.tenant.organizationId, user_id: session.user.id,
     session_hash: binding(request), platform: params.platform, profile_id: profileId,
     redirect_url: callback.toString(), expires_at: new Date(Math.min(Date.now() + 15 * 60_000, session.expiresAt)).toISOString(),
-    status: 'pending', encrypted_context: reconnect || params.platform === 'instagram' ? encryptOAuthContext({ ...reconnect, ...(params.platform === 'instagram' ? { loginMethod: reconnect?.loginMethod || params.loginMethod || 'instagram_login' } : {}) }, nonce) : null, expected_phone_number: expectedPhoneNumber || null,
+    status: 'pending', encrypted_context: reconnect || params.platform === 'instagram' ? encryptOAuthContext({ ...reconnect, ...(expectedUsername ? { expectedUsername } : {}), ...(params.platform === 'instagram' ? { loginMethod: reconnect?.loginMethod || params.loginMethod || 'instagram_login' } : {}) }, nonce) : null, expected_phone_number: expectedPhoneNumber || null,
     purchased_number_id: purchasedNumberId || null,
   };
   const { error } = await database().from('oauth_sessions').insert(row);
@@ -125,6 +131,11 @@ export async function acceptOAuthCallback(request: Request, session: AuthSession
   if (body.error) {
     await transition(row, 'pending', { status: 'failed', encrypted_context: null });
     const canceled = ['connection_cancelled', 'access_denied'].includes(String(body.error));
+    if (row.platform === 'tiktok' && !canceled) {
+      throw new TenantAccessError(400, String(body.error) === 'missing_tiktok_permissions'
+        ? 'TikTok did not grant every required permission, so nothing changed. Connect again and accept all permissions on TikTok\'s consent screen.'
+        : 'TikTok could not authorize the connection. Retry and accept every permission TikTok asks for.');
+    }
     throw new TenantAccessError(400, canceled ? 'Authorization was canceled. Restart when you are ready.' : 'The provider could not authorize the connection. Check Meta permissions and number ownership, then retry.');
   }
   if (body.profileId !== row.profile_id) throw new TenantAccessError(403, 'The callback profile does not match your workspace.');
@@ -217,6 +228,10 @@ function normalizePhone(value: string) {
   return /^[1-9]\d{7,14}$/.test(digits) ? digits : '';
 }
 
+function tiktokHandle(value: unknown) {
+  return typeof value === 'string' ? value.trim().replace(/^@/, '').toLowerCase() : '';
+}
+
 async function finish(row: OAuthRow, accountId: string) {
   let account: { id: string; accountId: string; platform: string; username: string; displayName: string; status: string; syncTime: string; needsReconnect: boolean };
   try {
@@ -240,6 +255,9 @@ async function finish(row: OAuthRow, accountId: string) {
     }
     if (reconnect.expectedPlatformUserId && ![identity.platformUserId, row.platform === 'instagram' ? identity.metadata?.instagramScopedId : undefined].includes(reconnect.expectedPlatformUserId)) {
       throw new TenantAccessError(409, 'The provider returned a different platform identity.');
+    }
+    if (row.platform === 'tiktok' && reconnect.expectedUsername && tiktokHandle(verified.username) !== reconnect.expectedUsername) {
+      throw new TenantAccessError(409, `TikTok authorized @${tiktokHandle(verified.username) || 'unknown'} instead of the original @${reconnect.expectedUsername}. Zernio may have replaced the original account in this slot. Refresh accounts and review before publishing.`);
     }
     if (verified.platform !== row.platform || !verified.isActive || verified.needsReconnection) {
       throw new TenantAccessError(409, 'The provider has not confirmed an active connection for this platform. Restart the connection.');

@@ -32,6 +32,8 @@ function sandbox(options = {}) {
   const instagramExports = {}; vm.runInNewContext(`(function(require,exports){${instagramSource}\n})`,{URL}).call(null,name=>modules[name],instagramExports); modules['@/lib/publishing/instagram']=instagramExports;
   const facebookSource = ts.transpileModule(fs.readFileSync('src/lib/publishing/facebook.ts','utf8'), {compilerOptions:{module:ts.ModuleKind.CommonJS,target:ts.ScriptTarget.ES2022}}).outputText;
   const facebookExports = {}; vm.runInNewContext(`(function(require,exports){${facebookSource}\n})`,{URL}).call(null,name=>modules[name],facebookExports); modules['@/lib/publishing/facebook']=facebookExports;
+  const tiktokSource = ts.transpileModule(fs.readFileSync('src/lib/publishing/tiktok.ts','utf8'), {compilerOptions:{module:ts.ModuleKind.CommonJS,target:ts.ScriptTarget.ES2022}}).outputText;
+  const tiktokExports = {}; vm.runInNewContext(`(function(require,exports){${tiktokSource}\n})`,{URL}).call(null,name=>name==='./instagram'?instagramExports:modules[name],tiktokExports); modules['@/lib/publishing/tiktok']=tiktokExports;
   const exports = {};
   vm.runInNewContext(`(function(require,exports){${source}\n})`, { URL, Intl, Date, Set }).call(null, name => { assert.ok(modules[name], name); return modules[name]; }, exports);
   return { service: exports.PublishingService, calls };

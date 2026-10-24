@@ -521,7 +521,8 @@ export function ConnectionWizardModal({
   const filteredPlatforms = useMemo(() => {
     return ALL_SOCIAL_PLATFORMS.filter((plat) => {
       const meta = PLATFORM_CATALOG[plat];
-      if (!meta) return false;
+      // Only offer channels Asra3 can use after connecting; others would consume paid account capacity and do nothing.
+      if (!meta || !['facebook', 'instagram', 'whatsapp', 'tiktok'].includes(plat)) return false;
       const matchesCategory =
         activeCategoryFilter === 'all' || meta.category === activeCategoryFilter;
       const matchesSearch =
@@ -1104,6 +1105,11 @@ export function ConnectionWizardModal({
                 <p className="text-xs text-[var(--text-secondary)]">{reconnectAccountId ? loc('إعادة الربط تستخدم طريقة الدخول الأصلية التي يتحقق منها المزود.', 'Reconnect preserves the original login method verified by the provider.') : loc('يلزم حساب أعمال أو منشئ محتوى احترافي. كلا الخيارين يدعم الرسائل والنشر؛ بعض الميزات المتقدمة تتطلب فيسبوك.', 'A Business or Creator account is required. Both options support messaging and publishing; some advanced features require Facebook Login.')}</p>
               </fieldset>}
 
+              {selectedPlatform === 'tiktok' && <div role="note" data-testid="tiktok-connect-notice" className="space-y-2 rounded-xl border border-[var(--border-subtle)] p-5 text-sm">
+                <p className="font-semibold">{loc('ربط حساب تيك توك', 'Connect your TikTok account')}</p>
+                <p className="text-xs leading-relaxed text-[var(--text-secondary)]">{loc('سجّل الدخول بحساب تيك توك الذي تريد النشر عليه ووافق على جميع الصلاحيات المطلوبة. تيك توك يرفض الربط إذا لم تُمنح صلاحيات الفيديو.', 'Sign in with the TikTok account you want to publish to and accept every permission TikTok asks for. TikTok refuses the connection if the video permissions are not granted.')}</p>
+                {reconnectAccountId && <p className="text-xs font-semibold leading-relaxed text-amber-700 dark:text-amber-300">{loc('أعد الربط بنفس اسم المستخدم (@). تفويض حساب تيك توك مختلف يستبدل هذا الحساب ويحذف نهائياً تحليلاته وسجل رسائله وتعليقاته.', 'Reconnect with the same @handle. Authorizing a different TikTok account replaces this one and permanently deletes its analytics, inbox and message history.')}</p>}
+              </div>}
               {/* A. OAuth 2.0 Consent Handshake Screen */}
               {platformMeta.connectionType === 'oauth' && (
                 <div className="rounded-2xl border border-[var(--border-subtle)] bg-[var(--bg-card)] p-6 space-y-5 shadow-sm">
